@@ -134,13 +134,13 @@ impl Interface {
 
 impl Hash for Interface {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.mac_address.hash(state);
+        self.index.hash(state);
     }
 }
 
 impl PartialEq for Interface {
     fn eq(&self, other: &Self) -> bool {
-        self.mac_address == other.mac_address
+        self.index == other.index
     }
 }
 
