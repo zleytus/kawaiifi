@@ -10,8 +10,6 @@ use nl80211_attr::Nl80211Attr;
 use nl80211_cmd::Nl80211Cmd;
 pub use scan_error::ScanError;
 
-use std::collections::HashSet;
-
 use neli::{
     consts::{nl::NlmF, socket::NlFamily},
     genl::{Genlmsghdr, GenlmsghdrBuilder},
@@ -27,17 +25,17 @@ pub fn default_interface() -> Option<Interface> {
     interfaces().into_iter().next()
 }
 
-pub fn interfaces() -> HashSet<Interface> {
+pub fn interfaces() -> Vec<Interface> {
     match interfaces_internal() {
         Ok(interfaces) => interfaces,
         Err(e) => {
             eprintln!("Failed to get interfaces: {:?}", e);
-            HashSet::new()
+            Vec::new()
         }
     }
 }
 
-fn interfaces_internal() -> Result<HashSet<Interface>, ScanError> {
+fn interfaces_internal() -> Result<Vec<Interface>, ScanError> {
     // Create a generic netlink socket and resolve nl80211 family
     let (socket, _) = NlRouter::connect(NlFamily::Generic, None, Groups::empty())?;
     let family_id = socket.resolve_genl_family(NL80211_FAMILY_NAME)?;
@@ -56,7 +54,7 @@ fn interfaces_internal() -> Result<HashSet<Interface>, ScanError> {
     )?;
 
     // Receive all responses and attempt to convert each of them into an Interface
-    let mut interfaces = HashSet::new();
+    let mut interfaces = Vec::new();
     for msg in recv {
         let msg = msg?;
         let Some(payload) = msg.get_payload() else {
@@ -64,7 +62,7 @@ fn interfaces_internal() -> Result<HashSet<Interface>, ScanError> {
         };
         let attrs = payload.attrs().iter();
         if let Ok(interface) = Interface::from_attrs(attrs) {
-            interfaces.insert(interface);
+            interfaces.push(interface);
         }
     }
 
