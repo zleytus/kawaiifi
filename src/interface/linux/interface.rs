@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashMap,
     convert::{TryFrom, TryInto},
     hash::Hash,
     iter::once,
@@ -180,7 +180,7 @@ impl Interface {
         self.vif_radio_mask
     }
 
-    pub fn scan(&self) -> Result<HashSet<Bss>, ScanError> {
+    pub fn scan(&self) -> Result<Vec<Bss>, ScanError> {
         // Connect to the generic netlink socket
         let (socket, multicast) = NlRouter::connect(NlFamily::Generic, None, Groups::empty())?;
 
@@ -243,7 +243,7 @@ impl Interface {
         todo!()
     }
 
-    pub fn cached_scan_results(&self) -> Result<HashSet<Bss>, ScanError> {
+    pub fn cached_scan_results(&self) -> Result<Vec<Bss>, ScanError> {
         // Connect to the generic netlink socket
         let (socket, _) = NlRouter::connect(NlFamily::Generic, None, Groups::empty())?;
 
@@ -276,13 +276,11 @@ impl Interface {
         )?;
 
         // Process responses and extract BSS information
-        let bss_set = responses
+        Ok(responses
             .into_iter()
             .filter_map(|msghdr| msghdr.ok())
             .filter_map(|msghdr| Self::extract_bss_from_message(msghdr))
-            .collect::<HashSet<_>>();
-
-        Ok(bss_set)
+            .collect())
     }
 
     /// Extract BSS information from a netlink message
