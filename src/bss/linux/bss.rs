@@ -280,7 +280,7 @@ impl Display for Bss {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let _r = writeln!(
             f,
-            "BSSID: {:?}\nSSID: {}\nRSSI: {} dBm\nChannel Number: {}\r\nChannel Width: {}\r\nWi-Fi Protocols: {}",
+            "BSSID: {:?}\nSSID: {}\nRSSI: {} dBm\nChannel Number: {}\nChannel Width: {}\nWi-Fi Protocols: {}",
             self.bssid,
             self.ssid().unwrap_or_default(),
             self.signal_dbm,

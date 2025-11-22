@@ -46,7 +46,7 @@ impl Display for Field {
         if let Some(subfields) = &self.subfields {
             let mut res = write!(f, "{}: {}", self.title, self.value);
             for field in subfields {
-                res = write!(f, "\r\n- {}: {}", field.title, field.value);
+                res = write!(f, "\n- {}: {}", field.title, field.value);
             }
             res
         } else {
