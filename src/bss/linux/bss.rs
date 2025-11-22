@@ -57,8 +57,8 @@ impl Bss {
         self.beacon_interval_tu as f64 * 1.024
     }
 
-    pub fn capability_info(&self) -> CapabilityInfo {
-        self.capability_info.clone()
+    pub fn capability_info(&self) -> &CapabilityInfo {
+        &self.capability_info
     }
 
     pub fn status(&self) -> BssStatus {
@@ -196,7 +196,7 @@ impl TryFrom<&[Nlattr<Nl80211Bss, Buffer>]> for Bss {
             capability_info: bss_attrs
                 .get(&Nl80211Bss::Capability)
                 .and_then(|attr| attr.payload().as_ref().try_into().ok())
-                .map(|payload| CapabilityInfo::new(payload))
+                .and_then(|payload: &[u8]| CapabilityInfo::try_from(payload).ok())
                 .ok_or(())?,
             status: bss_attrs
                 .get(&Nl80211Bss::Status)
