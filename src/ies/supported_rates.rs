@@ -1,5 +1,82 @@
-use super::{Display, Field, InformationElement};
-use std::{collections::HashSet, convert::TryFrom};
+use std::{collections::HashSet, convert::TryFrom, fmt::Display};
+
+use deku::{DekuRead, DekuWrite};
+
+use super::IeId;
+
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[deku(ctx = "len: usize")]
+pub struct SupportedRates {
+    #[deku(count = "len")]
+    bytes: Vec<u8>,
+}
+
+impl SupportedRates {
+    pub const NAME: &'static str = "Supported Rates";
+    pub const ID: u8 = 1;
+    pub const ID_EXT: Option<u8> = None;
+    pub(crate) const IE_ID: IeId = IeId::new(Self::ID, Self::ID_EXT);
+
+    pub fn rates(&self) -> HashSet<DataRate> {
+        self.bytes
+            .iter()
+            .filter_map(|byte| {
+                if let Ok(rate) = DataRate::try_from(*byte) {
+                    Some(rate)
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
+    pub fn basic_rates(&self) -> Vec<f64> {
+        self.bytes
+            .iter()
+            .filter_map(|byte| DataRate::try_from(*byte).ok())
+            .filter_map(|rate| {
+                if rate.is_basic() {
+                    Some(rate.value())
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
+    pub fn all_rates(&self) -> Vec<f64> {
+        self.bytes
+            .iter()
+            .map(|&byte| (byte >> 1) as f64 / 2.0)
+            .collect()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[deku(ctx = "len: usize")]
+pub struct ExtendedSupportedRates {
+    #[deku(ctx = "len")]
+    supported_rates: SupportedRates,
+}
+
+impl ExtendedSupportedRates {
+    pub const NAME: &'static str = "Extended Supported Rates";
+    pub const ID: u8 = 50;
+    pub const ID_EXT: Option<u8> = None;
+    pub(crate) const IE_ID: IeId = IeId::new(Self::ID, Self::ID_EXT);
+
+    pub fn rates(&self) -> HashSet<DataRate> {
+        self.supported_rates.rates()
+    }
+
+    pub fn basic_rates(&self) -> Vec<f64> {
+        self.supported_rates.basic_rates()
+    }
+
+    pub fn all_rates(&self) -> Vec<f64> {
+        self.supported_rates.all_rates()
+    }
+}
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub enum DataRate {
@@ -95,120 +172,3 @@ impl TryFrom<u8> for DataRate {
         }
     }
 }
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SupportedRates {
-    bytes: Vec<u8>,
-}
-
-impl SupportedRates {
-    pub fn new(bytes: Vec<u8>) -> SupportedRates {
-        SupportedRates { bytes }
-    }
-
-    pub fn rates(&self) -> HashSet<DataRate> {
-        self.bytes
-            .iter()
-            .filter_map(|byte| {
-                if let Ok(rate) = DataRate::try_from(*byte) {
-                    Some(rate)
-                } else {
-                    None
-                }
-            })
-            .collect()
-    }
-
-    pub fn basic_rates(&self) -> Vec<f64> {
-        self.bytes
-            .iter()
-            .filter_map(|byte| {
-                if byte & 1 == 1 {
-                    Some((byte >> 1) as f64 / 2.0)
-                } else {
-                    None
-                }
-            })
-            .collect()
-    }
-
-    pub fn all_rates(&self) -> Vec<f64> {
-        self.bytes
-            .iter()
-            .map(|&byte| (byte >> 1) as f64 / 2.0)
-            .collect()
-    }
-}
-
-impl InformationElement for SupportedRates {
-    const NAME: &'static str = "Supported Rates";
-    const ID: u8 = 1;
-
-    fn bytes(&self) -> &[u8] {
-        &self.bytes
-    }
-
-    fn information_fields(&self) -> Vec<Field> {
-        let sorted_rates = {
-            let mut rates = self.rates().into_iter().collect::<Vec<DataRate>>();
-            rates.sort();
-            rates
-        };
-
-        sorted_rates
-            .iter()
-            .map(|rate| {
-                Field::new(
-                    if rate.is_basic() {
-                        "Basic Rate"
-                    } else {
-                        "Supported Rate"
-                    },
-                    format!("{:.1} Mbps", rate.value()),
-                )
-            })
-            .collect()
-    }
-}
-
-impl_display_for_ie!(SupportedRates);
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ExtendedSupportedRates {
-    supported_rates: SupportedRates,
-}
-
-impl ExtendedSupportedRates {
-    pub fn new(bytes: Vec<u8>) -> ExtendedSupportedRates {
-        ExtendedSupportedRates {
-            supported_rates: SupportedRates { bytes },
-        }
-    }
-
-    pub fn rates(&self) -> HashSet<DataRate> {
-        self.supported_rates.rates()
-    }
-
-    pub fn basic_rates(&self) -> Vec<f64> {
-        self.supported_rates.basic_rates()
-    }
-
-    pub fn all_rates(&self) -> Vec<f64> {
-        self.supported_rates.all_rates()
-    }
-}
-
-impl InformationElement for ExtendedSupportedRates {
-    const NAME: &'static str = "Extended Supported Rates";
-    const ID: u8 = 50;
-
-    fn bytes(&self) -> &[u8] {
-        self.supported_rates.bytes()
-    }
-
-    fn information_fields(&self) -> Vec<Field> {
-        self.supported_rates.information_fields()
-    }
-}
-
-impl_display_for_ie!(ExtendedSupportedRates);

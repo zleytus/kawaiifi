@@ -1,40 +1,100 @@
-use super::{Field, InformationElement};
+use deku::{DekuRead, DekuWrite, deku_derive};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+use super::IeId;
+
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[deku(ctx = "len: usize")]
 pub struct Rsn {
-    bytes: Vec<u8>,
+    #[deku(bytes = 2)]
+    pub version: u16,
+    #[deku(cond = "len >= 6")]
+    pub group_data_cipher_suite: Option<CipherSuite>,
+    #[deku(bytes = 2, cond = "len >= 8")]
+    pub pairwise_cipher_suite_count: Option<u16>,
+    #[deku(
+        count = "pairwise_cipher_suite_count.unwrap_or_default()",
+        cond = "len >= 8 + usize::from(4 * pairwise_cipher_suite_count.unwrap_or_default())"
+    )]
+    pub pairwise_cipher_suite_list: Option<Vec<CipherSuite>>,
+    #[deku(
+        bytes = 2,
+        cond = "len >= 8 + usize::from(4 * pairwise_cipher_suite_count.unwrap_or_default()) + 2"
+    )]
+    pub akm_suite_count: Option<u16>,
+    #[deku(
+        count = "akm_suite_count.unwrap_or_default()",
+        cond = "len >= 8 + usize::from(4 * pairwise_cipher_suite_count.unwrap_or_default()) + 2 + usize::from(4 * akm_suite_count.unwrap_or_default())"
+    )]
+    pub akm_suite_list: Option<Vec<AkmSuite>>,
+    #[deku(
+        cond = "len >= 8 + usize::from(4 * pairwise_cipher_suite_count.unwrap_or_default()) + 2 + usize::from(4 * akm_suite_count.unwrap_or_default()) + 2"
+    )]
+    pub rsn_capabilities: Option<RsnCapabilities>,
+    #[deku(
+        bytes = 2,
+        cond = "len >= 8 + usize::from(4 * pairwise_cipher_suite_count.unwrap_or_default()) + 2 + usize::from(4 * akm_suite_count.unwrap_or_default()) + 2 + 2"
+    )]
+    pub pmkid_count: Option<u16>,
+    #[deku(
+        count = "pmkid_count.unwrap_or_default()",
+        cond = "len >= 8 + usize::from(4 * pairwise_cipher_suite_count.unwrap_or_default()) + 2 + usize::from(4 * akm_suite_count.unwrap_or_default()) + 2 + 2 + usize::from(16 * pmkid_count.unwrap_or_default())"
+    )]
+    pub pmkid_list: Option<Vec<u64>>,
+    #[deku(
+        cond = "len >= 8 + usize::from(4 * pairwise_cipher_suite_count.unwrap_or_default()) + 2 + usize::from(4 * akm_suite_count.unwrap_or_default()) + 2 + 2 + usize::from(16 * pmkid_count.unwrap_or_default()) + 4"
+    )]
+    pub group_management_cipher_suite: Option<CipherSuite>,
 }
 
 impl Rsn {
-
-    pub fn new(bytes: Vec<u8>) -> Rsn {
-        Rsn { bytes }
-    }
+    pub const NAME: &'static str = "RSN";
+    pub const ID: u8 = 48;
+    pub const ID_EXT: Option<u8> = None;
+    pub(crate) const IE_ID: IeId = IeId::new(Self::ID, Self::ID_EXT);
 }
 
-impl InformationElement for Rsn {
-    fn name(&self) -> &'static str {
-        Rsn::NAME
-    }
-
-    fn id(&self) -> u8 {
-        Rsn::ID
-    }
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+pub struct CipherSuite {
+    pub oui: [u8; 3],
+    pub suite_type: u8,
 }
 
-impl InformationElement for Rsn {
-    const NAME: &'static str = "RSN";
-    const ID: u8 = 48;
-
-    fn bytes(&self) -> &[u8] {
-        &self.bytes
-    }
-
-    fn information_fields(&self) -> Vec<Field> {
-        Vec::new()
-    }
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+pub struct AkmSuite {
+    pub oui: [u8; 3],
+    pub suite_type: u8,
 }
 
-impl_display_for_ie!(Rsn);
-    }
+#[deku_derive(DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[deku(bit_order = "lsb")]
+pub struct RsnCapabilities {
+    #[deku(bits = 1)]
+    pub preauthentication: bool,
+    #[deku(bits = 1)]
+    pub no_pairwise: bool,
+    #[deku(bits = 2)]
+    pub ptksa_replay_counter: u8,
+    #[deku(bits = 2)]
+    pub gtksa_replay_counter: u8,
+    #[deku(bits = 1)]
+    pub mfpr: bool,
+    #[deku(bits = 1)]
+    pub mfpc: bool,
+    #[deku(bits = 1)]
+    pub joint_multiband_rsna: bool,
+    #[deku(bits = 1)]
+    pub peerkey_enabled: bool,
+    #[deku(bits = 1)]
+    pub spp_amsdu_capable: bool,
+    #[deku(bits = 1)]
+    pub spp_amsdu_required: bool,
+    #[deku(bits = 1)]
+    pub pbac: bool,
+    #[deku(bits = 1)]
+    pub extended_key_id_for_individually_address_frames: bool,
+    #[deku(bits = 1)]
+    pub ocvc: bool,
+    #[deku(bits = 1)]
+    reserved: bool,
 }

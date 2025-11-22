@@ -1,135 +1,41 @@
-use super::{Field, IeError, InformationElement};
+use std::{convert::TryFrom, fmt::Display, str};
+
+use deku::{DekuRead, DekuWrite};
+
+use super::IeId;
 use crate::ChannelNumber;
-use std::convert::TryFrom;
-use std::{fmt::Display, str};
 
-pub enum Environment {
-    Any,
-    Outdoor,
-    Indoor,
-}
-
-impl Display for Environment {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Environment::Any => write!(f, "Any"),
-            Environment::Outdoor => write!(f, "Outdoor"),
-            Environment::Indoor => write!(f, "Indoor"),
-        }
-    }
-}
-
-#[derive(Copy, Clone)]
-pub struct OperatingInfo {
-    operating_extension_id: u8,
-    operating_class: u8,
-    coverage_class: u8,
-}
-
-impl OperatingInfo {
-    pub fn operating_extension_id(&self) -> u8 {
-        self.operating_extension_id
-    }
-
-    pub fn operating_class(&self) -> u8 {
-        self.operating_class
-    }
-
-    pub fn coverage_class(&self) -> u8 {
-        self.coverage_class
-    }
-
-    pub fn air_propagation_time_us(&self) -> Option<u16> {
-        match self.coverage_class {
-            0..=31 => Some(self.coverage_class as u16 * 3),
-            _ => None,
-        }
-    }
-}
-
-impl Display for OperatingInfo {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Operating Info:\r\n\tOperating Extension ID: {}\r\n\tOperating Class: {}\r\n\tCoverage Class: {}\r\n\t", self.operating_extension_id, self.operating_class,self.coverage_class)
-    }
-}
-
-pub struct SubbandInfo {
-    first_channel_number: ChannelNumber,
-    number_of_channels: u8,
-    max_transmit_power_level_dbm: i8,
-    operating_info: Option<OperatingInfo>,
-}
-
-impl SubbandInfo {
-    pub fn first_channel_number(&self) -> ChannelNumber {
-        self.first_channel_number
-    }
-
-    pub fn number_of_channels(&self) -> u8 {
-        self.number_of_channels
-    }
-
-    pub fn max_transmit_power_level_dbm(&self) -> i8 {
-        self.max_transmit_power_level_dbm
-    }
-
-    pub fn operating_class(&self) -> Option<OperatingInfo> {
-        self.operating_info
-    }
-}
-
-impl Display for SubbandInfo {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Subband Info:\r\n\tFirst Channel Number: {}\r\n\tNumber of Channels: {}\r\n\tMaximum Transmit Power Level: {} dBm", self.first_channel_number, self.number_of_channels, self.max_transmit_power_level_dbm)
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[deku(ctx = "len: usize")]
 pub struct Country {
-    bytes: Vec<u8>,
+    #[deku(bytes = 2)]
+    country_code: [u8; 2],
+    #[deku(bytes = 1)]
+    environment: u8,
+    #[deku(count = "len.checked_sub(3).unwrap_or_default()")]
+    triplets: Vec<u8>,
 }
 
 impl Country {
+    pub const NAME: &'static str = "Country";
+    pub const ID: u8 = 7;
+    pub const ID_EXT: Option<u8> = None;
+    pub(crate) const IE_ID: IeId = IeId::new(Self::ID, Self::ID_EXT);
     pub const MIN_LENGTH: usize = 6;
 
-    pub fn new(bytes: Vec<u8>) -> Result<Country, IeError> {
-        if bytes.len() >= Self::MIN_LENGTH {
-            Ok(Country { bytes })
-        } else {
-            Err(IeError::InvalidLength {
-                ie_name: Self::NAME,
-                expected_length: Self::MIN_LENGTH,
-                actual_length: bytes.len(),
-            })
-        }
-    }
-
-    // Country String
-
-    pub fn country_string(&self) -> &str {
-        str::from_utf8(&self.bytes[0..=2]).unwrap()
-    }
-
     pub fn country_code(&self) -> &str {
-        str::from_utf8(&self.bytes[0..=1]).unwrap()
+        str::from_utf8(&self.country_code).unwrap_or("??")
     }
 
-    pub fn environment(&self) -> Option<Environment> {
-        match self.bytes[2] as char {
-            ' ' => Some(Environment::Any),
-            'O' => Some(Environment::Outdoor),
-            'I' => Some(Environment::Indoor),
-            _ => None,
-        }
+    pub fn environment(&self) -> Environment {
+        Environment::from(self.environment)
     }
-
-    // Triplets
 
     pub fn subband_info(&self) -> Vec<SubbandInfo> {
         let mut subbands = Vec::new();
         let mut last_operating_info = None;
 
-        for triplet in self.bytes[3..].chunks_exact(3) {
+        for triplet in self.triplets.chunks_exact(3) {
             if let Ok(channel_number) = ChannelNumber::try_from(triplet[0]) {
                 subbands.push(SubbandInfo {
                     first_channel_number: channel_number,
@@ -150,23 +56,74 @@ impl Country {
     }
 }
 
-impl InformationElement for Country {
-    const NAME: &'static str = "Country";
-    const ID: u8 = 7;
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
+pub enum Environment {
+    Any,
+    Outdoor,
+    Indoor,
+}
 
-    fn bytes(&self) -> &[u8] {
-        &self.bytes
-    }
-
-    fn information_fields(&self) -> Vec<Field> {
-        vec![
-            Field::new("Country Code", self.country_code()),
-            Field::new(
-                "Environment",
-                self.environment().unwrap_or(Environment::Any),
-            ),
-        ]
+impl From<u8> for Environment {
+    fn from(value: u8) -> Self {
+        match value as char {
+            'O' => Environment::Outdoor,
+            'I' => Environment::Indoor,
+            _ => Environment::Any,
+        }
     }
 }
 
-impl_display_for_ie!(Country);
+impl Display for Environment {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Environment::Any => write!(f, "Any"),
+            Environment::Outdoor => write!(f, "Outdoor"),
+            Environment::Indoor => write!(f, "Indoor"),
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct OperatingInfo {
+    pub operating_extension_id: u8,
+    pub operating_class: u8,
+    pub coverage_class: u8,
+}
+
+impl OperatingInfo {
+    pub fn air_propagation_time_us(&self) -> Option<u16> {
+        match self.coverage_class {
+            0..=31 => Some(self.coverage_class as u16 * 3),
+            _ => None,
+        }
+    }
+}
+
+impl Display for OperatingInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Operating Info:\n\tOperating Extension ID: {}\n\tOperating Class: {}\r\n\tCoverage Class: {}\r\n\t",
+            self.operating_extension_id, self.operating_class, self.coverage_class
+        )
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SubbandInfo {
+    pub first_channel_number: ChannelNumber,
+    pub number_of_channels: u8,
+    pub max_transmit_power_level_dbm: i8,
+    pub operating_info: Option<OperatingInfo>,
+}
+
+impl Display for SubbandInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Subband Info:\n\tFirst Channel Number: {}\n\tNumber of Channels: {}\n\tMaximum Transmit Power Level: {} dBm",
+            self.first_channel_number, self.number_of_channels, self.max_transmit_power_level_dbm
+        )
+    }
+}

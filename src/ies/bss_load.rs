@@ -1,65 +1,21 @@
-use super::{Field, IeError, InformationElement};
-use bitvec::prelude::*;
+use deku::{DekuRead, DekuWrite};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+use super::IeId;
+
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
 pub struct BssLoad {
-    bits: BitVec<LocalBits, u8>,
+    #[deku(bytes = 2)]
+    pub station_count: u16,
+    #[deku(bytes = 1)]
+    pub channel_utilization: u8,
+    #[deku(bytes = 2)]
+    pub available_admission_capacity: u16,
 }
 
 impl BssLoad {
+    pub const NAME: &'static str = "Bss Load";
+    pub const ID: u8 = 11;
+    pub const ID_EXT: Option<u8> = None;
+    pub(crate) const IE_ID: IeId = IeId::new(Self::ID, Self::ID_EXT);
     pub const LENGTH: usize = 5;
-
-    pub fn new(bytes: Vec<u8>) -> Result<BssLoad, IeError> {
-        if bytes.len() == Self::LENGTH {
-            Ok(BssLoad {
-                bits: BitVec::from_vec(bytes),
-            })
-        } else {
-            Err(IeError::InvalidLength {
-                ie_name: Self::NAME,
-                expected_length: Self::LENGTH,
-                actual_length: bytes.len(),
-            })
-        }
-    }
-
-    pub fn station_count(&self) -> u16 {
-        self.bits[0..16].load::<u16>()
-    }
-
-    pub fn channel_utilization(&self) -> u8 {
-        self.bits.as_raw_slice()[2]
-    }
-
-    pub fn available_admission_capacity(&self) -> u16 {
-        self.bits[24..40].load::<u16>()
-    }
 }
-
-impl InformationElement for BssLoad {
-    const NAME: &'static str = "Bss Load";
-    const ID: u8 = 11;
-
-    fn bytes(&self) -> &[u8] {
-        self.bits.as_raw_slice()
-    }
-
-    fn information_fields(&self) -> Vec<Field> {
-        vec![
-            Field::new("Station Count", self.station_count()),
-            Field::new(
-                "Channel Utilization",
-                format!("{}%", self.channel_utilization()),
-            ),
-            Field::new(
-                "Available Admission Capacity",
-                format!(
-                    "{} μs/s",
-                    u32::from(self.available_admission_capacity()) * 32
-                ),
-            ),
-        ]
-    }
-}
-
-impl_display_for_ie!(BssLoad);

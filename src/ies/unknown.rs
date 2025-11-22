@@ -1,37 +1,15 @@
-use super::{Field, InformationElement};
+use deku::{DekuRead, DekuWrite};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// Represents an unrecognized or unsupported Information Element.
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[deku(ctx = "len: usize")]
 pub struct Unknown {
-    bytes: Vec<u8>,
-    id: u8,
-    id_ext: Option<u8>,
+    #[deku(count = "len")]
+    pub data: Vec<u8>,
 }
 
+/// Unlike other IE types, this doesn't have `ID` or `IE_ID` constants
+/// since it matches any IE that doesn't have a specific parser.
 impl Unknown {
-    pub fn new(bytes: Vec<u8>, id: u8, id_ext: Option<u8>) -> Unknown {
-        Unknown { bytes, id, id_ext }
-    }
+    pub const NAME: &'static str = "Unknown";
 }
-
-impl InformationElement for Unknown {
-    const NAME: &'static str = "Unknown";
-    const ID: u8 = u8::MAX;
-
-    fn id(&self) -> u8 {
-        self.id
-    }
-
-    fn id_ext(&self) -> Option<u8> {
-        self.id_ext
-    }
-
-    fn bytes(&self) -> &[u8] {
-        &self.bytes
-    }
-
-    fn information_fields(&self) -> Vec<Field> {
-        Vec::new()
-    }
-}
-
-impl_display_for_ie!(Unknown);

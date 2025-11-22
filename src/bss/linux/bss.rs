@@ -13,7 +13,15 @@ use std::{
     hash::Hash,
 };
 
-#[derive(Debug, Clone)]
+use neli::{attr::Attribute, genl::Nlattr, types::Buffer};
+
+use crate::{
+    Channel, SecurityProtocols, WifiProtocols,
+    bss::CapabilityInfo,
+    ies::{self, Ie, IeData},
+};
+
+#[derive(Debug, Clone, Eq)]
 pub struct Bss {
     bssid: MacAddr6,
     frequency_mhz: u32,
@@ -114,7 +122,7 @@ impl Bss {
 
     pub fn ssid(&self) -> Option<&str> {
         self.ies.iter().find_map(|ie| {
-            if let Ie::Ssid(ssid) = ie {
+            if let IeData::Ssid(ssid) = &ie.data {
                 ssid.as_str().ok()
             } else {
                 None
@@ -123,7 +131,7 @@ impl Bss {
     }
 
     pub fn channel(&self) -> Channel {
-        Channel::from(&self.ies)
+        Channel::from(self.ies.as_slice())
     }
 
     pub fn security_protocols(&self) -> SecurityProtocols {
@@ -138,15 +146,15 @@ impl Bss {
         let mut max_rate = 0.0;
 
         for ie in self.ies.iter() {
-            match ie {
-                Ie::SupportedRates(supported_rates) => {
+            match &ie.data {
+                IeData::SupportedRates(supported_rates) => {
                     let data_rates = supported_rates.rates();
                     if max_rate < data_rates.iter().max().unwrap().value() {
                         max_rate = data_rates.iter().max().unwrap().value();
                     }
                 }
-                Ie::HtOperation(_) => continue,
-                Ie::VhtOperation(_) => continue,
+                IeData::HtOperation(_) => continue,
+                IeData::VhtOperation(_) => continue,
                 _ => continue,
             }
         }
@@ -174,7 +182,7 @@ impl TryFrom<&[Nlattr<Nl80211Bss, Buffer>]> for Bss {
     fn try_from(bss_attrs: &[Nlattr<Nl80211Bss, Buffer>]) -> Result<Self, Self::Error> {
         let bss_attrs: HashMap<_, _> = bss_attrs.iter().map(|attr| (attr.nla_type, attr)).collect();
 
-        Ok(Bss {
+        let mut bss = Bss {
             bssid: bss_attrs
                 .get(&Nl80211Bss::Bssid)
                 .and_then(|attr| attr.payload().as_ref().try_into().ok())
@@ -205,8 +213,8 @@ impl TryFrom<&[Nlattr<Nl80211Bss, Buffer>]> for Bss {
                 .unwrap_or(BssStatus::NotAssociated),
             ies: bss_attrs
                 .get(&Nl80211Bss::InformationElements)
-                .and_then(|attr| ies::from_bytes(attr.payload().as_ref()).ok())
-                .ok_or(())?,
+                .map(|attr| ies::from_bytes(attr.payload().as_ref()))
+                .unwrap_or_default(),
             is_from_probe_response: bss_attrs.contains_key(&Nl80211Bss::PrespData),
             parent_bssid: bss_attrs
                 .get(&Nl80211Bss::ParentBssid)
@@ -229,7 +237,7 @@ impl TryFrom<&[Nlattr<Nl80211Bss, Buffer>]> for Bss {
                 .and_then(|attr| attr.get_payload_as().ok()),
             beacon_ies: bss_attrs
                 .get(&Nl80211Bss::BeaconIes)
-                .and_then(|attr| ies::from_bytes(attr.payload().as_ref()).ok()),
+                .map(|attr| ies::from_bytes(attr.payload().as_ref())),
             scan_width: bss_attrs.get(&Nl80211Bss::ChanWidth).and_then(|attr| {
                 ScanWidth::try_from(attr.get_payload_as::<u32>().unwrap_or_default()).ok()
             }),
@@ -239,7 +247,29 @@ impl TryFrom<&[Nlattr<Nl80211Bss, Buffer>]> for Bss {
             seen_ms_ago: bss_attrs
                 .get(&Nl80211Bss::SeenMsAgo)
                 .and_then(|attr| attr.get_payload_as().ok()),
-        })
+        };
+        bss.resolve_ie_dependencies();
+
+        Ok(bss)
+    }
+
+    fn resolve_ie_dependencies(&mut self) {
+        // Handle EHT + HE dependency
+        let mut eht_capabilities = None;
+        let mut he_capabilities = None;
+        for ie in self.ies.iter_mut() {
+            match &mut ie.data {
+                IeData::EhtCapabilities(eht_caps) => eht_capabilities = Some(eht_caps),
+                IeData::HeCapabilities(he_caps) => he_capabilities = Some(he_caps),
+                _ => continue,
+            }
+        }
+
+        if let Some(eht_capabilities) = eht_capabilities
+            && let Some(he_capabilities) = he_capabilities
+        {
+            _ = eht_capabilities.parse_with_he_capabilities(&he_capabilities);
+        }
     }
 }
 

@@ -1,12 +1,14 @@
-use crate::{
-    ies::{DataRate, SupportedRates},
-    Ie,
-};
+
 use derive_more::{
     BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Deref, DerefMut, From, Not,
 };
-use enumflags2::{bitflags, BitFlags};
 use std::fmt::Display;
+use enumflags2::{BitFlags, bitflags};
+
+use crate::{
+    Ie, IeData,
+    ies::supported_rates::{DataRate, SupportedRates},
+};
 
 #[bitflags]
 #[derive(Copy, Clone, Debug, PartialEq, Ord, PartialOrd, Eq)]
@@ -101,13 +103,13 @@ impl From<&[Ie]> for WifiProtocols {
         let mut protocols = WifiProtocols(BitFlags::empty());
 
         for ie in ies {
-            match ie {
-                Ie::SupportedRates(supported_rates) => {
+            match &ie.data {
+                IeData::SupportedRates(supported_rates) => {
                     protocols.insert(*WifiProtocols::from(supported_rates));
                 }
-                Ie::HtCapabilities(_) => protocols.insert(WifiProtocol::N),
-                Ie::VhtCapabilities(_) => protocols.insert(WifiProtocol::AC),
-                Ie::HeCapabilities(_) => protocols.insert(WifiProtocol::AX),
+                IeData::HtCapabilities(_) => protocols.insert(WifiProtocol::N),
+                IeData::VhtCapabilities(_) => protocols.insert(WifiProtocol::AC),
+                IeData::HeCapabilities(_) => protocols.insert(WifiProtocol::AX),
                 _ => continue,
             }
         }

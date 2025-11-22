@@ -1,27 +1,27 @@
-use super::{Field, InformationElement};
+use std::ops::Deref;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+use deku::prelude::*;
+
+use super::IeId;
+
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[deku(ctx = "len: usize")]
 pub struct VendorSpecific {
-    bytes: Vec<u8>,
+    #[deku(count = "len")]
+    data: Vec<u8>,
 }
 
 impl VendorSpecific {
-    pub fn new(bytes: Vec<u8>) -> VendorSpecific {
-        VendorSpecific { bytes }
-    }
+    pub const NAME: &'static str = "Vendor Specific";
+    pub const ID: u8 = 221;
+    pub const ID_EXT: Option<u8> = None;
+    pub(crate) const IE_ID: IeId = IeId::new(Self::ID, Self::ID_EXT);
 }
 
-impl InformationElement for VendorSpecific {
-    const NAME: &'static str = "Vendor Specific";
-    const ID: u8 = 221;
+impl Deref for VendorSpecific {
+    type Target = [u8];
 
-    fn bytes(&self) -> &[u8] {
-        &self.bytes
-    }
-
-    fn information_fields(&self) -> Vec<Field> {
-        Vec::new()
+    fn deref(&self) -> &Self::Target {
+        &self.data
     }
 }
-
-impl_display_for_ie!(VendorSpecific);
