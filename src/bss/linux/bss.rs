@@ -1,11 +1,3 @@
-use super::{BssStatus, Nl80211Bss, ScanWidth};
-use crate::{
-    bss::CapabilityInfo,
-    ies::{self, Ie},
-    Channel, SecurityProtocols, WifiProtocols,
-};
-use macaddr::MacAddr6;
-use neli::{attr::Attribute, genl::Nlattr, types::Buffer};
 use std::{
     collections::HashMap,
     convert::{TryFrom, TryInto},
@@ -15,6 +7,7 @@ use std::{
 
 use neli::{attr::Attribute, genl::Nlattr, types::Buffer};
 
+use super::{BssStatus, Nl80211Bss, ScanWidth};
 use crate::{
     Channel, SecurityProtocols, WifiProtocols,
     bss::CapabilityInfo,
@@ -23,7 +16,7 @@ use crate::{
 
 #[derive(Debug, Clone, Eq)]
 pub struct Bss {
-    bssid: MacAddr6,
+    bssid: [u8; 6],
     frequency_mhz: u32,
     signal_dbm: i32,
     beacon_interval_tu: u16,
@@ -31,7 +24,7 @@ pub struct Bss {
     status: BssStatus,
     ies: Vec<Ie>,
     is_from_probe_response: bool,
-    parent_bssid: Option<MacAddr6>,
+    parent_bssid: Option<[u8; 6]>,
     parent_tsf: Option<u64>,
     tsf: Option<u64>,
     beacon_tsf: Option<u64>,
@@ -44,7 +37,7 @@ pub struct Bss {
 }
 
 impl Bss {
-    pub fn bssid(&self) -> MacAddr6 {
+    pub fn bssid(&self) -> [u8; 6] {
         self.bssid
     }
 
@@ -80,7 +73,7 @@ impl Bss {
         self.is_from_probe_response
     }
 
-    pub fn parent_bssid(&self) -> Option<MacAddr6> {
+    pub fn parent_bssid(&self) -> Option<[u8; 6]> {
         self.parent_bssid
     }
 
@@ -186,7 +179,6 @@ impl TryFrom<&[Nlattr<Nl80211Bss, Buffer>]> for Bss {
             bssid: bss_attrs
                 .get(&Nl80211Bss::Bssid)
                 .and_then(|attr| attr.payload().as_ref().try_into().ok())
-                .map(|bssid_bytes: [u8; 6]| MacAddr6::from(bssid_bytes))
                 .ok_or(())?,
             frequency_mhz: bss_attrs
                 .get(&Nl80211Bss::Frequency)
@@ -218,8 +210,7 @@ impl TryFrom<&[Nlattr<Nl80211Bss, Buffer>]> for Bss {
             is_from_probe_response: bss_attrs.contains_key(&Nl80211Bss::PrespData),
             parent_bssid: bss_attrs
                 .get(&Nl80211Bss::ParentBssid)
-                .and_then(|attr| attr.payload().as_ref().try_into().ok())
-                .map(|parent_bssid_bytes: [u8; 6]| MacAddr6::from(parent_bssid_bytes)),
+                .and_then(|attr| attr.payload().as_ref().try_into().ok()),
             parent_tsf: bss_attrs
                 .get(&Nl80211Bss::ParentTsf)
                 .and_then(|attr| attr.get_payload_as().ok()),
@@ -273,11 +264,23 @@ impl TryFrom<&[Nlattr<Nl80211Bss, Buffer>]> for Bss {
     }
 }
 
+impl Hash for Bss {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.bssid.hash(state);
+    }
+}
+
+impl PartialEq for Bss {
+    fn eq(&self, other: &Self) -> bool {
+        self.bssid == other.bssid
+    }
+}
+
 impl Display for Bss {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let _r = writeln!(
             f,
-            "BSSID: {}\r\nSSID: {}\r\nRSSI: {} dBm\r\nChannel Number: {}\r\nChannel Width: {}\r\nWi-Fi Protocols: {}",
+            "BSSID: {:?}\nSSID: {}\nRSSI: {} dBm\nChannel Number: {}\r\nChannel Width: {}\r\nWi-Fi Protocols: {}",
             self.bssid,
             self.ssid().unwrap_or_default(),
             self.signal_dbm,
