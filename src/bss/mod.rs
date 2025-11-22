@@ -1,15 +1,11 @@
+mod bss;
+mod bss_status;
 mod capability_info;
-pub use capability_info::CapabilityInfo;
+mod nl80211_bss;
+mod scan_width;
 
-cfg_if::cfg_if! {
-    if #[cfg(target_os = "linux")] {
-        mod linux;
-        pub use linux::Bss;
-    } else if #[cfg(target_os = "macos")] {
-        mod macos;
-        pub use macos::Bss;
-    } else if #[cfg(target_os = "windows")] {
-        mod windows;
-        pub use windows::Bss;
-    }
-}
+pub use bss::Bss;
+pub use bss_status::BssStatus;
+pub use capability_info::CapabilityInfo;
+pub(crate) use nl80211_bss::Nl80211Bss;
+pub use scan_width::ScanWidth;
