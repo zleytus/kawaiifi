@@ -16,3 +16,5 @@ neli = "0.7"
 num_enum = "0.7"
 thiserror = "2"
 
+[dev-dependencies]
+env_logger = "*"
