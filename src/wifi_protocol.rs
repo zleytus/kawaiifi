@@ -1,8 +1,8 @@
+use std::fmt::Display;
 
 use derive_more::{
     BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Deref, DerefMut, From, Not,
 };
-use std::fmt::Display;
 use enumflags2::{BitFlags, bitflags};
 
 use crate::{
@@ -20,6 +20,7 @@ pub enum WifiProtocol {
     N = 1 << 3,
     AC = 1 << 4,
     AX = 1 << 5,
+    BE = 1 << 6,
 }
 
 impl Display for WifiProtocol {
@@ -31,6 +32,7 @@ impl Display for WifiProtocol {
             WifiProtocol::N => write!(f, "n"),
             WifiProtocol::AC => write!(f, "ac"),
             WifiProtocol::AX => write!(f, "ax"),
+            WifiProtocol::BE => write!(f, "be"),
         }
     }
 }
@@ -110,6 +112,7 @@ impl From<&[Ie]> for WifiProtocols {
                 IeData::HtCapabilities(_) => protocols.insert(WifiProtocol::N),
                 IeData::VhtCapabilities(_) => protocols.insert(WifiProtocol::AC),
                 IeData::HeCapabilities(_) => protocols.insert(WifiProtocol::AX),
+                IeData::EhtCapabilities(_) => protocols.insert(WifiProtocol::BE),
                 _ => continue,
             }
         }
