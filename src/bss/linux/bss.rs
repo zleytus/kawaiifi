@@ -153,27 +153,15 @@ impl Bss {
         }
         0.0
     }
-}
 
-impl Hash for Bss {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.bssid.hash(state);
-    }
-}
-
-impl PartialEq for Bss {
-    fn eq(&self, other: &Self) -> bool {
-        self.bssid == other.bssid
-    }
-}
-
-impl Eq for Bss {}
-
-impl TryFrom<&[Nlattr<Nl80211Bss, Buffer>]> for Bss {
-    type Error = ();
-
-    fn try_from(bss_attrs: &[Nlattr<Nl80211Bss, Buffer>]) -> Result<Self, Self::Error> {
-        let bss_attrs: HashMap<_, _> = bss_attrs.iter().map(|attr| (attr.nla_type, attr)).collect();
+    pub(crate) fn from_attrs<'a, I>(bss_attrs: I) -> Result<Self, ()>
+    where
+        I: IntoIterator<Item = &'a Nlattr<Nl80211Bss, Buffer>>,
+    {
+        let bss_attrs: HashMap<_, _> = bss_attrs
+            .into_iter()
+            .map(|attr| (attr.nla_type().nla_type(), attr))
+            .collect();
 
         let mut bss = Bss {
             bssid: bss_attrs
@@ -290,10 +278,6 @@ impl Display for Bss {
         );
 
         let _b = writeln!(f, "{}", self.capability_info);
-
-        for ie in self.ies.iter() {
-            let _b = writeln!(f, "{}", ie);
-        }
 
         Ok(())
     }
