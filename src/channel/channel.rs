@@ -1,11 +1,63 @@
-use crate::{ChannelWidth, Ie};
-use num_enum::TryFromPrimitive;
 use std::{
     convert::{From, TryFrom},
     fmt::Display,
 };
 
-#[derive(Hash, Eq, PartialEq, Copy, Clone, Debug, Ord, PartialOrd)]
+use num_enum::TryFromPrimitive;
+
+use crate::{ChannelWidth, Ie, IeData};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Channel {
+    number: ChannelNumber,
+    width: ChannelWidth,
+}
+
+impl Channel {
+    pub fn number(&self) -> ChannelNumber {
+        self.number
+    }
+
+    pub fn center_freq_mhz(&self) -> u32 {
+        if self.number == ChannelNumber::Fourteen {
+            return 2484;
+        }
+
+        match self.band() {
+            ChannelBand::TwoPointFourGhz => 2407 + (self.number as u32 * 5),
+            ChannelBand::FiveGhz => 5000 + (self.number as u32 * 5),
+            ChannelBand::SixGhz => 5935 + (self.number as u32 * 5),
+        }
+    }
+
+    pub fn band(&self) -> ChannelBand {
+        match self.number as u8 {
+            1..=14 => ChannelBand::TwoPointFourGhz,
+            _ => ChannelBand::FiveGhz,
+        }
+    }
+
+    pub fn width(&self) -> ChannelWidth {
+        self.width
+    }
+}
+
+impl From<&[Ie]> for Channel {
+    fn from(ies: &[Ie]) -> Self {
+        Channel {
+            number: ChannelNumber::from_ies(ies).unwrap_or(ChannelNumber::One),
+            width: ChannelWidth::from(ies),
+        }
+    }
+}
+
+impl Display for Channel {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Channel {}", self.number as u32)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Ord, PartialOrd, Hash)]
 pub enum ChannelBand {
     TwoPointFourGhz,
     FiveGhz,
@@ -94,79 +146,25 @@ pub enum ChannelNumber {
     OneHundredEightyOne = 181,
 }
 
-impl From<&[Ie]> for ChannelNumber {
-    fn from(ies: &[Ie]) -> Self {
-        let channel_number = ies
-            .iter()
-            .find_map(|ie| match ie {
-                Ie::DsParameterSet(ds_parameter_set) => Some(ds_parameter_set.channel_number()),
-                _ => None,
-            })
-            .unwrap_or(1);
+impl ChannelNumber {
+    pub fn from_ies(ies: &[Ie]) -> Option<Self> {
+        let channel_number = ies.iter().find_map(|ie| match &ie.data {
+            IeData::DsParameterSet(ds_parameter_set) => Some(ds_parameter_set.current_channel),
+            IeData::HtOperation(ht_operation) => Some(ht_operation.primary_channel),
+            _ => None,
+        });
 
-        ChannelNumber::try_from(channel_number).unwrap()
+        if let Some(channel_number) = channel_number {
+            Self::try_from(channel_number).ok()
+        } else {
+            None
+        }
     }
 }
 
 impl Display for ChannelNumber {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", *self as u8)
-    }
-}
-
-#[derive(Debug, Copy, Clone)]
-pub struct Channel {
-    number: ChannelNumber,
-    width: ChannelWidth,
-}
-
-impl Channel {
-    pub fn number(&self) -> ChannelNumber {
-        self.number
-    }
-
-    pub fn center_freq_mhz(&self) -> u32 {
-        if self.number == ChannelNumber::Fourteen {
-            return 2484;
-        }
-
-        match self.band() {
-            ChannelBand::TwoPointFourGhz => 2407 + (self.number as u32 * 5),
-            ChannelBand::FiveGhz => 5000 + (self.number as u32 * 5),
-            ChannelBand::SixGhz => 5935 + (self.number as u32 * 5),
-        }
-    }
-
-    pub fn band(&self) -> ChannelBand {
-        match self.number as u8 {
-            1..=14 => ChannelBand::TwoPointFourGhz,
-            _ => ChannelBand::FiveGhz,
-        }
-    }
-
-    pub fn width(&self) -> ChannelWidth {
-        self.width
-    }
-}
-
-impl From<&[Ie]> for Channel {
-    fn from(ies: &[Ie]) -> Self {
-        Channel {
-            number: ChannelNumber::from(ies),
-            width: ChannelWidth::from(ies),
-        }
-    }
-}
-
-impl From<&Vec<Ie>> for Channel {
-    fn from(ies: &Vec<Ie>) -> Self {
-        Channel::from(ies.as_slice())
-    }
-}
-
-impl Display for Channel {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Channel {}", self.number as u32)
     }
 }
 
