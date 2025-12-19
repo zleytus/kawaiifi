@@ -29,11 +29,97 @@ pub struct Bss {
     scan_width: Option<BssScanWidth>,
     last_seen_boottime: Option<u64>,
     seen_ms_ago: Option<u32>,
+    mlo_link_id: Option<u8>,
+    mld_address: Option<[u8; 6]>,
 }
 
 impl Bss {
-    pub fn bssid(&self) -> [u8; 6] {
-        self.bssid
+    pub(crate) fn from_attrs<'a, I>(bss_attrs: I) -> Result<Bss, ()>
+    where
+        I: IntoIterator<Item = &'a Nlattr<Nl80211Bss, Buffer>>,
+    {
+        let bss_attrs: HashMap<_, _> = bss_attrs
+            .into_iter()
+            .map(|attr| (attr.nla_type().nla_type(), attr))
+            .collect();
+
+        let mut bss = Bss {
+            bssid: bss_attrs
+                .get(&Nl80211Bss::Bssid)
+                .and_then(|attr| attr.payload().as_ref().try_into().ok())
+                .ok_or(())?,
+            frequency_mhz: bss_attrs
+                .get(&Nl80211Bss::Frequency)
+                .and_then(|attr| attr.get_payload_as().ok())
+                .ok_or(())?,
+            signal_dbm: bss_attrs
+                .get(&Nl80211Bss::SignalMbm)
+                .and_then(|attr| attr.get_payload_as::<i32>().ok())
+                .ok_or(())?
+                / 100,
+            beacon_interval_tu: bss_attrs
+                .get(&Nl80211Bss::BeaconInterval)
+                .and_then(|attr| attr.get_payload_as().ok())
+                .ok_or(())?,
+            capability_info: bss_attrs
+                .get(&Nl80211Bss::Capability)
+                .and_then(|attr| attr.payload().as_ref().try_into().ok())
+                .and_then(|payload: &[u8]| CapabilityInfo::try_from(payload).ok())
+                .ok_or(())?,
+            status: bss_attrs
+                .get(&Nl80211Bss::Status)
+                .and_then(|attr| attr.get_payload_as::<u32>().ok())
+                .and_then(|payload| BssStatus::try_from(payload).ok())
+                .unwrap_or(BssStatus::NotAssociated),
+            ies: bss_attrs
+                .get(&Nl80211Bss::InformationElements)
+                .map(|attr| ies::from_bytes(attr.payload().as_ref()))
+                .unwrap_or_default(),
+            is_from_probe_response: bss_attrs.contains_key(&Nl80211Bss::PrespData),
+            parent_bssid: bss_attrs
+                .get(&Nl80211Bss::ParentBssid)
+                .and_then(|attr| attr.payload().as_ref().try_into().ok()),
+            parent_tsf: bss_attrs
+                .get(&Nl80211Bss::ParentTsf)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            tsf: bss_attrs
+                .get(&Nl80211Bss::Tsf)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            beacon_tsf: bss_attrs
+                .get(&Nl80211Bss::BeaconTsf)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            frequency_offset_khz: bss_attrs
+                .get(&Nl80211Bss::FrequencyOffset)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            signal_percent: bss_attrs
+                .get(&Nl80211Bss::SignalUnspec)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            beacon_ies: bss_attrs
+                .get(&Nl80211Bss::BeaconIes)
+                .map(|attr| ies::from_bytes(attr.payload().as_ref())),
+            scan_width: bss_attrs.get(&Nl80211Bss::ChanWidth).and_then(|attr| {
+                BssScanWidth::try_from(attr.get_payload_as::<u32>().unwrap_or_default()).ok()
+            }),
+            last_seen_boottime: bss_attrs
+                .get(&Nl80211Bss::LastSeenBoottime)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            seen_ms_ago: bss_attrs
+                .get(&Nl80211Bss::SeenMsAgo)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            mlo_link_id: bss_attrs
+                .get(&Nl80211Bss::MloLinkId)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            mld_address: bss_attrs
+                .get(&Nl80211Bss::MldAddr)
+                .and_then(|attr| attr.payload().as_ref().try_into().ok()),
+        };
+        bss.resolve_ie_dependencies();
+
+        Ok(bss)
+    }
+
+    pub fn bssid(&self) -> &[u8; 6] {
+        &self.bssid
     }
 
     pub fn frequency_mhz(&self) -> u32 {
@@ -139,7 +225,9 @@ impl Bss {
 
     pub fn ssid(&self) -> Option<&str> {
         self.ies.iter().find_map(|ie| {
-            if let IeData::Ssid(ssid) = &ie.data {
+            if let IeData::Ssid(ssid) = &ie.data
+                && !ssid.is_empty()
+            {
                 ssid.as_str().ok()
             } else {
                 None
@@ -174,85 +262,15 @@ impl Bss {
         0.0
     }
 
-    pub(crate) fn from_attrs<'a, I>(bss_attrs: I) -> Result<Self, ()>
-    where
-        I: IntoIterator<Item = &'a Nlattr<Nl80211Bss, Buffer>>,
-    {
-        let bss_attrs: HashMap<_, _> = bss_attrs
-            .into_iter()
-            .map(|attr| (attr.nla_type().nla_type(), attr))
-            .collect();
-
-        let mut bss = Bss {
-            bssid: bss_attrs
-                .get(&Nl80211Bss::Bssid)
-                .and_then(|attr| attr.payload().as_ref().try_into().ok())
-                .ok_or(())?,
-            frequency_mhz: bss_attrs
-                .get(&Nl80211Bss::Frequency)
-                .and_then(|attr| attr.get_payload_as().ok())
-                .ok_or(())?,
-            signal_dbm: bss_attrs
-                .get(&Nl80211Bss::SignalMbm)
-                .and_then(|attr| attr.get_payload_as::<i32>().ok())
-                .ok_or(())?
-                / 100,
-            beacon_interval_tu: bss_attrs
-                .get(&Nl80211Bss::BeaconInterval)
-                .and_then(|attr| attr.get_payload_as().ok())
-                .ok_or(())?,
-            capability_info: bss_attrs
-                .get(&Nl80211Bss::Capability)
-                .and_then(|attr| attr.payload().as_ref().try_into().ok())
-                .and_then(|payload: &[u8]| CapabilityInfo::try_from(payload).ok())
-                .ok_or(())?,
-            status: bss_attrs
-                .get(&Nl80211Bss::Status)
-                .and_then(|attr| attr.get_payload_as::<u32>().ok())
-                .and_then(|payload| BssStatus::try_from(payload).ok())
-                .unwrap_or(BssStatus::NotAssociated),
-            ies: bss_attrs
-                .get(&Nl80211Bss::InformationElements)
-                .map(|attr| ies::from_bytes(attr.payload().as_ref()))
-                .unwrap_or_default(),
-            is_from_probe_response: bss_attrs.contains_key(&Nl80211Bss::PrespData),
-            parent_bssid: bss_attrs
-                .get(&Nl80211Bss::ParentBssid)
-                .and_then(|attr| attr.payload().as_ref().try_into().ok()),
-            parent_tsf: bss_attrs
-                .get(&Nl80211Bss::ParentTsf)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            tsf: bss_attrs
-                .get(&Nl80211Bss::Tsf)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            beacon_tsf: bss_attrs
-                .get(&Nl80211Bss::BeaconTsf)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            frequency_offset_khz: bss_attrs
-                .get(&Nl80211Bss::FrequencyOffset)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            signal_percent: bss_attrs
-                .get(&Nl80211Bss::SignalUnspec)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            beacon_ies: bss_attrs
-                .get(&Nl80211Bss::BeaconIes)
-                .map(|attr| ies::from_bytes(attr.payload().as_ref())),
-            scan_width: bss_attrs.get(&Nl80211Bss::ChanWidth).and_then(|attr| {
-                ScanWidth::try_from(attr.get_payload_as::<u32>().unwrap_or_default()).ok()
-            }),
-            last_seen_boottime: bss_attrs
-                .get(&Nl80211Bss::LastSeenBoottime)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            seen_ms_ago: bss_attrs
-                .get(&Nl80211Bss::SeenMsAgo)
-                .and_then(|attr| attr.get_payload_as().ok()),
-        };
-        bss.resolve_ie_dependencies();
-
-        Ok(bss)
+    pub fn mlo_link_id(&self) -> Option<u8> {
+        self.mlo_link_id
     }
 
-    fn resolve_ie_dependencies(&mut self) {
+    pub fn mld_address(&self) -> Option<&[u8; 6]> {
+        self.mld_address.as_ref()
+    }
+
+    pub(crate) fn resolve_ie_dependencies(&mut self) {
         // Handle EHT + HE dependency
         let mut eht_capabilities = None;
         let mut he_capabilities = None;
