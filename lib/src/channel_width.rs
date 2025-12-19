@@ -3,25 +3,31 @@ use std::{collections::HashSet, convert::From, fmt::Display, hash::Hash};
 use derive_more::{Deref, DerefMut, From};
 use num_enum::TryFromPrimitive;
 
-use crate::{Ie, IeData, ies::ht_operation::SupportedChannelWidths};
+use crate::{Ie, IeData, ies::ht_operation, nl80211::ChanWidth};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Ord, PartialOrd, TryFromPrimitive)]
 #[repr(u8)]
 pub enum ChannelWidth {
-    TwentyMhzNoHt,
     TwentyMhz,
     FortyMhz,
     EightyMhz,
     EightyPlusEightyMhz,
     OneSixtyMhz,
-    FiveMhzOfdm,
-    TenMhzOfdm,
-    OneMhzOfdm,
-    TwoMhzOfdm,
-    FourMhzOfdm,
-    EightMhzOfdm,
-    SixteenMhzOfdm,
     ThreeHundredTwentyMhz,
+}
+
+impl From<ChanWidth> for ChannelWidth {
+    fn from(chan_width: ChanWidth) -> Self {
+        match chan_width {
+            ChanWidth::TwentyMhz => ChannelWidth::TwentyMhz,
+            ChanWidth::FortyMhz => ChannelWidth::FortyMhz,
+            ChanWidth::EightyMhz => ChannelWidth::EightyMhz,
+            ChanWidth::EightyPlusEightyMhz => ChannelWidth::EightyPlusEightyMhz,
+            ChanWidth::OneSixtyMhz => ChannelWidth::OneSixtyMhz,
+            ChanWidth::ThreeHundredTwentyMhz => ChannelWidth::ThreeHundredTwentyMhz,
+            _ => ChannelWidth::TwentyMhz,
+        }
+    }
 }
 
 impl From<&[Ie]> for ChannelWidth {
@@ -63,32 +69,24 @@ impl From<&[Ie]> for ChannelWidth {
             _ => None,
         }) {
             match ht_operation.ht_operation_information.sta_channel_width {
-                SupportedChannelWidths::TwentyMhz => return ChannelWidth::TwentyMhz,
-                SupportedChannelWidths::Any => return ChannelWidth::FortyMhz,
+                ht_operation::SupportedChannelWidths::TwentyMhz => return ChannelWidth::TwentyMhz,
+                ht_operation::SupportedChannelWidths::Any => return ChannelWidth::FortyMhz,
             }
         }
 
         // If there is no EHT/HE/VHT/HT Information
-        ChannelWidth::TwentyMhzNoHt
+        ChannelWidth::TwentyMhz
     }
 }
 
 impl Display for ChannelWidth {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ChannelWidth::TwentyMhzNoHt => write!(f, "20 MHz, non-HT"),
             ChannelWidth::TwentyMhz => write!(f, "20 MHz"),
             ChannelWidth::FortyMhz => write!(f, "40 MHz"),
             ChannelWidth::EightyMhz => write!(f, "80 MHz"),
             ChannelWidth::EightyPlusEightyMhz => write!(f, "80+80 MHz"),
             ChannelWidth::OneSixtyMhz => write!(f, "160 MHz"),
-            ChannelWidth::FiveMhzOfdm => write!(f, "5 MHz OFDM"),
-            ChannelWidth::TenMhzOfdm => write!(f, "10 MHz OFDM"),
-            ChannelWidth::OneMhzOfdm => write!(f, "1 MHz OFDM"),
-            ChannelWidth::TwoMhzOfdm => write!(f, "2 MHz OFDM"),
-            ChannelWidth::FourMhzOfdm => write!(f, "4 MHz OFDM"),
-            ChannelWidth::EightMhzOfdm => write!(f, "8 MHz OFDM"),
-            ChannelWidth::SixteenMhzOfdm => write!(f, "16 MHz OFDM"),
             ChannelWidth::ThreeHundredTwentyMhz => write!(f, "320 MHz"),
         }
     }
