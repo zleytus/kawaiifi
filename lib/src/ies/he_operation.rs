@@ -1,10 +1,11 @@
 use deku::{DekuError, DekuRead, DekuWrite};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
+use serde::{Deserialize, Serialize};
 
-use super::{vht_operation::VhtOperationInformation, write_bits_lsb0, IeId};
+use super::{IeId, vht_operation::VhtOperationInformation, write_bits_lsb0};
 use crate::ChannelWidth;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct HeOperation {
     pub he_operation_parameters: HeOperationParameters,
     pub bss_color_information: BssColorInformation,
@@ -57,7 +58,7 @@ impl HeOperation {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct HeOperationParameters {
     #[deku(bits = 3)]
@@ -78,7 +79,7 @@ pub struct HeOperationParameters {
     reserved: u8,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct BssColorInformation {
     #[deku(bits = 6)]
@@ -89,7 +90,7 @@ pub struct BssColorInformation {
     pub bss_color_disabled: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct SixGhzOperationInformation {
     #[deku(bytes = 1)]
     pub primary_channel: u8,
@@ -102,7 +103,7 @@ pub struct SixGhzOperationInformation {
     pub minimum_rate: u8,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct Control {
     #[deku(
@@ -119,7 +120,9 @@ pub struct Control {
     reserved: u8,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive, IntoPrimitive)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
+)]
 #[repr(u8)]
 pub enum SixGhzHeChannelWidth {
     TwentyMhz = 0,

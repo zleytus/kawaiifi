@@ -1,10 +1,11 @@
 use std::fmt::Display;
 
 use deku::{DekuError, DekuRead, DekuWrite, bitvec::*};
+use serde::{Deserialize, Serialize};
 
 use super::IeId;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
 pub struct ExtendedCapabilities {
     #[deku(
@@ -12,7 +13,30 @@ pub struct ExtendedCapabilities {
         map = "|bytes: Vec<u8>| -> Result<_, DekuError> { Ok(BitVec::<u8, Lsb0>::from_vec(bytes)) }",
         writer = "bits.clone().into_vec().to_writer(deku::writer, ())"
     )]
+    #[serde(
+        serialize_with = "serialize_bitvec",
+        deserialize_with = "deserialize_bitvec"
+    )]
     bits: BitVec<u8, Lsb0>,
+}
+
+// Helper functions for serde serialization of BitVec
+fn serialize_bitvec<S>(bits: &BitVec<u8, Lsb0>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    // Convert BitVec to Vec<u8> for serialization
+    let bytes = bits.clone().into_vec();
+    bytes.serialize(serializer)
+}
+
+fn deserialize_bitvec<'de, D>(deserializer: D) -> Result<BitVec<u8, Lsb0>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    // Deserialize as Vec<u8>, then convert to BitVec
+    let bytes = Vec::<u8>::deserialize(deserializer)?;
+    Ok(BitVec::<u8, Lsb0>::from_vec(bytes))
 }
 
 impl ExtendedCapabilities {

@@ -4,10 +4,11 @@ use std::{
 };
 
 use deku::{DekuRead, DekuWrite};
+use serde::{Deserialize, Serialize};
 
 use super::IeId;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
 pub struct TimeZone {
     #[deku(count = "len")]

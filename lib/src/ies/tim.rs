@@ -1,8 +1,9 @@
 use deku::{DekuRead, DekuWrite};
+use serde::{Deserialize, Serialize};
 
 use super::IeId;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
 pub struct Tim {
     #[deku(bytes = 1)]
@@ -26,7 +27,7 @@ impl Tim {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct BitmapControl {
     #[deku(bits = 1)]
     pub traffic_indicator: u8,

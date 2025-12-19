@@ -1,10 +1,11 @@
 use std::fmt::Display;
 
-use deku::{DekuRead, DekuWrite, deku_derive};
+use deku::{DekuRead, DekuWrite};
+use serde::{Deserialize, Serialize};
 
 use super::{IeId, write_bits_lsb0};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
 pub struct TransmitPowerEnvelope {
     transmit_power_information: TransmitPowerInformation,
@@ -49,8 +50,7 @@ impl TransmitPowerEnvelope {
     }
 }
 
-#[deku_derive(DekuRead, DekuWrite)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct TransmitPowerInformation {
     #[deku(bits = 3)]
@@ -65,7 +65,7 @@ pub struct TransmitPowerInformation {
     reserved: u8,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[repr(u8)]
 pub enum UnitInterpretation {
     Eirp = 0,

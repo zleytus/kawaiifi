@@ -1,8 +1,9 @@
-use deku::prelude::*;
+use deku::{DekuRead, DekuWrite};
+use serde::{Deserialize, Serialize};
 
 use super::IeId;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct PowerConstraint {
     #[deku(bytes = 1)]
     pub local_power_constraint_db: u8,

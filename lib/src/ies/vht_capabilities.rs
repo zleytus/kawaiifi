@@ -1,8 +1,9 @@
 use deku::{DekuRead, DekuWrite};
+use serde::{Deserialize, Serialize};
 
 use super::{IeId, write_bits_lsb0};
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct VhtCapabilities {
     pub vht_capabilities_info: VhtCapabilitiesInfo,
     #[deku(count = "8")]
@@ -17,7 +18,7 @@ impl VhtCapabilities {
     pub const LENGTH: usize = 12;
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct VhtCapabilitiesInfo {
     #[deku(

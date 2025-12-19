@@ -1,8 +1,9 @@
 use deku::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use super::IeId;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct Antenna {
     #[deku(bytes = 1)]
     pub antenna_id: u8,

@@ -1,8 +1,9 @@
 use deku::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use super::IeId;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ReducedNeighborReport {
     pub neighbor_ap_information_fields: Vec<NeighborApInformationField>,
 }
@@ -51,7 +52,7 @@ impl DekuWriter<usize> for ReducedNeighborReport {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct NeighborApInformationField {
     pub tbtt_information_header: TbttInformationHeader,
     pub operating_class: u8,
@@ -63,7 +64,7 @@ pub struct NeighborApInformationField {
     pub tbtt_information_set: Vec<TbttInformation>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct TbttInformationHeader {
     #[deku(bits = 2)]
@@ -78,7 +79,7 @@ pub struct TbttInformationHeader {
     tbtt_information_length: u8,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "tbtt_information_length: u8")]
 pub struct TbttInformation {
     #[deku(bytes = 1)]
@@ -109,7 +110,7 @@ pub struct TbttInformation {
     reserved: Option<Vec<u8>>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct BssParameters {
     #[deku(bits = 1)]

@@ -1,8 +1,9 @@
 use deku::{DekuRead, DekuWrite};
+use serde::{Deserialize, Serialize};
 
 use super::IeId;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
 pub struct RoamingConsortium {
     #[deku(bytes = 1)]
@@ -29,7 +30,7 @@ impl RoamingConsortium {
     pub(crate) const IE_ID: IeId = IeId::new(Self::ID, Self::ID_EXT);
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct OiLengths {
     #[deku(bits = 4)]

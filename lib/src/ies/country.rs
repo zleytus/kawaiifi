@@ -1,11 +1,11 @@
-use std::{convert::TryFrom, fmt::Display, str};
+use std::{fmt::Display, str};
 
 use deku::{DekuRead, DekuWrite};
+use serde::{Deserialize, Serialize};
 
 use super::IeId;
-use crate::ChannelNumber;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
 pub struct Country {
     #[deku(bytes = 2)]
@@ -36,14 +36,14 @@ impl Country {
         let mut last_operating_info = None;
 
         for triplet in self.triplets.chunks_exact(3) {
-            if let Ok(channel_number) = ChannelNumber::try_from(triplet[0]) {
+            if triplet[0] <= 233 {
                 subbands.push(SubbandInfo {
-                    first_channel_number: channel_number,
+                    first_channel_number: triplet[0],
                     number_of_channels: triplet[1],
                     max_transmit_power_level_dbm: triplet[2] as i8,
                     operating_info: last_operating_info,
                 });
-            } else if triplet[0] > 200 {
+            } else {
                 last_operating_info = Some(OperatingInfo {
                     operating_extension_id: triplet[0],
                     operating_class: triplet[1],
@@ -112,7 +112,7 @@ impl Display for OperatingInfo {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SubbandInfo {
-    pub first_channel_number: ChannelNumber,
+    pub first_channel_number: u8,
     pub number_of_channels: u8,
     pub max_transmit_power_level_dbm: i8,
     pub operating_info: Option<OperatingInfo>,

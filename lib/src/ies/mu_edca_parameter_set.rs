@@ -1,8 +1,9 @@
 use deku::{DekuRead, DekuWrite};
+use serde::{Deserialize, Serialize};
 
 use super::IeId;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct MuEdcaParameterSet {
     pub qos_info: QosInfo,
     pub mu_ac_be_parameter_record: ParameterRecord,
@@ -18,7 +19,7 @@ impl MuEdcaParameterSet {
     pub(crate) const IE_ID: IeId = IeId::new(Self::ID, Self::ID_EXT);
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct QosInfo {
     #[deku(bits = 4)]
@@ -33,7 +34,7 @@ pub struct QosInfo {
     pub more_data_ack: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct ParameterRecord {
     pub aci_aifsn: AciAifsn,
     pub ecw_min_ecw_max: EcwMinEcwMax,
@@ -41,7 +42,7 @@ pub struct ParameterRecord {
     pub mu_edca_timer: u8,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct AciAifsn {
     #[deku(bits = 4)]
@@ -54,7 +55,7 @@ pub struct AciAifsn {
     reserved: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct EcwMinEcwMax {
     #[deku(bits = 4)]

@@ -1,8 +1,9 @@
 use deku::{DekuRead, DekuWrite};
+use serde::{Deserialize, Serialize};
 
 use super::IeId;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
 pub struct Interworking {
     pub access_network_options: AccessNetworkOptions,
@@ -19,7 +20,7 @@ impl Interworking {
     pub const NAME: &'static str = "Interworking";
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct AccessNetworkOptions {
     #[deku(bits = 4)]
@@ -34,14 +35,14 @@ pub struct AccessNetworkOptions {
     pub uesa: bool,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct VenueInfo {
     pub venue_group: VenueGroup,
     #[deku(bytes = 1)]
     pub venue_type: u8,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[repr(u8)]
 #[deku(id_type = "u8")]
 pub enum VenueGroup {

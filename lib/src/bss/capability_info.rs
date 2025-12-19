@@ -1,10 +1,11 @@
 use std::fmt::Display;
 
 use deku::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use crate::Field;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct CapabilityInfo {
     #[deku(bits = 1)]

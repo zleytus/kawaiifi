@@ -2,10 +2,11 @@ use deku::{
     DekuRead, DekuWrite,
     bitvec::{BitSlice, BitVec, BitView, Lsb0},
 };
+use serde::{Deserialize, Serialize};
 
 use super::IeId;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct HeCapabilities {
     pub he_mac_capabilities_information: HeMacCapabilitiesInformation,
     pub he_phy_capabilities_information: HePhyCapabilitiesInformation,
@@ -25,7 +26,7 @@ impl HeCapabilities {
     pub const LENGTH: usize = 22;
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct HeMacCapabilitiesInformation {
     #[deku(bits = 1)]
@@ -104,7 +105,7 @@ pub struct HeMacCapabilitiesInformation {
     pub ht_and_vht_trigger_frame_rx_support: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct HePhyCapabilitiesInformation {
     #[deku(bits = 1)]
@@ -225,7 +226,7 @@ pub struct HePhyCapabilitiesInformation {
     reserved_2: u8,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "supported_width_set: deku::bitvec::BitVec<u8, Lsb0>")]
 pub struct SupportedHeMcsAndNssSet {
     #[deku(bytes = 2)]
@@ -242,7 +243,7 @@ pub struct SupportedHeMcsAndNssSet {
     pub tx_he_mcs_map_eighty_plus_eighty_mhz: Option<u16>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct PpeThresholds {
     #[deku(bits = 3, bit_order = "lsb")]
@@ -257,7 +258,7 @@ pub struct PpeThresholds {
     ppe_pad: u8,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(
     bit_order = "lsb",
     ctx = "bit_order: deku::ctx::Order, ru_index_bitmask: &BitSlice<u8, Lsb0>"

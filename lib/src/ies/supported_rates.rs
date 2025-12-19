@@ -1,10 +1,11 @@
-use std::{collections::HashSet, convert::TryFrom, fmt::Display};
+use std::{collections::HashSet, convert::TryFrom, fmt::Display, ops::Deref};
 
 use deku::{DekuRead, DekuWrite};
+use serde::{Deserialize, Serialize};
 
 use super::IeId;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
 pub struct SupportedRates {
     #[deku(count = "len")]
@@ -52,7 +53,7 @@ impl SupportedRates {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
 pub struct ExtendedSupportedRates {
     #[deku(ctx = "len")]
@@ -65,16 +66,30 @@ impl ExtendedSupportedRates {
     pub const ID_EXT: Option<u8> = None;
     pub(crate) const IE_ID: IeId = IeId::new(Self::ID, Self::ID_EXT);
 
-    pub fn rates(&self) -> HashSet<DataRate> {
-        self.supported_rates.rates()
-    }
+    // pub fn rates(&self) -> HashSet<DataRate> {
+    // self.supported_rates.rates()
+    // }
+    //
+    // pub fn basic_rates(&self) -> Vec<f64> {
+    // self.supported_rates.basic_rates()
+    // }
+    //
+    // pub fn all_rates(&self) -> Vec<f64> {
+    // self.supported_rates.all_rates()
+    // }
+}
 
-    pub fn basic_rates(&self) -> Vec<f64> {
-        self.supported_rates.basic_rates()
-    }
+impl Deref for ExtendedSupportedRates {
+    type Target = SupportedRates;
 
-    pub fn all_rates(&self) -> Vec<f64> {
-        self.supported_rates.all_rates()
+    fn deref(&self) -> &Self::Target {
+        &self.supported_rates
+    }
+}
+
+impl AsRef<SupportedRates> for ExtendedSupportedRates {
+    fn as_ref(&self) -> &SupportedRates {
+        &self.supported_rates
     }
 }
 

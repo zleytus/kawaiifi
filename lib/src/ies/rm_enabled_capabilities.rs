@@ -1,9 +1,9 @@
-use deku::deku_derive;
+use deku::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use super::IeId;
 
-#[deku_derive(DekuRead, DekuWrite)]
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct RmEnabledCapabilities {
     #[deku(bits = 1)]

@@ -1,8 +1,9 @@
 use deku::{DekuRead, DekuWrite};
+use serde::{Deserialize, Serialize};
 
 use super::IeId;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
 pub struct TimeAdvertisement {
     pub timing_capabilities: TimingCapabilities,
@@ -34,7 +35,7 @@ impl TimeAdvertisement {
     pub(crate) const IE_ID: IeId = IeId::new(Self::ID, Self::ID_EXT);
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(id_type = "u8")]
 #[repr(u8)]
 pub enum TimingCapabilities {
@@ -45,7 +46,7 @@ pub enum TimingCapabilities {
     Reserved(u8),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct TimeValue {
     #[deku(bytes = 2)]
     pub year: u16,

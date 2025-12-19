@@ -6,6 +6,7 @@ use std::{
 };
 
 use neli::{attr::Attribute, genl::Nlattr, types::Buffer};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     Channel, SecurityProtocols, WifiProtocols,
@@ -14,7 +15,7 @@ use crate::{
     nl80211::{Bss as Nl80211Bss, BssScanWidth, BssStatus},
 };
 
-#[derive(Debug, Clone, Eq)]
+#[derive(Debug, Clone, Eq, Serialize, Deserialize)]
 pub struct Bss {
     bssid: [u8; 6],
     frequency_mhz: u32,

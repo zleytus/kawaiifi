@@ -1,9 +1,10 @@
 use deku::{DekuError, DekuRead, DekuWrite};
 use num_enum::TryFromPrimitive;
+use serde::{Deserialize, Serialize};
 
 use super::{IeId, write_bits_lsb0};
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct HtOperation {
     #[deku(bytes = 1)]
     pub primary_channel: u8,
@@ -20,7 +21,7 @@ impl HtOperation {
     pub const LENGTH: usize = 22;
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct HtOperationInformation {
     #[deku(
@@ -67,7 +68,7 @@ pub struct HtOperationInformation {
     reserved_5: u8,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive, Serialize, Deserialize)]
 #[repr(u8)]
 pub enum SecondaryChannelOffset {
     NoSecondary = 0,
@@ -75,14 +76,14 @@ pub enum SecondaryChannelOffset {
     BelowPrimary = 3,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive, Serialize, Deserialize)]
 #[repr(u8)]
 pub enum SupportedChannelWidths {
     TwentyMhz = 0,
     Any = 1,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive, Serialize, Deserialize)]
 #[repr(u8)]
 pub enum HtProtection {
     NoProtection = 0,
