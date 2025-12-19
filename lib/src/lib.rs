@@ -5,6 +5,7 @@ mod field;
 pub mod ies;
 mod interface;
 mod nl80211;
+pub mod scan;
 mod security_protocol;
 mod wifi_protocol;
 

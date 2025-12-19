@@ -1,14 +1,6 @@
 mod interface;
-mod interface_type;
-mod nl80211_attr;
-mod nl80211_cmd;
-mod scan_error;
 
 pub use interface::Interface;
-pub use interface_type::InterfaceType;
-use nl80211_attr::Nl80211Attr;
-use nl80211_cmd::Nl80211Cmd;
-pub use scan_error::ScanError;
 
 use neli::{
     consts::{nl::NlmF, socket::NlFamily},
@@ -18,8 +10,10 @@ use neli::{
     utils::Groups,
 };
 
-const NL80211_FAMILY_NAME: &str = "nl80211";
-const SCAN_MULTICAST_NAME: &str = "scan";
+use crate::{
+    nl80211::{Attr, Cmd, NL80211_FAMILY_NAME},
+    scan::Error,
+};
 
 pub fn default_interface() -> Option<Interface> {
     interfaces().into_iter().next()
@@ -35,19 +29,19 @@ pub fn interfaces() -> Vec<Interface> {
     }
 }
 
-fn interfaces_internal() -> Result<Vec<Interface>, ScanError> {
+fn interfaces_internal() -> Result<Vec<Interface>, Error> {
     // Create a generic netlink socket and resolve nl80211 family
     let (socket, _) = NlRouter::connect(NlFamily::Generic, None, Groups::empty())?;
     let family_id = socket.resolve_genl_family(NL80211_FAMILY_NAME)?;
 
     // Query system for WiFi interfaces using the 'GetInterface' command
     // No attributes needed because DUMP flag will return all interfaces
-    let recv = socket.send::<_, _, u16, Genlmsghdr<Nl80211Cmd, Nl80211Attr>>(
+    let recv = socket.send::<_, _, u16, Genlmsghdr<Cmd, Attr>>(
         family_id,
         NlmF::DUMP | NlmF::REQUEST,
         NlPayload::Payload(
             GenlmsghdrBuilder::default()
-                .cmd(Nl80211Cmd::GetInterface)
+                .cmd(Cmd::GetInterface)
                 .version(1)
                 .build()?,
         ),

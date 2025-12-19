@@ -183,127 +183,59 @@ impl Interface {
         self.vif_radio_mask
     }
 
-    pub fn scan(&self) -> Result<Vec<Bss>, ScanError> {
-        // Connect to the generic netlink socket
-        let (socket, multicast) = NlRouter::connect(NlFamily::Generic, None, Groups::empty())?;
-
-        // Resolve the nl80211 family ID
-        let family_id = socket.resolve_genl_family(NL80211_FAMILY_NAME)?;
-
-        // Build the netlink attribute specifying which interface to query
-        let ifindex_attr = NlattrBuilder::default()
-            .nla_type(
-                AttrTypeBuilder::default()
-                    .nla_type(Nl80211Attr::Ifindex)
-                    .build()?,
-            )
-            .nla_payload(self.index)
-            .build()?;
-
-        let attrs = once(ifindex_attr).collect::<GenlBuffer<_, _>>();
-
-        // Build and send the NL80211_CMD_TRIGGER_SCAN request
-        let genlmsghdr = GenlmsghdrBuilder::default()
-            .cmd(Nl80211Cmd::TriggerScan)
-            .attrs(attrs)
-            .version(1)
-            .build()?;
-
-        let responses = socket.send::<_, _, u16, Genlmsghdr<Nl80211Cmd, Nl80211Attr>>(
-            family_id,
-            NlmF::REQUEST | NlmF::ACK,
-            NlPayload::Payload(genlmsghdr),
-        )?;
-
-        // Wait for the message we just sent to be acknowledged
-        // If we don't receive an ACK, assume the user was denied permission to scan
-        if !responses
-            .filter_map(|msg| msg.ok())
-            .any(|msg| matches!(msg.nl_payload(), NlPayload::Ack(_)))
-        {
-            return Err(ScanError::PermissionDenied);
         }
 
-        // Join the scan multicast group to receive a notification when the scan is completed
-        let id = socket.resolve_nl_mcast_group(NL80211_FAMILY_NAME, SCAN_MULTICAST_NAME)?;
-        socket.add_mcast_membership(Groups::new_groups(&[id]))?;
-
-        // If we receive a message with a payload containing Nl80211Cmd::NewScanResults, we know
-        // a new scan has successfully completed and we can get the scan results by calling
-        // Interface::cached_scan_results()
-        if multicast
-            .filter_map(|msg| msg.ok())
-            .filter_map(|msg| msg.get_payload().map(|payload| *payload.cmd()))
-            .any(|cmd| cmd == u8::from(Nl80211Cmd::NewScanResults))
-        {
-            self.cached_scan_results()
-        } else {
-            Err(ScanError::AlreadyScanning)
         }
     }
 
-    pub fn scan_for_ssid(&self, _: &str) {
-        todo!()
     }
 
-    pub fn cached_scan_results(&self) -> Result<Vec<Bss>, ScanError> {
-        // Connect to the generic netlink socket
-        let (socket, _) = NlRouter::connect(NlFamily::Generic, None, Groups::empty())?;
 
-        // Resolve the nl80211 family ID
-        let family_id = socket.resolve_genl_family(NL80211_FAMILY_NAME)?;
-
-        // Build the netlink attribute specifying which interface to query
-        let ifindex_attr = NlattrBuilder::default()
-            .nla_type(
-                AttrTypeBuilder::default()
-                    .nla_type(Nl80211Attr::Ifindex)
-                    .build()?,
-            )
-            .nla_payload(self.index)
-            .build()?;
-
-        let attrs = once(ifindex_attr).collect::<GenlBuffer<_, _>>();
-
-        // Build and send the NL80211_CMD_GET_SCAN request
-        let genlmsghdr = GenlmsghdrBuilder::default()
-            .cmd(Nl80211Cmd::GetScan)
-            .attrs(attrs)
-            .version(1)
-            .build()?;
-
-        let responses = socket.send::<_, _, u16, Genlmsghdr<Nl80211Cmd, Nl80211Attr>>(
-            family_id,
-            NlmF::DUMP | NlmF::ACK,
-            NlPayload::Payload(genlmsghdr),
-        )?;
-
-        // Process responses and extract BSS information
-        Ok(responses
-            .into_iter()
-            .filter_map(|msghdr| msghdr.ok())
-            .filter_map(|msghdr| Self::extract_bss_from_message(msghdr))
-            .collect())
+        None
     }
 
-    /// Extract BSS information from a netlink message
-    fn extract_bss_from_message(
-        msghdr: Nlmsghdr<u16, Genlmsghdr<Nl80211Cmd, Nl80211Attr>>,
-    ) -> Option<Bss> {
-        // Get the payload from the message
-        let payload = msghdr.get_payload()?;
 
-        // Only process NL80211_CMD_NEW_SCAN_RESULTS messages
-        if *payload.cmd() != Nl80211Cmd::NewScanResults {
-            return None;
+        None
+    }
+
+
+
+    }
+
+
         }
 
-        // Get the nested BSS attributes
-        let attr_handle = payload.attrs().get_attr_handle();
-        let bss_attrs = attr_handle.get_nested_attributes(Nl80211Attr::Bss).ok()?;
 
-        // Parse the attributes into a Bss struct
-        Bss::from_attrs(bss_attrs.iter()).ok()
+    pub async fn scan(&self, scan_backend: scan::Backend) -> Result<(), scan::Error> {
+        crate::scan::scan(&self, scan_backend).await
+    }
+
+    pub fn scan_blocking(&self, scan_backend: scan::Backend) -> Result<(), scan::Error> {
+        crate::scan::scan_blocking(&self, scan_backend)
+    }
+
+    pub async fn scan_and_get_results(
+        &self,
+        scan_backend: scan::Backend,
+    ) -> Result<Vec<Bss>, scan::Error> {
+        crate::scan::scan(&self, scan_backend).await?;
+        crate::scan::scan_results(&self).await
+    }
+
+    pub fn scan_and_get_results_blocking(
+        &self,
+        scan_backend: scan::Backend,
+    ) -> Result<Vec<Bss>, scan::Error> {
+        crate::scan::scan_blocking(&self, scan_backend)?;
+        crate::scan::scan_results_blocking(&self)
+    }
+
+    pub async fn scan_results(&self) -> Result<Vec<Bss>, scan::Error> {
+        crate::scan::scan_results(&self).await
+    }
+
+    pub fn scan_results_blocking(&self) -> Result<Vec<Bss>, scan::Error> {
+        crate::scan::scan_results_blocking(&self)
     }
 }
 
