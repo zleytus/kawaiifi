@@ -7,7 +7,7 @@ use enumflags2::{BitFlags, bitflags};
 
 use crate::{
     Ie, IeData,
-    ies::supported_rates::{DataRate, SupportedRates},
+    ies::supported_rates::{DataRate, ExtendedSupportedRates, SupportedRates},
 };
 
 #[bitflags]
@@ -100,6 +100,12 @@ impl From<&SupportedRates> for WifiProtocols {
     }
 }
 
+impl From<&ExtendedSupportedRates> for WifiProtocols {
+    fn from(extended_supported_rates: &ExtendedSupportedRates) -> Self {
+        WifiProtocols::from(extended_supported_rates.as_ref())
+    }
+}
+
 impl From<&[Ie]> for WifiProtocols {
     fn from(ies: &[Ie]) -> Self {
         let mut protocols = WifiProtocols(BitFlags::empty());
@@ -107,6 +113,9 @@ impl From<&[Ie]> for WifiProtocols {
         for ie in ies {
             match &ie.data {
                 IeData::SupportedRates(supported_rates) => {
+                    protocols.insert(*WifiProtocols::from(supported_rates));
+                }
+                IeData::ExtendedSupportedRates(supported_rates) => {
                     protocols.insert(*WifiProtocols::from(supported_rates));
                 }
                 IeData::HtCapabilities(_) => protocols.insert(WifiProtocol::N),
