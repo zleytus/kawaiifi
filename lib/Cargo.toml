@@ -22,3 +22,4 @@ zbus = { version = "5" }
 
 [dev-dependencies]
 env_logger = "*"
+tokio = { version = "1", features = ["full"] }
