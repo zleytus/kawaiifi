@@ -1,26 +1,14 @@
-use std::{
-    collections::HashMap,
-    convert::{TryFrom, TryInto},
-    hash::Hash,
-    iter::once,
-};
+use std::{collections::HashMap, fmt::Display, hash::Hash};
 
-use neli::{
-    attr::Attribute,
-    consts::{nl::NlmF, socket::NlFamily},
-    genl::{AttrTypeBuilder, Genlmsghdr, GenlmsghdrBuilder, Nlattr, NlattrBuilder},
-    nl::{NlPayload, Nlmsghdr},
-    router::synchronous::NlRouter,
-    types::{Buffer, GenlBuffer},
-    utils::Groups,
-};
+use neli::{attr::Attribute, genl::Nlattr, types::Buffer};
+use pci_ids::FromId as FromPciId;
+use usb_ids::FromId as FromUsbId;
 
 use crate::{
     Bss, ChannelWidth,
     nl80211::{Attr, ChanWidth, IfType},
     scan,
 };
-use crate::{Bss, ChannelWidth};
 
 #[derive(Debug, Clone, Eq)]
 pub struct Interface {
@@ -183,28 +171,118 @@ impl Interface {
         self.vif_radio_mask
     }
 
+    pub fn vendor_name(&self) -> Option<String> {
+        // Fall back to database lookup using vendor ID
+        let vendor_id = self.vendor_id()?;
+
+        // Try USB database
+        if let Some(vendor) = usb_ids::Vendor::from_id(vendor_id) {
+            return Some(vendor.name().to_string());
         }
 
+        // Try PCI database
+        if let Some(vendor) = pci_ids::Vendor::from_id(vendor_id) {
+            return Some(vendor.name().to_string());
         }
-    }
-
-    }
-
 
         None
     }
 
+    pub fn device_name(&self) -> Option<String> {
+        // Fall back to database lookup
+        let vendor_id = self.vendor_id()?;
+        let device_id = self.device_id()?;
+
+        // Try USB database
+        if let Some(vendor) = usb_ids::Vendor::from_id(vendor_id) {
+            if let Some(device) = vendor.devices().find(|d| d.id() == device_id) {
+                return Some(device.name().to_string());
+            }
+        }
+
+        // Try PCI database
+        if let Some(vendor) = pci_ids::Vendor::from_id(vendor_id) {
+            if let Some(device) = vendor.devices().find(|d| d.id() == device_id) {
+                return Some(device.name().to_string());
+            }
+        }
 
         None
     }
 
+    pub fn vendor_id(&self) -> Option<u16> {
+        let uevent =
+            std::fs::read_to_string(format!("/sys/class/net/{}/device/uevent", self.name()))
+                .ok()?;
 
-
-    }
-
-
+        for line in uevent.lines() {
+            // Try PCI format: PCI_ID=14C3:0616
+            if let Some(pci_id) = line.strip_prefix("PCI_ID=") {
+                let vendor_hex = pci_id.split(':').next()?;
+                return u16::from_str_radix(vendor_hex, 16).ok();
+            }
+            // Try USB format: PRODUCT=846/9072/100 (decimal)
+            if let Some(product) = line.strip_prefix("PRODUCT=") {
+                let vendor_hex = product.split('/').next()?;
+                return u16::from_str_radix(vendor_hex, 16).ok();
+            }
         }
 
+        None
+    }
+
+    pub fn device_id(&self) -> Option<u16> {
+        let uevent =
+            std::fs::read_to_string(format!("/sys/class/net/{}/device/uevent", self.name()))
+                .ok()?;
+
+        for line in uevent.lines() {
+            // Try PCI format: PCI_ID=14C3:0616
+            if let Some(pci_id) = line.strip_prefix("PCI_ID=") {
+                let device_hex = pci_id.split(':').nth(1)?;
+                return u16::from_str_radix(device_hex, 16).ok();
+            }
+            // Try USB format: PRODUCT=846/9072/100 (decimal)
+            if let Some(product) = line.strip_prefix("PRODUCT=") {
+                let device_hex = product.split('/').nth(1)?;
+                return u16::from_str_radix(device_hex, 16).ok();
+            }
+        }
+
+        None
+    }
+
+    pub fn driver(&self) -> Option<String> {
+        let uevent =
+            std::fs::read_to_string(format!("/sys/class/net/{}/device/uevent", self.name()))
+                .ok()?;
+
+        for line in uevent.lines() {
+            if let Some(driver) = line.strip_prefix("DRIVER=") {
+                return Some(driver.to_string());
+            }
+        }
+
+        None
+    }
+
+    pub fn bus_type(&self) -> BusType {
+        let subsystem_path = format!("/sys/class/net/{}/device/subsystem", self.name);
+
+        if let Ok(link) = std::fs::read_link(&subsystem_path) {
+            let subsystem = link.to_string_lossy();
+
+            if subsystem.contains("pci") {
+                return BusType::Pci;
+            } else if subsystem.contains("usb") {
+                return BusType::Usb;
+            } else if subsystem.contains("sdio") {
+                return BusType::Sdio;
+            }
+        }
+
+        BusType::Unknown
+    }
 
     pub async fn scan(&self, scan_backend: scan::Backend) -> Result<(), scan::Error> {
         crate::scan::scan(&self, scan_backend).await
@@ -248,5 +326,24 @@ impl Hash for Interface {
 impl PartialEq for Interface {
     fn eq(&self, other: &Self) -> bool {
         self.index == other.index
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BusType {
+    Pci,
+    Usb,
+    Sdio,
+    Unknown,
+}
+
+impl Display for BusType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self {
+            Self::Pci => write!(f, "PCIe"),
+            Self::Usb => write!(f, "USB"),
+            Self::Sdio => write!(f, "SDIO"),
+            Self::Unknown => write!(f, "Unknown"),
+        }
     }
 }

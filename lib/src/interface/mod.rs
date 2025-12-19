@@ -1,6 +1,6 @@
 mod interface;
 
-pub use interface::Interface;
+pub use interface::{BusType, Interface};
 
 use neli::{
     consts::{nl::NlmF, socket::NlFamily},
