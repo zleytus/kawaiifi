@@ -1,7 +1,7 @@
 /// nl80211 commands.
 /// Based on nl80211_commands from linux/include/uapi/linux/nl80211.h
 #[neli::neli_enum(serialized_type = "u8")]
-pub(crate) enum Nl80211Cmd {
+pub(crate) enum Cmd {
     Unspec = 0,
     GetWiphy = 1,
     SetWiphy = 2,
@@ -169,4 +169,4 @@ pub(crate) enum Nl80211Cmd {
     NanClusterJoined = 159,
 }
 
-impl neli::consts::genl::Cmd for Nl80211Cmd {}
+impl neli::consts::genl::Cmd for Cmd {}

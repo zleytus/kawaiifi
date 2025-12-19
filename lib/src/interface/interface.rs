@@ -15,8 +15,10 @@ use neli::{
     utils::Groups,
 };
 
-use super::{
-    InterfaceType, NL80211_FAMILY_NAME, Nl80211Attr, Nl80211Cmd, SCAN_MULTICAST_NAME, ScanError,
+use crate::{
+    Bss, ChannelWidth,
+    nl80211::{Attr, ChanWidth, IfType},
+    scan,
 };
 use crate::{Bss, ChannelWidth};
 
@@ -24,7 +26,7 @@ use crate::{Bss, ChannelWidth};
 pub struct Interface {
     name: String,
     index: u32,
-    interface_type: InterfaceType,
+    interface_type: IfType,
     wiphy: u32,
     wdev: u64,
     mac_address: [u8; 6],
@@ -43,7 +45,7 @@ pub struct Interface {
 impl Interface {
     pub(crate) fn from_attrs<'a, I>(iface_attrs: I) -> Result<Self, ()>
     where
-        I: IntoIterator<Item = &'a Nlattr<Nl80211Attr, Buffer>>,
+        I: IntoIterator<Item = &'a Nlattr<Attr, Buffer>>,
     {
         let iface_attrs: HashMap<_, _> = iface_attrs
             .into_iter()
@@ -52,66 +54,67 @@ impl Interface {
 
         Ok(Interface {
             name: iface_attrs
-                .get(&Nl80211Attr::Ifname)
+                .get(&Attr::Ifname)
                 .and_then(|attr| attr.payload().as_ref().split_last())
                 .and_then(|(_, name_bytes)| String::from_utf8(name_bytes.to_vec()).ok())
                 .ok_or(())?,
             index: iface_attrs
-                .get(&Nl80211Attr::Ifindex)
+                .get(&Attr::Ifindex)
                 .and_then(|attr| attr.get_payload_as().ok())
                 .ok_or(())?,
             interface_type: iface_attrs
-                .get(&Nl80211Attr::Iftype)
+                .get(&Attr::Iftype)
                 .and_then(|attr| attr.get_payload_as().ok())
-                .and_then(|if_type: u32| InterfaceType::try_from(if_type).ok())
+                .and_then(|if_type: u32| IfType::try_from(if_type).ok())
                 .ok_or(())?,
             wiphy: iface_attrs
-                .get(&Nl80211Attr::Wiphy)
+                .get(&Attr::Wiphy)
                 .and_then(|attr| attr.get_payload_as().ok())
                 .ok_or(())?,
             wdev: iface_attrs
-                .get(&Nl80211Attr::Wdev)
+                .get(&Attr::Wdev)
                 .and_then(|attr| attr.get_payload_as().ok())
                 .ok_or(())?,
             mac_address: iface_attrs
-                .get(&Nl80211Attr::Mac)
+                .get(&Attr::Mac)
                 .and_then(|attr| attr.payload().as_ref().try_into().ok())
                 .ok_or(())?,
             generation: iface_attrs
-                .get(&Nl80211Attr::Generation)
+                .get(&Attr::Generation)
                 .and_then(|attr| attr.get_payload_as().ok())
                 .ok_or(())?,
             four_address: iface_attrs
-                .get(&Nl80211Attr::FourAddr)
+                .get(&Attr::FourAddr)
                 .and_then(|attr| attr.get_payload_as().ok())
                 .map(|four_address: u8| four_address > 0)
                 .ok_or(())?,
-            ssid: iface_attrs.get(&Nl80211Attr::Ssid).map(|attr| {
+            ssid: iface_attrs.get(&Attr::Ssid).map(|attr| {
                 String::from_utf8(attr.payload().as_ref().to_vec()).unwrap_or_default()
             }),
             wiphy_freq_mhz: iface_attrs
-                .get(&Nl80211Attr::WiphyFreq)
+                .get(&Attr::WiphyFreq)
                 .and_then(|attr| attr.get_payload_as().ok()),
             wiphy_freq_offset_khz: iface_attrs
-                .get(&Nl80211Attr::WiphyFreqOffset)
+                .get(&Attr::WiphyFreqOffset)
                 .and_then(|attr| attr.get_payload_as().ok()),
             wiphy_tx_power_level_mbm: iface_attrs
-                .get(&Nl80211Attr::WiphyTxPowerLevel)
+                .get(&Attr::WiphyTxPowerLevel)
                 .and_then(|attr| attr.get_payload_as().ok()),
             center_freq_1_mhz: iface_attrs
-                .get(&Nl80211Attr::CenterFreq1)
+                .get(&Attr::CenterFreq1)
                 .and_then(|attr| attr.get_payload_as().ok()),
             center_freq_2_mhz: iface_attrs
-                .get(&Nl80211Attr::CenterFreq2)
+                .get(&Attr::CenterFreq2)
                 .and_then(|attr| attr.get_payload_as().ok()),
             channel_width: iface_attrs
-                .get(&Nl80211Attr::ChannelWidth)
+                .get(&Attr::ChannelWidth)
                 .and_then(|attr| attr.get_payload_as().ok())
                 .map(|channel_width: u8| {
-                    ChannelWidth::try_from(channel_width).unwrap_or(ChannelWidth::TwentyMhz)
-                }),
+                    ChanWidth::try_from(channel_width).unwrap_or(ChanWidth::TwentyMhz)
+                })
+                .map(ChannelWidth::from),
             vif_radio_mask: iface_attrs
-                .get(&Nl80211Attr::VifRadioMask)
+                .get(&Attr::VifRadioMask)
                 .and_then(|attr| attr.get_payload_as().ok()),
         })
     }
@@ -124,7 +127,7 @@ impl Interface {
         self.index
     }
 
-    pub fn interface_type(&self) -> InterfaceType {
+    pub fn interface_type(&self) -> IfType {
         self.interface_type
     }
 

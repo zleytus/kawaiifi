@@ -4,6 +4,7 @@ mod channel_width;
 mod field;
 pub mod ies;
 mod interface;
+mod nl80211;
 mod security_protocol;
 mod wifi_protocol;
 

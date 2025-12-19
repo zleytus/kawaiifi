@@ -1,7 +1,7 @@
 /// Netlink attributes for a BSS.
 /// Based on nl80211_bss from linux/include/uapi/linux/nl80211.h
 #[neli::neli_enum(serialized_type = "u16")]
-pub(crate) enum Nl80211Bss {
+pub(crate) enum Bss {
     Invalid = 0,
     Bssid = 1,
     Frequency = 2,
@@ -29,4 +29,4 @@ pub(crate) enum Nl80211Bss {
     CannotUseReasons = 24,
 }
 
-impl neli::consts::genl::NlAttrType for Nl80211Bss {}
+impl neli::consts::genl::NlAttrType for Bss {}

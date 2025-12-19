@@ -1,7 +1,7 @@
 /// nl80211 netlink attributes.
 /// Based on nl80211_attrs from linux/include/uapi/linux/nl80211.h
 #[neli::neli_enum(serialized_type = "u16")]
-pub(crate) enum Nl80211Attr {
+pub(crate) enum Attr {
     Unspec = 0,
     Wiphy = 1,
     WiphyName = 2,
@@ -349,4 +349,4 @@ pub(crate) enum Nl80211Attr {
     NanCapabilities = 344,
     S1gPrimary2Mhz = 345,
 }
-impl neli::consts::genl::NlAttrType for Nl80211Attr {}
+impl neli::consts::genl::NlAttrType for Attr {}

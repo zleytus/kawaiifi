@@ -7,11 +7,11 @@ use std::{
 
 use neli::{attr::Attribute, genl::Nlattr, types::Buffer};
 
-use super::{BssStatus, Nl80211Bss, ScanWidth};
 use crate::{
     Channel, SecurityProtocols, WifiProtocols,
     bss::CapabilityInfo,
     ies::{self, Ie, IeData},
+    nl80211::{Bss as Nl80211Bss, BssScanWidth, BssStatus},
 };
 
 #[derive(Debug, Clone, Eq)]
