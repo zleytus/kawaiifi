@@ -1,16 +1,10 @@
-use std::{
-    collections::HashMap,
-    convert::{TryFrom, TryInto},
-    fmt::Display,
-    hash::Hash,
-};
+use std::{collections::HashMap, fmt::Display, hash::Hash};
 
 use neli::{attr::Attribute, genl::Nlattr, types::Buffer};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    Channel, SecurityProtocols, WifiProtocols,
-    bss::CapabilityInfo,
+    Band, CapabilityInfo, ChannelWidth, SecurityProtocols, WifiProtocols,
     ies::{self, Ie, IeData},
     nl80211::{Bss as Nl80211Bss, BssScanWidth, BssStatus},
 };
@@ -32,7 +26,7 @@ pub struct Bss {
     frequency_offset_khz: Option<u32>,
     signal_percent: Option<u8>,
     beacon_ies: Option<Vec<Ie>>,
-    scan_width: Option<ScanWidth>,
+    scan_width: Option<BssScanWidth>,
     last_seen_boottime: Option<u64>,
     seen_ms_ago: Option<u32>,
 }
@@ -44,6 +38,35 @@ impl Bss {
 
     pub fn frequency_mhz(&self) -> u32 {
         self.frequency_mhz
+    }
+
+    pub fn band(&self) -> Band {
+        Band::from_freq_mhz(self.frequency_mhz)
+    }
+
+    pub fn channel_width(&self) -> ChannelWidth {
+        ChannelWidth::from(self.ies())
+    }
+
+    pub fn channel_number(&self) -> u8 {
+        self.ies
+            .iter()
+            .find_map(|ie| match &ie.data {
+                IeData::DsParameterSet(ds_parameter_set) => Some(ds_parameter_set.current_channel),
+                IeData::HtOperation(ht_operation) => Some(ht_operation.primary_channel),
+                _ => None,
+            })
+            .unwrap_or_else(|| match self.band() {
+                Band::TwoPointFourGhz => {
+                    if self.frequency_mhz() == 2484 {
+                        14
+                    } else {
+                        ((self.frequency_mhz() - 2407) / 5) as u8
+                    }
+                }
+                Band::FiveGhz => ((self.frequency_mhz() - 5000) / 5) as u8,
+                Band::SixGhz => ((self.frequency_mhz() - 5950) / 5) as u8,
+            })
     }
 
     pub fn signal_dbm(&self) -> i32 {
@@ -102,7 +125,7 @@ impl Bss {
         self.beacon_ies.as_deref()
     }
 
-    pub fn scan_width(&self) -> Option<ScanWidth> {
+    pub fn scan_width(&self) -> Option<BssScanWidth> {
         self.scan_width
     }
 
@@ -122,10 +145,6 @@ impl Bss {
                 None
             }
         })
-    }
-
-    pub fn channel(&self) -> Channel {
-        Channel::from(self.ies.as_slice())
     }
 
     pub fn security_protocols(&self) -> SecurityProtocols {
@@ -273,8 +292,8 @@ impl Display for Bss {
             self.bssid,
             self.ssid().unwrap_or_default(),
             self.signal_dbm,
-            self.channel().number(),
-            self.channel().width(),
+            self.channel_number(),
+            self.channel_width(),
             self.wifi_protocols()
         );
 
