@@ -21,7 +21,7 @@ pub struct Bss {
     is_from_probe_response: bool,
     parent_bssid: Option<[u8; 6]>,
     parent_tsf: Option<u64>,
-    tsf: Option<u64>,
+    tsf: u64,
     beacon_tsf: Option<u64>,
     frequency_offset_khz: Option<u32>,
     signal_percent: Option<u8>,
@@ -84,7 +84,8 @@ impl Bss {
                 .and_then(|attr| attr.get_payload_as().ok()),
             tsf: bss_attrs
                 .get(&Nl80211Bss::Tsf)
-                .and_then(|attr| attr.get_payload_as().ok()),
+                .and_then(|attr| attr.get_payload_as().ok())
+                .ok_or(())?,
             beacon_tsf: bss_attrs
                 .get(&Nl80211Bss::BeaconTsf)
                 .and_then(|attr| attr.get_payload_as().ok()),
@@ -191,7 +192,7 @@ impl Bss {
         self.parent_tsf
     }
 
-    pub fn tsf(&self) -> Option<u64> {
+    pub fn tsf(&self) -> u64 {
         self.tsf
     }
 
