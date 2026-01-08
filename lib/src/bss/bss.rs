@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Display, hash::Hash};
+use std::{collections::HashMap, fmt::Display, hash::Hash, time::Duration};
 
 use neli::{attr::Attribute, genl::Nlattr, types::Buffer};
 use serde::{Deserialize, Serialize};
@@ -194,6 +194,10 @@ impl Bss {
 
     pub fn tsf(&self) -> u64 {
         self.tsf
+    }
+
+    pub fn uptime(&self) -> Duration {
+        Duration::from_micros(self.tsf)
     }
 
     pub fn beacon_tsf(&self) -> Option<u64> {
