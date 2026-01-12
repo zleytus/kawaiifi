@@ -1,12 +1,12 @@
 use std::{collections::HashMap, fmt::Display, hash::Hash, time::Duration};
 
-use neli::{attr::Attribute, genl::Nlattr, types::Buffer};
+use neli::{attr::Attribute, genl::Genlmsghdr};
 use serde::{Deserialize, Serialize};
 
 use crate::{
     Band, CapabilityInfo, ChannelWidth, SecurityProtocols, WifiProtocols,
     ies::{self, Ie, IeData},
-    nl80211::{Bss as Nl80211Bss, BssScanWidth, BssStatus},
+    nl80211::{Attr, Bss as Nl80211Bss, BssScanWidth, BssStatus, Cmd, ParseError},
 };
 
 #[derive(Debug, Clone, Eq, Serialize, Deserialize)]
@@ -34,91 +34,6 @@ pub struct Bss {
 }
 
 impl Bss {
-    pub(crate) fn from_attrs<'a, I>(bss_attrs: I) -> Result<Bss, ()>
-    where
-        I: IntoIterator<Item = &'a Nlattr<Nl80211Bss, Buffer>>,
-    {
-        let bss_attrs: HashMap<_, _> = bss_attrs
-            .into_iter()
-            .map(|attr| (attr.nla_type().nla_type(), attr))
-            .collect();
-
-        let mut bss = Bss {
-            bssid: bss_attrs
-                .get(&Nl80211Bss::Bssid)
-                .and_then(|attr| attr.payload().as_ref().try_into().ok())
-                .ok_or(())?,
-            frequency_mhz: bss_attrs
-                .get(&Nl80211Bss::Frequency)
-                .and_then(|attr| attr.get_payload_as().ok())
-                .ok_or(())?,
-            signal_dbm: bss_attrs
-                .get(&Nl80211Bss::SignalMbm)
-                .and_then(|attr| attr.get_payload_as::<i32>().ok())
-                .ok_or(())?
-                / 100,
-            beacon_interval_tu: bss_attrs
-                .get(&Nl80211Bss::BeaconInterval)
-                .and_then(|attr| attr.get_payload_as().ok())
-                .ok_or(())?,
-            capability_info: bss_attrs
-                .get(&Nl80211Bss::Capability)
-                .and_then(|attr| attr.payload().as_ref().try_into().ok())
-                .and_then(|payload: &[u8]| CapabilityInfo::try_from(payload).ok())
-                .ok_or(())?,
-            status: bss_attrs
-                .get(&Nl80211Bss::Status)
-                .and_then(|attr| attr.get_payload_as::<u32>().ok())
-                .and_then(|payload| BssStatus::try_from(payload).ok())
-                .unwrap_or(BssStatus::NotAssociated),
-            ies: bss_attrs
-                .get(&Nl80211Bss::InformationElements)
-                .map(|attr| ies::from_bytes(attr.payload().as_ref()))
-                .unwrap_or_default(),
-            is_from_probe_response: bss_attrs.contains_key(&Nl80211Bss::PrespData),
-            parent_bssid: bss_attrs
-                .get(&Nl80211Bss::ParentBssid)
-                .and_then(|attr| attr.payload().as_ref().try_into().ok()),
-            parent_tsf: bss_attrs
-                .get(&Nl80211Bss::ParentTsf)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            tsf: bss_attrs
-                .get(&Nl80211Bss::Tsf)
-                .and_then(|attr| attr.get_payload_as().ok())
-                .ok_or(())?,
-            beacon_tsf: bss_attrs
-                .get(&Nl80211Bss::BeaconTsf)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            frequency_offset_khz: bss_attrs
-                .get(&Nl80211Bss::FrequencyOffset)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            signal_percent: bss_attrs
-                .get(&Nl80211Bss::SignalUnspec)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            beacon_ies: bss_attrs
-                .get(&Nl80211Bss::BeaconIes)
-                .map(|attr| ies::from_bytes(attr.payload().as_ref())),
-            scan_width: bss_attrs.get(&Nl80211Bss::ChanWidth).and_then(|attr| {
-                BssScanWidth::try_from(attr.get_payload_as::<u32>().unwrap_or_default()).ok()
-            }),
-            last_seen_boottime: bss_attrs
-                .get(&Nl80211Bss::LastSeenBoottime)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            seen_ms_ago: bss_attrs
-                .get(&Nl80211Bss::SeenMsAgo)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            mlo_link_id: bss_attrs
-                .get(&Nl80211Bss::MloLinkId)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            mld_address: bss_attrs
-                .get(&Nl80211Bss::MldAddr)
-                .and_then(|attr| attr.payload().as_ref().try_into().ok()),
-        };
-        bss.resolve_ie_dependencies();
-
-        Ok(bss)
-    }
-
     pub fn bssid(&self) -> &[u8; 6] {
         &self.bssid
     }
@@ -356,6 +271,102 @@ impl Hash for Bss {
 impl PartialEq for Bss {
     fn eq(&self, other: &Self) -> bool {
         self.bssid == other.bssid
+    }
+}
+
+impl TryFrom<&Genlmsghdr<Cmd, Attr>> for Bss {
+    type Error = ParseError;
+
+    fn try_from(msghdr: &Genlmsghdr<Cmd, Attr>) -> Result<Self, Self::Error> {
+        if *msghdr.cmd() != Cmd::NewScanResults {
+            return Err(ParseError::UnexpectedCommand {
+                expected: Cmd::NewScanResults,
+                got: *msghdr.cmd(),
+            });
+        }
+
+        let attr_handle = msghdr.attrs().get_attr_handle();
+        let bss_attrs = attr_handle.get_nested_attributes(Attr::Bss)?;
+
+        let bss_attrs: HashMap<_, _> = bss_attrs
+            .iter()
+            .map(|attr| (attr.nla_type().nla_type(), attr))
+            .collect();
+
+        let mut bss = Bss {
+            bssid: bss_attrs
+                .get(&Nl80211Bss::Bssid)
+                .ok_or(ParseError::MissingAttribute("Nl80211Bss::Bssid"))?
+                .get_payload_as()?,
+            frequency_mhz: bss_attrs
+                .get(&Nl80211Bss::Frequency)
+                .ok_or(ParseError::MissingAttribute("Nl80211Bss::Frequency"))?
+                .get_payload_as()?,
+            signal_dbm: bss_attrs
+                .get(&Nl80211Bss::SignalMbm)
+                .ok_or(ParseError::MissingAttribute("Nl80211Bss::SignalMbm"))?
+                .get_payload_as::<i32>()?
+                / 100,
+            beacon_interval_tu: bss_attrs
+                .get(&Nl80211Bss::BeaconInterval)
+                .ok_or(ParseError::MissingAttribute("Nl80211Bss::BeaconInterval"))?
+                .get_payload_as()?,
+            capability_info: bss_attrs
+                .get(&Nl80211Bss::Capability)
+                .ok_or(ParseError::MissingAttribute("Nl80211Bss::Capability"))?
+                .get_payload_as::<[u8; 2]>()?
+                .as_ref()
+                .try_into()?,
+            status: bss_attrs
+                .get(&Nl80211Bss::Status)
+                .and_then(|attr| attr.get_payload_as::<u32>().ok())
+                .and_then(|val| BssStatus::try_from(val).ok()),
+            ies: bss_attrs
+                .get(&Nl80211Bss::InformationElements)
+                .map(|attr| ies::from_bytes(attr.payload().as_ref()))
+                .unwrap_or_default(),
+            is_from_probe_response: bss_attrs.contains_key(&Nl80211Bss::PrespData),
+            parent_bssid: bss_attrs
+                .get(&Nl80211Bss::ParentBssid)
+                .and_then(|attr| attr.payload().as_ref().try_into().ok()),
+            parent_tsf: bss_attrs
+                .get(&Nl80211Bss::ParentTsf)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            tsf: bss_attrs
+                .get(&Nl80211Bss::Tsf)
+                .ok_or(ParseError::MissingAttribute("Nl80211Bss::Tsf"))?
+                .get_payload_as()?,
+            beacon_tsf: bss_attrs
+                .get(&Nl80211Bss::BeaconTsf)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            frequency_offset_khz: bss_attrs
+                .get(&Nl80211Bss::FrequencyOffset)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            signal_percent: bss_attrs
+                .get(&Nl80211Bss::SignalUnspec)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            beacon_ies: bss_attrs
+                .get(&Nl80211Bss::BeaconIes)
+                .map(|attr| ies::from_bytes(attr.payload().as_ref())),
+            scan_width: bss_attrs.get(&Nl80211Bss::ChanWidth).and_then(|attr| {
+                BssScanWidth::try_from(attr.get_payload_as::<u32>().unwrap_or_default()).ok()
+            }),
+            last_seen_boottime: bss_attrs
+                .get(&Nl80211Bss::LastSeenBoottime)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            seen_ms_ago: bss_attrs
+                .get(&Nl80211Bss::SeenMsAgo)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            mlo_link_id: bss_attrs
+                .get(&Nl80211Bss::MloLinkId)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            mld_address: bss_attrs
+                .get(&Nl80211Bss::MldAddr)
+                .and_then(|attr| attr.payload().as_ref().try_into().ok()),
+        };
+        bss.resolve_ie_dependencies();
+
+        Ok(bss)
     }
 }
 
