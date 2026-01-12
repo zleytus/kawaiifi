@@ -165,7 +165,7 @@ impl Bss {
     }
 
     pub fn beacon_interval_ms(&self) -> f64 {
-        self.beacon_interval_tu as f64 * 1.024
+        f64::from(self.beacon_interval_tu) * 1.024
     }
 
     pub fn capability_info(&self) -> &CapabilityInfo {
