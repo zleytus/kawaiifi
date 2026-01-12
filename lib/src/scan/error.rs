@@ -3,9 +3,6 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("Interface is already scanning")]
-    AlreadyScanning,
-
     #[error("Permission denied")]
     PermissionDenied,
 
@@ -14,7 +11,7 @@ pub enum Error {
     Nl80211(String),
 
     #[error("Network Manager error: {0}")]
-    NetworkManager(String),
+    NetworkManager(#[from] zbus::Error),
 
     #[error(transparent)]
     IOError(#[from] std::io::Error),
