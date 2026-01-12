@@ -5,6 +5,7 @@ use deku::{
 use serde::{Deserialize, Serialize};
 
 use super::IeId;
+use crate::ChannelWidth;
 
 #[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct HeCapabilities {
@@ -24,6 +25,97 @@ impl HeCapabilities {
     pub const ID_EXT: Option<u8> = Some(35);
     pub(crate) const IE_ID: IeId = IeId::new(Self::ID, Self::ID_EXT);
     pub const LENGTH: usize = 22;
+
+    /// Calculate HE (802.11ax) data rate in Mbps
+    pub(crate) fn max_rate(&self, channel_width: ChannelWidth) -> f64 {
+        let data_subcarriers = match channel_width {
+            ChannelWidth::TwentyMhz => 234.0,
+            ChannelWidth::FortyMhz => 468.0,
+            ChannelWidth::EightyMhz => 980.0,
+            ChannelWidth::EightyPlusEightyMhz | ChannelWidth::OneSixtyMhz => 1960.0,
+            _ => return 0.0,
+        };
+
+        let symbol_duration_us = 12.8 + self.min_guard_interval_us();
+
+        let bits_per_symbol = match self.max_mcs() {
+            0 => 0.5,
+            1 => 1.0,
+            2 => 1.5,
+            3 => 2.0,
+            4 => 3.0,
+            5 => 4.0,
+            6 => 4.5,
+            7 => 5.0,
+            8 => 6.0,
+            9 => 6.666667,
+            10 => 8.0,
+            11 => 8.333333,
+            _ => return 0.0,
+        };
+
+        (data_subcarriers * bits_per_symbol * f64::from(self.max_spatial_streams()))
+            / f64::from(symbol_duration_us)
+    }
+
+    /// Get the shortest supported guard interval in microseconds
+    fn min_guard_interval_us(&self) -> f32 {
+        0.8
+    }
+
+    /// Get maximum spatial streams from RX MCS map
+    fn max_spatial_streams(&self) -> u8 {
+        // Use the 80 MHz map as baseline
+        self.max_spatial_streams_for_map(
+            self.supported_he_mcs_and_nss_set
+                .rx_he_mcs_map_less_than_or_equal_to_eighty_mhz,
+        )
+    }
+
+    fn max_spatial_streams_for_map(&self, mcs_map: u16) -> u8 {
+        // MCS map: 2 bits per stream, 8 streams total
+        // 0 = MCS 0-7, 1 = MCS 0-9, 2 = MCS 0-11, 3 = not supported
+
+        for stream in (1..=8).rev() {
+            let shift = (stream - 1) * 2;
+            let mcs_support = (mcs_map >> shift) & 0b11;
+
+            if mcs_support != 0b11 {
+                // 0b11 = not supported
+                return stream;
+            }
+        }
+
+        1 // At least 1 stream
+    }
+
+    /// Get maximum MCS for a given spatial stream
+    fn max_mcs_for_stream(&self, stream: u8) -> Option<u8> {
+        if stream < 1 || stream > 8 {
+            return None;
+        }
+
+        let shift = (stream - 1) * 2;
+        let mcs_support = (self
+            .supported_he_mcs_and_nss_set
+            .rx_he_mcs_map_less_than_or_equal_to_eighty_mhz
+            >> shift)
+            & 0b11;
+
+        match mcs_support {
+            0b00 => Some(7),  // MCS 0-7 supported
+            0b01 => Some(9),  // MCS 0-9 supported
+            0b10 => Some(11), // MCS 0-11 supported (1024-QAM)
+            0b11 => None,     // Not supported
+            _ => None,
+        }
+    }
+
+    /// Get the highest MCS supported across all streams
+    fn max_mcs(&self) -> u8 {
+        let max_streams = self.max_spatial_streams();
+        self.max_mcs_for_stream(max_streams).unwrap_or(0)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]

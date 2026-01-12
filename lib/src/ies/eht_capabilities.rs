@@ -7,6 +7,8 @@ use deku::{
 };
 use serde::{Deserialize, Serialize};
 
+use crate::ChannelWidth;
+
 use super::{HeCapabilities, IeId};
 
 #[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
@@ -53,6 +55,127 @@ impl EhtCapabilities {
         }
 
         Ok(())
+    }
+
+    /// Calculate EHT (802.11be) data rate in Mbps
+    pub(crate) fn max_rate(&self, channel_width: ChannelWidth) -> f64 {
+        let data_subcarriers = match channel_width {
+            ChannelWidth::TwentyMhz => 234.0,
+            ChannelWidth::FortyMhz => 468.0,
+            ChannelWidth::EightyMhz => 980.0,
+            ChannelWidth::EightyPlusEightyMhz | ChannelWidth::OneSixtyMhz => 1960.0,
+            ChannelWidth::ThreeHundredTwentyMhz => 3920.0,
+        };
+
+        // EHT uses same 12.8 µs OFDM symbol as HE
+        let symbol_duration_us = 12.8 + self.min_guard_interval_us();
+
+        // Bits per symbol (modulation × coding rate)
+        let bits_per_symbol = match self.max_mcs() {
+            0 => 0.5,       // BPSK 1/2
+            1 => 1.0,       // QPSK 1/2
+            2 => 1.5,       // QPSK 3/4
+            3 => 2.0,       // 16-QAM 1/2
+            4 => 3.0,       // 16-QAM 3/4
+            5 => 4.0,       // 64-QAM 2/3
+            6 => 4.5,       // 64-QAM 3/4
+            7 => 5.0,       // 64-QAM 5/6
+            8 => 6.0,       // 256-QAM 3/4
+            9 => 6.666667,  // 256-QAM 5/6
+            10 => 8.0,      // 1024-QAM 3/4
+            11 => 8.333333, // 1024-QAM 5/6
+            12 => 10.0,     // 4096-QAM 3/4 (EHT introduces 4096-QAM)
+            13 => 10.0,     // 4096-QAM 5/6
+            _ => return 0.0,
+        };
+
+        // Rate formula
+        (data_subcarriers * bits_per_symbol * f64::from(self.max_spatial_streams()))
+            / f64::from(symbol_duration_us)
+    }
+
+    fn max_spatial_streams(&self) -> u8 {
+        let rx_mcs_map_80 = self
+            .supported_eht_mcs_and_nss_set
+            .as_ref()
+            .map(|mcs_nss_set| {
+                mcs_nss_set
+                    .eht_mcs_map_bw_lte_80_mhz_except_20_mhz_only_non_ap_sta
+                    .clone()
+            })
+            .unwrap_or_default();
+        let rx_mcs_map_80 = [
+            rx_mcs_map_80.get(0).cloned().unwrap_or_default(),
+            rx_mcs_map_80.get(1).cloned().unwrap_or_default(),
+            rx_mcs_map_80.get(2).cloned().unwrap_or_default(),
+            0,
+        ];
+        self.max_spatial_streams_for_map(u32::from_le_bytes(rx_mcs_map_80))
+    }
+
+    fn max_spatial_streams_for_map(&self, mcs_map: u32) -> u8 {
+        // EHT MCS map: 4 bits per stream, 8 streams total (32 bits)
+        // 0000 = MCS 0-7
+        // 0001 = MCS 0-9
+        // 0010 = MCS 0-11
+        // 0011 = MCS 0-13 (4096-QAM support!)
+        // 1111 = Not supported
+
+        for stream in (1..=8).rev() {
+            let shift = (stream - 1) * 4;
+            let mcs_support = (mcs_map >> shift) & 0b1111;
+
+            if mcs_support != 0b1111 {
+                // Not "not supported"
+                return stream;
+            }
+        }
+
+        1 // At least 1 stream
+    }
+
+    fn min_guard_interval_us(&self) -> f32 {
+        0.8
+    }
+
+    /// Get maximum MCS for a given spatial stream
+    fn max_mcs_for_stream(&self, stream: u8) -> Option<u8> {
+        if stream < 1 || stream > 8 {
+            return None;
+        }
+
+        let shift = (stream - 1) * 4;
+        let rx_mcs_map_80 = self
+            .supported_eht_mcs_and_nss_set
+            .as_ref()
+            .map(|mcs_nss_set| {
+                mcs_nss_set
+                    .eht_mcs_map_bw_lte_80_mhz_except_20_mhz_only_non_ap_sta
+                    .clone()
+            })
+            .unwrap_or_default();
+        let rx_mcs_map_80 = [
+            rx_mcs_map_80.get(0).cloned().unwrap_or_default(),
+            rx_mcs_map_80.get(1).cloned().unwrap_or_default(),
+            rx_mcs_map_80.get(2).cloned().unwrap_or_default(),
+            0,
+        ];
+        let mcs_support = (u32::from_le_bytes(rx_mcs_map_80) >> shift) & 0b1111;
+
+        match mcs_support {
+            0b0000 => Some(7),  // MCS 0-7
+            0b0001 => Some(9),  // MCS 0-9
+            0b0010 => Some(11), // MCS 0-11
+            0b0011 => Some(13), // MCS 0-13 (4096-QAM!)
+            0b1111 => None,     // Not supported
+            _ => None,          // Reserved values
+        }
+    }
+
+    /// Get the highest MCS supported across all streams
+    fn max_mcs(&self) -> u8 {
+        let max_streams = self.max_spatial_streams();
+        self.max_mcs_for_stream(max_streams).unwrap_or(0)
     }
 }
 

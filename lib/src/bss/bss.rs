@@ -248,23 +248,75 @@ impl Bss {
         WifiProtocols::from(self.ies.as_slice())
     }
 
+    /// The max data rate of the BSS in Mbps
     pub fn max_rate_mbps(&self) -> f64 {
-        let mut max_rate = 0.0;
+        // Iterate once through the IEs and find all of the following IEs that can be used
+        // to figure out the max rate
+        let (mut eht_caps, mut he_caps, mut vht_caps, mut ht_caps) = (None, None, None, None);
+        let (mut supported_rates, mut extended_supported_rates) = (None, None);
 
         for ie in self.ies.iter() {
             match &ie.data {
-                IeData::SupportedRates(supported_rates) => {
-                    let data_rates = supported_rates.rates();
-                    if max_rate < data_rates.iter().max().unwrap().value() {
-                        max_rate = data_rates.iter().max().unwrap().value();
-                    }
-                }
-                IeData::HtOperation(_) => continue,
-                IeData::VhtOperation(_) => continue,
+                IeData::EhtCapabilities(ie_data) => eht_caps = Some(ie_data),
+                IeData::HeCapabilities(ie_data) => he_caps = Some(ie_data),
+                IeData::VhtCapabilities(ie_data) => vht_caps = Some(ie_data),
+                IeData::HtCapabilities(ie_data) => ht_caps = Some(ie_data),
+                IeData::SupportedRates(ie_data) => supported_rates = Some(ie_data),
+                IeData::ExtendedSupportedRates(ie_data) => extended_supported_rates = Some(ie_data),
                 _ => continue,
             }
         }
-        0.0
+
+        // Check for the existence of the most modern EHT/HE/VHT/HT Capability element and use
+        // it to perform the max rate calculation
+
+        if let Some(eht_caps) = eht_caps {
+            let channel_width = self.channel_width();
+            return eht_caps.max_rate(channel_width);
+        }
+
+        if let Some(he_caps) = he_caps {
+            let channel_width = self.channel_width();
+            return he_caps.max_rate(channel_width);
+        }
+
+        if let Some(vht_caps) = vht_caps {
+            let channel_width = self.channel_width();
+            return vht_caps.max_rate(channel_width, ht_caps.map(|ht_caps| ht_caps.as_ref()));
+        }
+
+        if let Some(ht_caps) = ht_caps {
+            let channel_width = self.channel_width();
+            return ht_caps.max_rate(channel_width);
+        }
+
+        // If we don't have an EHT/HE/VHT/HT Capability element then use the extended supported
+        // rates or supported rates element
+
+        let mut max_rate = 0.0f64;
+        if let Some(supported_rates) = supported_rates {
+            max_rate = max_rate.max(
+                supported_rates
+                    .rates()
+                    .iter()
+                    .map(|rate| rate.value())
+                    .max_by(|r1, r2| r1.total_cmp(r2))
+                    .unwrap_or_default(),
+            );
+        }
+
+        if let Some(extended_supported_rates) = extended_supported_rates {
+            max_rate = max_rate.max(
+                extended_supported_rates
+                    .rates()
+                    .iter()
+                    .map(|rate| rate.value())
+                    .max_by(|r1, r2| r1.total_cmp(r2))
+                    .unwrap_or_default(),
+            );
+        }
+
+        max_rate
     }
 
     pub fn mlo_link_id(&self) -> Option<u8> {

@@ -5,6 +5,7 @@ use num_enum::{IntoPrimitive, TryFromPrimitive};
 use serde::{Deserialize, Serialize};
 
 use super::{IeId, write_bits_lsb0};
+use crate::ChannelWidth;
 
 #[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct HtCapabilities {
@@ -23,6 +24,94 @@ impl HtCapabilities {
     pub const ID_EXT: Option<u8> = None;
     pub(crate) const IE_ID: IeId = IeId::new(Self::ID, Self::ID_EXT);
     pub const MIN_LENGTH: usize = 26;
+
+    /// Calculate HT (802.11n) data rate in Mbps
+    pub fn max_rate(&self, channel_width: ChannelWidth) -> f64 {
+        let data_subcarriers = match channel_width {
+            ChannelWidth::FortyMhz => 108.0,
+            _ => 52.0,
+        };
+
+        let short_gi = self.supports_short_gi_for_width(channel_width);
+        let symbol_duration_us = if short_gi { 3.6 } else { 4.0 };
+
+        // Bits per symbol depends on MCS (modulation + coding rate)
+        let bits_per_symbol = match self.max_mcs() {
+            0 => 0.5, // BPSK 1/2
+            1 => 1.0, // QPSK 1/2
+            2 => 1.5, // QPSK 3/4
+            3 => 2.0, // 16-QAM 1/2
+            4 => 3.0, // 16-QAM 3/4
+            5 => 4.0, // 64-QAM 2/3
+            6 => 4.5, // 64-QAM 3/4
+            7 => 5.0, // 64-QAM 5/6
+            _ => return 0.0,
+        };
+
+        // Calculate data rate
+        // Rate = (subcarriers × bits/symbol × streams) / symbol_time
+        (data_subcarriers * bits_per_symbol * f64::from(self.max_spatial_streams()))
+            / symbol_duration_us
+    }
+
+    pub(crate) fn max_spatial_streams(&self) -> u8 {
+        // Check which MCS indices are supported
+        // MCS 0-7: 1 stream, 8-15: 2 streams, 16-23: 3 streams, 24-31: 4 streams
+
+        for stream in (1..=4u8).rev() {
+            let start_mcs = (stream - 1) * 8;
+            let byte_idx = start_mcs / 8;
+
+            if usize::from(byte_idx) < self.supported_mcs_set.len() {
+                // Check if any MCS in this stream range is supported
+                for mcs in start_mcs..(start_mcs + 8) {
+                    if self.is_mcs_supported(mcs) {
+                        return stream;
+                    }
+                }
+            }
+        }
+        1 // At least 1 stream
+    }
+
+    pub(crate) fn is_mcs_supported(&self, mcs: u8) -> bool {
+        if mcs > 76 {
+            return false;
+        }
+
+        let byte_idx = (mcs / 8) as usize;
+        let bit_idx = mcs % 8;
+
+        if byte_idx >= self.supported_mcs_set.len() {
+            return false;
+        }
+
+        (self.supported_mcs_set[byte_idx] & (1 << bit_idx)) != 0
+    }
+
+    pub(crate) fn max_mcs(&self) -> u8 {
+        let max_streams = self.max_spatial_streams();
+
+        // For the max stream, find the highest MCS (0-7) supported
+        let base_mcs = (max_streams - 1) * 8;
+
+        for mcs_index in (0..8).rev() {
+            let absolute_mcs = base_mcs + mcs_index;
+            if self.is_mcs_supported(absolute_mcs) {
+                return mcs_index;
+            }
+        }
+
+        0
+    }
+
+    pub(crate) fn supports_short_gi_for_width(&self, width: ChannelWidth) -> bool {
+        match width {
+            ChannelWidth::TwentyMhz => self.ht_capability_information.short_gi_for_twenty_mhz,
+            ChannelWidth::FortyMhz => self.ht_capability_information.short_gi_for_forty_mhz,
+            _ => false,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
