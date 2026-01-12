@@ -16,7 +16,7 @@ pub struct Bss {
     signal_dbm: i32,
     beacon_interval_tu: u16,
     capability_info: CapabilityInfo,
-    status: BssStatus,
+    status: Option<BssStatus>,
     ies: Vec<Ie>,
     is_from_probe_response: bool,
     parent_bssid: Option<[u8; 6]>,
@@ -172,7 +172,7 @@ impl Bss {
         &self.capability_info
     }
 
-    pub fn status(&self) -> BssStatus {
+    pub fn status(&self) -> Option<BssStatus> {
         self.status
     }
 

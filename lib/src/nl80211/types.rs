@@ -21,7 +21,6 @@ pub enum BssStatus {
     Authenticated = 0,
     Associated,
     IbssJoined,
-    NotAssociated = u32::MAX,
 }
 
 /// The type of interface.
