@@ -3,6 +3,7 @@ use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 
 use super::{IeId, write_bits_lsb0};
+use crate::ChannelWidth;
 
 #[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct HtOperation {
@@ -19,6 +20,13 @@ impl HtOperation {
     pub const ID_EXT: Option<u8> = None;
     pub(crate) const IE_ID: IeId = IeId::new(Self::ID, Self::ID_EXT);
     pub const LENGTH: usize = 22;
+
+    pub fn channel_width(&self) -> ChannelWidth {
+        match self.ht_operation_information.sta_channel_width {
+            SupportedChannelWidths::TwentyMhz => ChannelWidth::TwentyMhz,
+            SupportedChannelWidths::Any => ChannelWidth::FortyMhz,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
