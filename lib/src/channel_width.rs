@@ -34,10 +34,7 @@ impl From<&[Ie]> for ChannelWidth {
     // From Table 11-24 in IEEE Std 802.11-2016
     fn from(ies: &[Ie]) -> Self {
         // Iterate once through the IEs and find the IEs that report the BSSs channel width
-        let mut eht_op = None;
-        let mut he_op = None;
-        let mut vht_op = None;
-        let mut ht_op = None;
+        let (mut eht_op, mut he_op, mut vht_op, mut ht_op) = (None, None, None, None);
 
         for ie in ies {
             match &ie.data {
