@@ -3,7 +3,7 @@ use std::{collections::HashSet, convert::From, fmt::Display, hash::Hash};
 use derive_more::{Deref, DerefMut, From};
 use num_enum::TryFromPrimitive;
 
-use crate::{Ie, IeData, ies::ht_operation, nl80211::ChanWidth};
+use crate::{Ie, IeData, nl80211::ChanWidth};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Ord, PartialOrd, TryFromPrimitive)]
 #[repr(u8)]
@@ -33,45 +33,46 @@ impl From<ChanWidth> for ChannelWidth {
 impl From<&[Ie]> for ChannelWidth {
     // From Table 11-24 in IEEE Std 802.11-2016
     fn from(ies: &[Ie]) -> Self {
-        // Check for an EHT Operation element
-        if let Some(eht_operation) = ies.iter().find_map(|ie| match &ie.data {
-            IeData::EhtOperation(eht_operation) => Some(eht_operation),
-            _ => None,
-        }) {
-            if let Some(channel_width) = eht_operation.channel_width() {
-                return channel_width;
+        // Iterate once through the IEs and find the IEs that report the BSSs channel width
+        let mut eht_op = None;
+        let mut he_op = None;
+        let mut vht_op = None;
+        let mut ht_op = None;
+
+        for ie in ies {
+            match &ie.data {
+                IeData::EhtOperation(op) => eht_op = Some(op),
+                IeData::HeOperation(op) => he_op = Some(op),
+                IeData::VhtOperation(op) => vht_op = Some(op),
+                IeData::HtOperation(op) => ht_op = Some(op),
+                _ => continue,
             }
+        }
+
+        // Check for an EHT Operation element
+        if let Some(eht_op) = eht_op
+            && let Some(channel_width) = eht_op.channel_width()
+        {
+            return channel_width;
         }
 
         // Check for an HE Operation element
-        if let Some(he_operation) = ies.iter().find_map(|ie| match &ie.data {
-            IeData::HeOperation(he_operation) => Some(he_operation),
-            _ => None,
-        }) {
-            if let Some(channel_width) = he_operation.channel_width() {
-                return channel_width;
-            }
+        if let Some(he_op) = he_op
+            && let Some(channel_width) = he_op.channel_width()
+        {
+            return channel_width;
         }
 
         // Check for a VHT Operation element
-        if let Some(vht_operation) = ies.iter().find_map(|ie| match &ie.data {
-            IeData::VhtOperation(vht_operation) => Some(vht_operation),
-            _ => None,
-        }) {
-            if let Some(channel_width) = vht_operation.channel_width() {
-                return channel_width;
-            }
+        if let Some(vht_op) = vht_op
+            && let Some(channel_width) = vht_op.channel_width()
+        {
+            return channel_width;
         }
 
         // Check for an HT Operation element
-        if let Some(ht_operation) = ies.iter().find_map(|ie| match &ie.data {
-            IeData::HtOperation(ht_operation) => Some(ht_operation),
-            _ => None,
-        }) {
-            match ht_operation.ht_operation_information.sta_channel_width {
-                ht_operation::SupportedChannelWidths::TwentyMhz => return ChannelWidth::TwentyMhz,
-                ht_operation::SupportedChannelWidths::Any => return ChannelWidth::FortyMhz,
-            }
+        if let Some(ht_op) = ht_op {
+            return ht_op.channel_width();
         }
 
         // If there is no EHT/HE/VHT/HT Information
