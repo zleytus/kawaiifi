@@ -1,18 +1,18 @@
-use std::{collections::HashMap, fmt::Display, hash::Hash};
+use std::{collections::HashMap, ffi::CString, fmt::Display, hash::Hash};
 
-use neli::{attr::Attribute, genl::Nlattr, types::Buffer};
+use neli::{attr::Attribute, genl::Genlmsghdr};
 use pci_ids::FromId as FromPciId;
 use usb_ids::FromId as FromUsbId;
 
 use crate::{
-    Bss, ChannelWidth,
-    nl80211::{Attr, ChanWidth, IfType},
+    Bss, ChannelWidth, Scan,
+    nl80211::{Attr, ChanWidth, Cmd, IfType, ParseError},
     scan,
 };
 
 #[derive(Debug, Clone, Eq)]
 pub struct Interface {
-    name: String,
+    name: CString,
     index: u32,
     interface_type: IfType,
     wiphy: u32,
@@ -31,84 +31,8 @@ pub struct Interface {
 }
 
 impl Interface {
-    pub(crate) fn from_attrs<'a, I>(iface_attrs: I) -> Result<Self, ()>
-    where
-        I: IntoIterator<Item = &'a Nlattr<Attr, Buffer>>,
-    {
-        let iface_attrs: HashMap<_, _> = iface_attrs
-            .into_iter()
-            .map(|attr| (attr.nla_type().nla_type(), attr))
-            .collect();
-
-        Ok(Interface {
-            name: iface_attrs
-                .get(&Attr::Ifname)
-                .and_then(|attr| attr.payload().as_ref().split_last())
-                .and_then(|(_, name_bytes)| String::from_utf8(name_bytes.to_vec()).ok())
-                .ok_or(())?,
-            index: iface_attrs
-                .get(&Attr::Ifindex)
-                .and_then(|attr| attr.get_payload_as().ok())
-                .ok_or(())?,
-            interface_type: iface_attrs
-                .get(&Attr::Iftype)
-                .and_then(|attr| attr.get_payload_as().ok())
-                .and_then(|if_type: u32| IfType::try_from(if_type).ok())
-                .ok_or(())?,
-            wiphy: iface_attrs
-                .get(&Attr::Wiphy)
-                .and_then(|attr| attr.get_payload_as().ok())
-                .ok_or(())?,
-            wdev: iface_attrs
-                .get(&Attr::Wdev)
-                .and_then(|attr| attr.get_payload_as().ok())
-                .ok_or(())?,
-            mac_address: iface_attrs
-                .get(&Attr::Mac)
-                .and_then(|attr| attr.payload().as_ref().try_into().ok())
-                .ok_or(())?,
-            generation: iface_attrs
-                .get(&Attr::Generation)
-                .and_then(|attr| attr.get_payload_as().ok())
-                .ok_or(())?,
-            four_address: iface_attrs
-                .get(&Attr::FourAddr)
-                .and_then(|attr| attr.get_payload_as().ok())
-                .map(|four_address: u8| four_address > 0)
-                .ok_or(())?,
-            ssid: iface_attrs.get(&Attr::Ssid).map(|attr| {
-                String::from_utf8(attr.payload().as_ref().to_vec()).unwrap_or_default()
-            }),
-            wiphy_freq_mhz: iface_attrs
-                .get(&Attr::WiphyFreq)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            wiphy_freq_offset_khz: iface_attrs
-                .get(&Attr::WiphyFreqOffset)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            wiphy_tx_power_level_mbm: iface_attrs
-                .get(&Attr::WiphyTxPowerLevel)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            center_freq_1_mhz: iface_attrs
-                .get(&Attr::CenterFreq1)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            center_freq_2_mhz: iface_attrs
-                .get(&Attr::CenterFreq2)
-                .and_then(|attr| attr.get_payload_as().ok()),
-            channel_width: iface_attrs
-                .get(&Attr::ChannelWidth)
-                .and_then(|attr| attr.get_payload_as().ok())
-                .map(|channel_width: u8| {
-                    ChanWidth::try_from(channel_width).unwrap_or(ChanWidth::TwentyMhz)
-                })
-                .map(ChannelWidth::from),
-            vif_radio_mask: iface_attrs
-                .get(&Attr::VifRadioMask)
-                .and_then(|attr| attr.get_payload_as().ok()),
-        })
-    }
-
     pub fn name(&self) -> &str {
-        &self.name
+        self.name.to_str().unwrap_or_default()
     }
 
     pub fn index(&self) -> u32 {
@@ -267,7 +191,7 @@ impl Interface {
     }
 
     pub fn bus_type(&self) -> BusType {
-        let subsystem_path = format!("/sys/class/net/{}/device/subsystem", self.name);
+        let subsystem_path = format!("/sys/class/net/{}/device/subsystem", self.name());
 
         if let Ok(link) = std::fs::read_link(&subsystem_path) {
             let subsystem = link.to_string_lossy();
@@ -326,6 +250,99 @@ impl Hash for Interface {
 impl PartialEq for Interface {
     fn eq(&self, other: &Self) -> bool {
         self.index == other.index
+    }
+}
+
+impl TryFrom<&Genlmsghdr<Cmd, Attr>> for Interface {
+    type Error = ParseError;
+
+    fn try_from(msghdr: &Genlmsghdr<Cmd, Attr>) -> Result<Self, Self::Error> {
+        if *msghdr.cmd() != Cmd::NewInterface {
+            return Err(ParseError::UnexpectedCommand {
+                expected: Cmd::NewInterface,
+                got: *msghdr.cmd(),
+            });
+        }
+
+        let attr_handle = msghdr.attrs().get_attr_handle();
+        let interface_attrs: HashMap<_, _> = attr_handle
+            .iter()
+            .map(|attr| (attr.nla_type().nla_type(), attr))
+            .collect();
+
+        Ok(Interface {
+            name: CString::from_vec_with_nul(
+                interface_attrs
+                    .get(&Attr::Ifname)
+                    .ok_or(ParseError::MissingAttribute("Attr::Ifname"))?
+                    .payload()
+                    .as_ref()
+                    .to_vec(),
+            )
+            .unwrap_or_default(),
+            index: interface_attrs
+                .get(&Attr::Ifindex)
+                .ok_or(ParseError::MissingAttribute("Attr::Ifindex"))?
+                .get_payload_as()?,
+            interface_type: interface_attrs
+                .get(&Attr::Iftype)
+                .ok_or(ParseError::MissingAttribute("Attr::Iftype"))?
+                .get_payload_as::<u32>()?
+                .try_into()
+                .map_err(|_| ParseError::TryFromPrimitive {
+                    primitive: "u32",
+                    expected_type: "IfType",
+                })?,
+            wiphy: interface_attrs
+                .get(&Attr::Wiphy)
+                .ok_or(ParseError::MissingAttribute("Attr::Wiphy"))?
+                .get_payload_as()?,
+            wdev: interface_attrs
+                .get(&Attr::Wdev)
+                .ok_or(ParseError::MissingAttribute("Attr::Wdev"))?
+                .get_payload_as()?,
+            mac_address: interface_attrs
+                .get(&Attr::Mac)
+                .ok_or(ParseError::MissingAttribute("Attr::Mac"))?
+                .get_payload_as()?,
+            generation: interface_attrs
+                .get(&Attr::Generation)
+                .ok_or(ParseError::MissingAttribute("Attr::Generation"))?
+                .get_payload_as()?,
+            four_address: interface_attrs
+                .get(&Attr::FourAddr)
+                .ok_or(ParseError::MissingAttribute("Attr::FourAddr"))?
+                .get_payload_as::<u8>()?
+                > 0,
+            ssid: interface_attrs.get(&Attr::Ssid).map(|attr| {
+                String::from_utf8(attr.payload().as_ref().to_vec()).unwrap_or_default()
+            }),
+            wiphy_freq_mhz: interface_attrs
+                .get(&Attr::WiphyFreq)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            wiphy_freq_offset_khz: interface_attrs
+                .get(&Attr::WiphyFreqOffset)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            wiphy_tx_power_level_mbm: interface_attrs
+                .get(&Attr::WiphyTxPowerLevel)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            center_freq_1_mhz: interface_attrs
+                .get(&Attr::CenterFreq1)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            center_freq_2_mhz: interface_attrs
+                .get(&Attr::CenterFreq2)
+                .and_then(|attr| attr.get_payload_as().ok()),
+            channel_width: interface_attrs
+                .get(&Attr::ChannelWidth)
+                .and_then(|attr| attr.get_payload_as().ok())
+                .map(|channel_width: u8| {
+                    ChanWidth::try_from(channel_width).unwrap_or(ChanWidth::TwentyMhz)
+                })
+                .map(ChannelWidth::from),
+            vif_radio_mask: interface_attrs
+                .get(&Attr::VifRadioMask)
+                .and_then(|attr| attr.get_payload_as().ok()),
+        })
     }
 }
 

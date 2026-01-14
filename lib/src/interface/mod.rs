@@ -51,11 +51,9 @@ fn interfaces_internal() -> Result<Vec<Interface>, Error> {
     let mut interfaces = Vec::new();
     for msg in recv {
         let msg = msg?;
-        let Some(payload) = msg.get_payload() else {
-            continue;
-        };
-        let attrs = payload.attrs().iter();
-        if let Ok(interface) = Interface::from_attrs(attrs) {
+        if let Some(payload) = msg.get_payload()
+            && let Ok(interface) = Interface::try_from(payload)
+        {
             interfaces.push(interface);
         }
     }

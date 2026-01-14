@@ -16,4 +16,10 @@ pub(crate) enum ParseError {
 
     #[error("Deku parsing error: {0}")]
     Deku(#[from] deku::error::DekuError),
+
+    #[error("Failed to convert from primitive")]
+    TryFromPrimitive {
+        primitive: &'static str,
+        expected_type: &'static str,
+    },
 }
