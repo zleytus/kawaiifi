@@ -6,11 +6,15 @@ use kawaiifi::scan::Backend;
 async fn main() -> Result<(), Box<dyn Error>> {
     let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");
 
-    let scan_results = interface
-        .scan_and_get_results(Backend::NetworkManager)
-        .await?;
+    let scan = interface.scan(Backend::NetworkManager).await?;
 
-    println!("Found {} BSS(s)", scan_results.len());
+    println!(
+        "Found {} BSS(s) in {:#?} on {} frequencies using {}",
+        scan.bss_list().len(),
+        scan.duration(),
+        scan.freqs_mhz().len(),
+        interface.name(),
+    );
 
     Ok(())
 }

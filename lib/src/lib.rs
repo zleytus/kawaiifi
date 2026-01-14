@@ -15,5 +15,6 @@ pub use channel_width::{ChannelWidth, ChannelWidths};
 pub use field::Field;
 pub use ies::{Ie, IeData};
 pub use interface::{BusType, Interface, default_interface, interfaces};
+pub use scan::Scan;
 pub use security_protocol::{SecurityProtocol, SecurityProtocols};
 pub use wifi_protocol::{WifiProtocol, WifiProtocols};

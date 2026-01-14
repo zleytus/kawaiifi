@@ -208,36 +208,36 @@ impl Interface {
         BusType::Unknown
     }
 
-    pub async fn scan(&self, scan_backend: scan::Backend) -> Result<(), scan::Error> {
-        crate::scan::scan(&self, scan_backend).await
+    #[tracing::instrument(skip(self), fields(interface = %self.name()))]
+    pub async fn scan(&self, backend: scan::Backend) -> Result<Scan, scan::Error> {
+        scan::scan(self, backend).await
     }
 
-    pub fn scan_blocking(&self, scan_backend: scan::Backend) -> Result<(), scan::Error> {
-        crate::scan::scan_blocking(&self, scan_backend)
+    #[tracing::instrument(skip(self), fields(interface = %self.name()))]
+    pub fn scan_blocking(&self, backend: scan::Backend) -> Result<Scan, scan::Error> {
+        tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()?
+            .block_on(scan::scan(self, backend))
     }
 
-    pub async fn scan_and_get_results(
-        &self,
-        scan_backend: scan::Backend,
-    ) -> Result<Vec<Bss>, scan::Error> {
-        crate::scan::scan(&self, scan_backend).await?;
-        crate::scan::scan_results(&self).await
+    pub async fn cached_scan_results(&self) -> Result<Vec<Bss>, scan::Error> {
+        let (socket, _) = neli::router::asynchronous::NlRouter::connect(
+            neli::consts::socket::NlFamily::Generic,
+            None,
+            neli::utils::Groups::empty(),
+        )
+        .await?;
+        scan::scan_results(self, &socket).await
     }
 
-    pub fn scan_and_get_results_blocking(
-        &self,
-        scan_backend: scan::Backend,
-    ) -> Result<Vec<Bss>, scan::Error> {
-        crate::scan::scan_blocking(&self, scan_backend)?;
-        crate::scan::scan_results_blocking(&self)
-    }
-
-    pub async fn scan_results(&self) -> Result<Vec<Bss>, scan::Error> {
-        crate::scan::scan_results(&self).await
-    }
-
-    pub fn scan_results_blocking(&self) -> Result<Vec<Bss>, scan::Error> {
-        crate::scan::scan_results_blocking(&self)
+    pub fn cached_scan_results_blocking(&self) -> Result<Vec<Bss>, scan::Error> {
+        let (socket, _) = neli::router::synchronous::NlRouter::connect(
+            neli::consts::socket::NlFamily::Generic,
+            None,
+            neli::utils::Groups::empty(),
+        )?;
+        scan::scan_results_blocking(self, &socket)
     }
 }
 
