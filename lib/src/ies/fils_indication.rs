@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use super::IeId;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct FilsIndication {
     pub fils_information: FilsInformation,
     #[deku(cond = "fils_information.cache_identifier_included", bytes = 2)]
@@ -23,7 +23,7 @@ impl FilsIndication {
     pub(crate) const IE_ID: IeId = IeId::new(Self::ID, Self::ID_EXT);
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct FilsInformation {
     #[deku(bits = 3)]
@@ -46,13 +46,13 @@ pub struct FilsInformation {
     reserved: u8,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct RealmIdentifier {
     #[deku(bytes = 2)]
     pub hashed_realm: u16,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct PublicKeyIdentifier {
     #[deku(bytes = 1)]
     pub key_type: u8,

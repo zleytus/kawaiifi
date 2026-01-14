@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use super::IeId;
 use crate::ChannelWidth;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct VhtOperation {
     pub vht_operation_information: VhtOperationInformation,
     #[deku(count = "2")]
@@ -24,7 +24,7 @@ impl VhtOperation {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct VhtOperationInformation {
     #[deku(
         bytes = 1,
@@ -62,7 +62,7 @@ impl VhtOperationInformation {
 }
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
+    Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
 )]
 #[repr(u8)]
 pub enum VhtChannelWidth {

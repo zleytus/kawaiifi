@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use super::{HtCapabilities, IeId, write_bits_lsb0};
 use crate::ChannelWidth;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct VhtCapabilities {
     pub vht_capabilities_info: VhtCapabilitiesInfo,
     #[deku(count = "8")]
@@ -117,7 +117,7 @@ impl VhtCapabilities {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct VhtCapabilitiesInfo {
     #[deku(

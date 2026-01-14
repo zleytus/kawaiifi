@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{Ie, IeId};
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
 pub struct MeasurementPilotTransmission {
     #[deku(bytes = 1)]

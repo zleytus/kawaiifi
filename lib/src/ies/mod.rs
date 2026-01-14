@@ -151,7 +151,7 @@ use deku::{DekuContainerRead, DekuContainerWrite, DekuError, DekuRead, DekuWrite
 /// A Wi-Fi Information Element.
 ///
 /// Contains the element ID, length, optional extension ID, and parsed data.
-#[derive(Clone, Debug, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct Ie {
     pub id: u8,
     pub len: u8,
@@ -297,7 +297,7 @@ pub fn from_bytes(bytes: &[u8]) -> Vec<Ie> {
 ///
 /// Each variant corresponds to a specific IE type defined in the Wi-Fi standards.
 /// Unknown or unrecognized IEs are captured in the `Unknown` variant.
-#[derive(Clone, Debug, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: deku::ctx::ByteSize, ie_id: IeId", id = "ie_id")]
 pub enum IeData {
     #[deku(id = "AdvertisementProtocol::IE_ID")]
@@ -415,7 +415,7 @@ pub enum IeData {
 ///
 /// Used internally for IE type discrimination during parsing.
 /// Standard IEs use only `id`, while extended IEs (id=255) also have `id_ext`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, DekuWrite, Serialize, Deserialize)]
 pub struct IeId {
     #[deku(skip)]
     pub id: u8,

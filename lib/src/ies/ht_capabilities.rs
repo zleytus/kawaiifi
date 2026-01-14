@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use super::{IeId, write_bits_lsb0};
 use crate::ChannelWidth;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct HtCapabilities {
     pub ht_capability_information: HtCapabilityInformation,
     pub ampdu_parameters: AmpduParameters,
@@ -114,7 +114,7 @@ impl HtCapabilities {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct HtCapabilityInformation {
     #[deku(bits = 1)]
@@ -164,7 +164,7 @@ pub struct HtCapabilityInformation {
 }
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
+    Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
 )]
 #[repr(u8)]
 pub enum SupportedChannelWidthSet {
@@ -172,7 +172,7 @@ pub enum SupportedChannelWidthSet {
     TwentyOrFortyMhz = 1,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct AmpduParameters {
     #[deku(bits = 2)]
@@ -193,7 +193,7 @@ impl AmpduParameters {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct HtExtendedCapabilities {
     #[deku(bits = 8)]
@@ -212,7 +212,7 @@ pub struct HtExtendedCapabilities {
     reserved_2: u8,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct TransmitBeamformingCapabilities {
     #[deku(bits = 1)]
@@ -277,7 +277,7 @@ pub struct TransmitBeamformingCapabilities {
     reserved: u8,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct AselCapabilities {
     #[deku(bits = 1)]
@@ -299,7 +299,7 @@ pub struct AselCapabilities {
 }
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
+    Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
 )]
 #[repr(u8)]
 pub enum SmPowerSave {
@@ -309,7 +309,7 @@ pub enum SmPowerSave {
 }
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
+    Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
 )]
 #[repr(u8)]
 pub enum RxStbc {
@@ -333,7 +333,7 @@ impl Display for RxStbc {
 }
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
+    Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
 )]
 #[repr(u8)]
 pub enum MpduStartSpacing {
@@ -363,7 +363,7 @@ impl Display for MpduStartSpacing {
 }
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
+    Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
 )]
 #[repr(u8)]
 pub enum McsFeedback {
@@ -385,7 +385,7 @@ impl Display for McsFeedback {
 }
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
+    Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
 )]
 #[repr(u8)]
 pub enum Calibration {
@@ -407,7 +407,7 @@ impl Display for Calibration {
 }
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
+    Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
 )]
 #[repr(u8)]
 pub enum BeamformingFeedback {
@@ -429,7 +429,7 @@ impl Display for BeamformingFeedback {
 }
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
+    Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
 )]
 #[repr(u8)]
 pub enum MinimalGrouping {

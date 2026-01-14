@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{IeId, VendorSpecific};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct AdvertisementProtocol {
     pub advertisement_protocol_tuple_list: Vec<AdvertisementProtocolTuple>,
 }
@@ -53,13 +53,13 @@ impl DekuWriter<usize> for AdvertisementProtocol {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct AdvertisementProtocolTuple {
     pub query_response_info: QueryResponseInfo,
     pub advertisement_protocol_id: AdvertisementProtocolId,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct QueryResponseInfo {
     #[deku(bits = 7)]
@@ -68,7 +68,7 @@ pub struct QueryResponseInfo {
     pub pame_bi: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct AdvertisementProtocolId {
     #[deku(bytes = 1)]
     pub id: u8,

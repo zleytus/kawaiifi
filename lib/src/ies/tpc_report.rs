@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use super::IeId;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct TpcReport {
     #[deku(bytes = 1)]
     pub transmit_power_dbm: i8,

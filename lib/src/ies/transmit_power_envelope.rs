@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{IeId, write_bits_lsb0};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
 pub struct TransmitPowerEnvelope {
     transmit_power_information: TransmitPowerInformation,
@@ -50,7 +50,7 @@ impl TransmitPowerEnvelope {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct TransmitPowerInformation {
     #[deku(bits = 3)]
@@ -65,7 +65,7 @@ pub struct TransmitPowerInformation {
     reserved: u8,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[repr(u8)]
 pub enum UnitInterpretation {
     Eirp = 0,

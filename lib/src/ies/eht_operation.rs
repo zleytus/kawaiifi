@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use super::{IeId, write_bits_lsb0};
 use crate::ChannelWidth;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct EhtOperation {
     pub eht_operation_parameters: EhtOperationParameters,
     #[deku(bytes = 4)]
@@ -37,7 +37,7 @@ impl EhtOperation {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct EhtOperationParameters {
     #[deku(bits = 1)]
@@ -56,7 +56,7 @@ pub struct EhtOperationParameters {
     reserved: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "disabled_subchannel_bitmap_present: bool")]
 pub struct EhtOperationInformation {
     pub control: Control,
@@ -68,7 +68,7 @@ pub struct EhtOperationInformation {
     pub disabled_subchannel_bitmap: Option<u16>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct Control {
     #[deku(
@@ -82,7 +82,7 @@ pub struct Control {
 }
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
+    Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive, IntoPrimitive, Serialize, Deserialize,
 )]
 #[repr(u8)]
 pub enum EhtChannelWidth {

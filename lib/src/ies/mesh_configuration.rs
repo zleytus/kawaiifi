@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use super::IeId;
 
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct MeshConfiguration {
     pub active_path_selection_protocol_identifier: ActivePathSelectionProtocolIdentifier,
     pub active_path_selection_metric_identifier: ActivePathSelectionMetricIdentifier,
@@ -23,7 +23,7 @@ impl MeshConfiguration {
     pub const MIN_LENGTH: usize = 7;
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct MeshCapability {
     #[deku(bits = 1)]
@@ -44,7 +44,7 @@ pub struct MeshCapability {
     reserved: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct MeshFormationInfo {
     #[deku(bits = 1)]
@@ -61,6 +61,7 @@ pub struct MeshFormationInfo {
     Copy,
     PartialEq,
     Eq,
+    Hash,
     TryFromPrimitive,
     IntoPrimitive,
     DekuRead,
@@ -81,6 +82,7 @@ pub enum ActivePathSelectionProtocolIdentifier {
     Copy,
     PartialEq,
     Eq,
+    Hash,
     TryFromPrimitive,
     IntoPrimitive,
     DekuRead,
@@ -101,6 +103,7 @@ pub enum ActivePathSelectionMetricIdentifier {
     Copy,
     PartialEq,
     Eq,
+    Hash,
     TryFromPrimitive,
     IntoPrimitive,
     DekuRead,
@@ -122,6 +125,7 @@ pub enum CongestionControlModeIdentifier {
     Copy,
     PartialEq,
     Eq,
+    Hash,
     TryFromPrimitive,
     IntoPrimitive,
     DekuRead,
@@ -142,6 +146,7 @@ pub enum SynchronizationMethodIdentifier {
     Copy,
     PartialEq,
     Eq,
+    Hash,
     TryFromPrimitive,
     IntoPrimitive,
     DekuRead,
