@@ -1,19 +1,22 @@
 use std::{fmt::Display, str};
 
-use deku::{DekuRead, DekuWrite};
+use deku::{DekuContainerWrite, DekuRead, DekuWrite};
 use serde::{Deserialize, Serialize};
 
 use super::IeId;
+use crate::Field;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
 pub struct Country {
     #[deku(bytes = 2)]
-    country_code: [u8; 2],
+    pub country_code: [u8; 2],
     #[deku(bytes = 1)]
-    environment: u8,
-    #[deku(count = "len.checked_sub(3).unwrap_or_default()")]
-    triplets: Vec<u8>,
+    pub environment: u8,
+    #[deku(count = "len.checked_sub(3).unwrap_or_default() / 3")]
+    pub triplets: Vec<Triplet>,
+    #[deku(cond = "len.checked_sub(3 + triplets.len() * 3).unwrap_or_default() == 1")]
+    padding: Option<u8>,
 }
 
 impl Country {
@@ -31,28 +34,26 @@ impl Country {
         Environment::from(self.environment)
     }
 
-    pub fn subband_info(&self) -> Vec<SubbandInfo> {
-        let mut subbands = Vec::new();
-        let mut last_operating_info = None;
+    pub fn summary(&self) -> String {
+        format!("{} ({})", self.country_code(), self.environment())
+    }
 
-        for triplet in self.triplets.chunks_exact(3) {
-            if triplet[0] <= 233 {
-                subbands.push(SubbandInfo {
-                    first_channel_number: triplet[0],
-                    number_of_channels: triplet[1],
-                    max_transmit_power_level_dbm: triplet[2] as i8,
-                    operating_info: last_operating_info,
-                });
-            } else {
-                last_operating_info = Some(OperatingInfo {
-                    operating_extension_id: triplet[0],
-                    operating_class: triplet[1],
-                    coverage_class: triplet[2],
-                });
-            }
-        }
+    pub fn fields(&self) -> Vec<Field> {
+        let mut fields = vec![
+            Field::builder()
+                .title("Country Code")
+                .value(self.country_code())
+                .bytes(self.country_code.to_vec())
+                .build(),
+            Field::builder()
+                .title("Environment")
+                .value(self.environment())
+                .byte(self.environment)
+                .build(),
+        ];
+        fields.extend(self.triplets.iter().map(|triplet| triplet.to_field()));
 
-        subbands
+        fields
     }
 }
 
@@ -84,46 +85,79 @@ impl Display for Environment {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct OperatingInfo {
-    pub operating_extension_id: u8,
-    pub operating_class: u8,
-    pub coverage_class: u8,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[deku(id_type = "u8")]
+pub enum Triplet {
+    #[deku(id_pat = "0..=200")]
+    SubbandInfo {
+        first_channel_number: u8,
+        number_of_channels: u8,
+        max_transmit_power_level: i8,
+    },
+    #[deku(id_pat = "_")]
+    OperatingInfo {
+        operating_extension_id: u8,
+        operating_class: u8,
+        coverage_class: u8,
+    },
 }
 
-impl OperatingInfo {
-    pub fn air_propagation_time_us(&self) -> Option<u16> {
-        match self.coverage_class {
-            0..=31 => Some(self.coverage_class as u16 * 3),
-            _ => None,
+impl Triplet {
+    pub fn to_field(&self) -> Field {
+        match self {
+            Self::SubbandInfo {
+                first_channel_number,
+                number_of_channels,
+                max_transmit_power_level,
+            } => Field::builder()
+                .title("Subband Info")
+                .value("")
+                .subfields([
+                    Field::builder()
+                        .title("First Channel Number")
+                        .value(first_channel_number)
+                        .byte(*first_channel_number)
+                        .build(),
+                    Field::builder()
+                        .title("Number of Channels")
+                        .value(number_of_channels)
+                        .byte(*number_of_channels)
+                        .build(),
+                    Field::builder()
+                        .title("Max Tx Power Level")
+                        .value(max_transmit_power_level)
+                        .units("dBm")
+                        .byte(*max_transmit_power_level as u8)
+                        .build(),
+                ])
+                .bytes(self.to_bytes().unwrap_or_default())
+                .build(),
+            Self::OperatingInfo {
+                operating_extension_id,
+                operating_class,
+                coverage_class,
+            } => Field::builder()
+                .title("Operating Info")
+                .value("")
+                .subfields([
+                    Field::builder()
+                        .title("Operating Extension ID")
+                        .value(operating_extension_id)
+                        .byte(*operating_extension_id)
+                        .build(),
+                    Field::builder()
+                        .title("Operating Class")
+                        .value(operating_class)
+                        .byte(*operating_class)
+                        .build(),
+                    Field::builder()
+                        .title("Coverage Class")
+                        .value(coverage_class)
+                        .byte(*coverage_class)
+                        .build(),
+                ])
+                .bytes(self.to_bytes().unwrap_or_default())
+                .build(),
         }
-    }
-}
-
-impl Display for OperatingInfo {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "Operating Info:\n\tOperating Extension ID: {}\n\tOperating Class: {}\r\n\tCoverage Class: {}\r\n\t",
-            self.operating_extension_id, self.operating_class, self.coverage_class
-        )
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SubbandInfo {
-    pub first_channel_number: u8,
-    pub number_of_channels: u8,
-    pub max_transmit_power_level_dbm: i8,
-    pub operating_info: Option<OperatingInfo>,
-}
-
-impl Display for SubbandInfo {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "Subband Info:\n\tFirst Channel Number: {}\n\tNumber of Channels: {}\n\tMaximum Transmit Power Level: {} dBm",
-            self.first_channel_number, self.number_of_channels, self.max_transmit_power_level_dbm
-        )
     }
 }

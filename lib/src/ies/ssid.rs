@@ -7,6 +7,7 @@ use deku::{DekuRead, DekuWrite};
 use serde::{Deserialize, Serialize};
 
 use super::IeId;
+use crate::Field;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
@@ -27,6 +28,20 @@ impl Ssid {
 
     pub fn to_string_lossy(&self) -> String {
         String::from_utf8_lossy(&self.ssid).into_owned()
+    }
+
+    pub fn summary(&self) -> String {
+        self.to_string_lossy()
+    }
+
+    pub fn fields(&self) -> Vec<Field> {
+        vec![
+            Field::builder()
+                .title("SSID")
+                .value(self.to_string_lossy())
+                .bytes(self.ssid.clone())
+                .build(),
+        ]
     }
 }
 

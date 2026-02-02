@@ -1,15 +1,16 @@
-use deku::{DekuError, DekuRead, DekuWrite};
+use std::fmt::Display;
+
+use deku::{DekuContainerWrite, DekuError, DekuRead, DekuWrite};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use serde::{Deserialize, Serialize};
 
 use super::IeId;
-use crate::ChannelWidth;
+use crate::{ChannelWidth, Field, ies::vht_capabilities::VhtMcsMap};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct VhtOperation {
     pub vht_operation_information: VhtOperationInformation,
-    #[deku(count = "2")]
-    pub basic_vht_mcs_and_nss_set: Vec<u8>,
+    pub basic_vht_mcs_and_nss_set: VhtMcsMap,
 }
 
 impl VhtOperation {
@@ -21,6 +22,48 @@ impl VhtOperation {
 
     pub fn channel_width(&self) -> Option<ChannelWidth> {
         self.vht_operation_information.channel_width()
+    }
+
+    pub fn summary(&self) -> String {
+        let mut summary = Vec::new();
+        summary.push(format!(
+            "{} MHz",
+            self.vht_operation_information.channel_width
+        ));
+
+        if self
+            .vht_operation_information
+            .channel_center_frequency_segment_0
+            > 0
+        {
+            summary.push(format!(
+                "Channel Center Frequency Segment 0: {}",
+                self.vht_operation_information
+                    .channel_center_frequency_segment_0
+            ));
+        }
+
+        if self
+            .vht_operation_information
+            .channel_center_frequency_segment_1
+            > 0
+        {
+            summary.push(format!(
+                "Channel Center Frequency Segment 1: {}",
+                self.vht_operation_information
+                    .channel_center_frequency_segment_1
+            ));
+        }
+
+        summary.join(", ")
+    }
+
+    pub fn fields(&self) -> Vec<Field> {
+        vec![
+            self.vht_operation_information.to_field(),
+            self.basic_vht_mcs_and_nss_set
+                .to_field("Basic VHT-MCS and NSS Set"),
+        ]
     }
 }
 
@@ -59,6 +102,32 @@ impl VhtOperationInformation {
             VhtChannelWidth::EightyPlusEightyMhz => return Some(ChannelWidth::EightyPlusEightyMhz),
         }
     }
+
+    pub fn to_field(&self) -> Field {
+        Field::builder()
+            .title("VHT Operation Information")
+            .value("")
+            .bytes(self.to_bytes().unwrap_or_default())
+            .subfields([
+                Field::builder()
+                    .title("VHT Channel Width")
+                    .value(self.channel_width)
+                    .units("MHz")
+                    .byte(self.channel_width.into())
+                    .build(),
+                Field::builder()
+                    .title("Channel Center Frequency Segment 0")
+                    .value(self.channel_center_frequency_segment_0)
+                    .byte(self.channel_center_frequency_segment_0)
+                    .build(),
+                Field::builder()
+                    .title("Channel Center Frequency Segment 1")
+                    .value(self.channel_center_frequency_segment_1)
+                    .byte(self.channel_center_frequency_segment_1)
+                    .build(),
+            ])
+            .build()
+    }
 }
 
 #[derive(
@@ -70,4 +139,15 @@ pub enum VhtChannelWidth {
     EightyOrOneHundredSixtyOrEightyPlusEightyMhz = 1,
     OneHundredSixtyMhz = 2,
     EightyPlusEightyMhz = 3,
+}
+
+impl Display for VhtChannelWidth {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::TwentyOrFortyMhz => write!(f, "20/40"),
+            Self::EightyOrOneHundredSixtyOrEightyPlusEightyMhz => write!(f, "80/160/80+80"),
+            Self::OneHundredSixtyMhz => write!(f, "160"),
+            Self::EightyPlusEightyMhz => write!(f, "80+80"),
+        }
+    }
 }

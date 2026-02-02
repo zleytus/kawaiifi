@@ -2,6 +2,7 @@ use deku::{DekuRead, DekuWrite};
 use serde::{Deserialize, Serialize};
 
 use super::IeId;
+use crate::Field;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct IbssParameterSet {
@@ -15,4 +16,18 @@ impl IbssParameterSet {
     pub const ID_EXT: Option<u8> = None;
     pub(crate) const IE_ID: IeId = IeId::new(Self::ID, Self::ID_EXT);
     pub const LENGTH: usize = 2;
+
+    pub fn summary(&self) -> String {
+        format!("ATIM Window: {} TU", self.atim_window_tu)
+    }
+
+    pub fn fields(&self) -> Vec<Field> {
+        vec![
+            Field::builder()
+                .title("ATIM Window")
+                .value(self.atim_window_tu)
+                .units("TU")
+                .build(),
+        ]
+    }
 }

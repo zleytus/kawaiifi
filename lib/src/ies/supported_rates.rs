@@ -4,6 +4,7 @@ use deku::{DekuRead, DekuWrite};
 use serde::{Deserialize, Serialize};
 
 use super::IeId;
+use crate::Field;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
@@ -51,6 +52,54 @@ impl SupportedRates {
             .map(|&byte| (byte >> 1) as f64 / 2.0)
             .collect()
     }
+
+    pub fn summary(&self) -> String {
+        let rates = self
+            .bytes
+            .iter()
+            .filter_map(|byte| DataRate::try_from(*byte).ok())
+            .map(|rate| {
+                if rate.is_basic() {
+                    format!(
+                        "{}*",
+                        rate.value()
+                            .to_string()
+                            .trim_end_matches('0')
+                            .trim_end_matches('.')
+                    )
+                } else {
+                    rate.value()
+                        .to_string()
+                        .trim_end_matches('0')
+                        .trim_end_matches('.')
+                        .to_string()
+                }
+            })
+            .collect::<Vec<String>>();
+        rates.join(", ")
+    }
+
+    pub fn fields(&self) -> Vec<Field> {
+        self.bytes
+            .iter()
+            .filter_map(|byte| {
+                let rate = DataRate::try_from(*byte).ok()?;
+                Some((rate, byte))
+            })
+            .map(|(rate, byte)| {
+                Field::builder()
+                    .title("Supported Rate")
+                    .value(
+                        format!("{:.1}", rate.value())
+                            .trim_end_matches('0')
+                            .trim_end_matches('.'),
+                    )
+                    .units("Mbps".to_string() + if rate.is_basic() { " (Basic)" } else { "" })
+                    .byte(*byte)
+                    .build()
+            })
+            .collect()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
@@ -65,18 +114,6 @@ impl ExtendedSupportedRates {
     pub const ID: u8 = 50;
     pub const ID_EXT: Option<u8> = None;
     pub(crate) const IE_ID: IeId = IeId::new(Self::ID, Self::ID_EXT);
-
-    // pub fn rates(&self) -> HashSet<DataRate> {
-    // self.supported_rates.rates()
-    // }
-    //
-    // pub fn basic_rates(&self) -> Vec<f64> {
-    // self.supported_rates.basic_rates()
-    // }
-    //
-    // pub fn all_rates(&self) -> Vec<f64> {
-    // self.supported_rates.all_rates()
-    // }
 }
 
 impl Deref for ExtendedSupportedRates {

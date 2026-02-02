@@ -4,6 +4,7 @@ use deku::{DekuRead, DekuWrite};
 use serde::{Deserialize, Serialize};
 
 use super::IeId;
+use crate::Field;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
@@ -24,6 +25,20 @@ impl MeshId {
 
     pub fn to_string_lossy(&self) -> String {
         String::from_utf8_lossy(&self.mesh_id).into_owned()
+    }
+
+    pub fn summary(&self) -> String {
+        self.to_string_lossy()
+    }
+
+    pub fn fields(&self) -> Vec<Field> {
+        vec![
+            Field::builder()
+                .title("Mesh ID")
+                .value(self.to_string_lossy())
+                .bytes(self.mesh_id.clone())
+                .build(),
+        ]
     }
 }
 

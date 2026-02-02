@@ -2,6 +2,7 @@ use deku::{DekuRead, DekuWrite};
 use serde::{Deserialize, Serialize};
 
 use super::{Ie, IeId};
+use crate::Field;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
@@ -21,5 +22,31 @@ impl MeasurementPilotTransmission {
 
     pub fn subelements(&self) -> Vec<Ie> {
         super::from_bytes(&self.subelements)
+    }
+
+    pub fn summary(&self) -> String {
+        format!("Interval: {} TU", self.measurement_pilot_interval_tu)
+    }
+
+    pub fn fields(&self) -> Vec<Field> {
+        vec![
+            Field::builder()
+                .title("Measurement Pilot Interval")
+                .value(self.measurement_pilot_interval_tu)
+                .units("TU")
+                .byte(self.measurement_pilot_interval_tu)
+                .build(),
+            Field::builder()
+                .title("Subelements")
+                .value("")
+                .subfields(self.subelements().iter().map(|element| {
+                    Field::builder()
+                        .title(element.name())
+                        .value(element.summary())
+                        .subfields(element.fields())
+                        .build()
+                }))
+                .build(),
+        ]
     }
 }

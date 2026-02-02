@@ -1,9 +1,10 @@
 use std::fmt::Display;
 
-use deku::{DekuRead, DekuWrite};
+use deku::{DekuContainerWrite, DekuRead, DekuWrite};
 use serde::{Deserialize, Serialize};
 
 use super::{IeId, write_bits_lsb0};
+use crate::{BitRange, Field};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]
@@ -48,6 +49,78 @@ impl TransmitPowerEnvelope {
         self.local_maximum_transmit_power_for_one_hundred_sixty_mhz
             .map(|value| value as f64 / 2.0)
     }
+
+    pub fn summary(&self) -> String {
+        format!(
+            "Local Maximum for 20 MHz: {:.1}",
+            self.local_maximum_transmit_power_for_twenty_mhz_dbm()
+        )
+        .trim_end_matches("0")
+        .trim_end_matches(".")
+        .to_string()
+            + " dBm"
+    }
+
+    pub fn fields(&self) -> Vec<Field> {
+        let mut fields = vec![
+            self.transmit_power_information.to_field(),
+            Field::builder()
+                .title("Local Maximum Transmit Power for 20 MHz")
+                .value(self.local_maximum_transmit_power_for_twenty_mhz_dbm())
+                .units("dBm")
+                .byte(self.local_maximum_transmit_power_for_twenty_mhz as u8)
+                .build(),
+        ];
+
+        if let Some(max_transmit_power) = self.local_maximum_transmit_power_for_forty_mhz_dbm() {
+            fields.push(
+                Field::builder()
+                    .title("Local Maximum Transmit Power for 40 MHz")
+                    .value(max_transmit_power)
+                    .units("dBm")
+                    .byte(
+                        self.local_maximum_transmit_power_for_forty_mhz
+                            .map(|power_byte| power_byte as u8)
+                            .unwrap_or_default(),
+                    )
+                    .build(),
+            );
+        }
+
+        if let Some(max_transmit_power) = self.local_maximum_transmit_power_for_eighty_mhz_dbm() {
+            fields.push(
+                Field::builder()
+                    .title("Local Maximum Transmit Power for 80 MHz")
+                    .value(max_transmit_power)
+                    .units("dBm")
+                    .byte(
+                        self.local_maximum_transmit_power_for_eighty_mhz
+                            .map(|power_byte| power_byte as u8)
+                            .unwrap_or_default(),
+                    )
+                    .build(),
+            );
+        }
+
+        if let Some(max_transmit_power) =
+            self.local_maximum_transmit_power_for_one_hundred_sixty_mhz_dbm()
+        {
+            fields.push(
+                Field::builder()
+                    .title("Local Maximum Transmit Power for 160 MHz")
+                    .value(max_transmit_power)
+                    .units("dBm")
+                    .byte(
+                        self.local_maximum_transmit_power_for_one_hundred_sixty_mhz
+                            .map(|byte| byte as u8)
+                            .unwrap_or_default(),
+                    )
+                    .build(),
+            );
+        }
+
+        fields
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
@@ -63,6 +136,35 @@ pub struct TransmitPowerInformation {
     pub local_maximum_transmit_power_unit_interpretation: UnitInterpretation,
     #[deku(bits = 2)]
     reserved: u8,
+}
+
+impl TransmitPowerInformation {
+    pub fn to_field(&self) -> Field {
+        let byte = self
+            .to_bytes()
+            .unwrap_or_default()
+            .first()
+            .cloned()
+            .unwrap_or_default();
+        Field::builder()
+            .title("Transmit Power Information")
+            .value("")
+            .bytes(self.to_bytes().unwrap_or_default())
+            .subfields([
+                Field::builder()
+                    .title("Local Maximum Transmit Power Count")
+                    .value(self.local_maximum_transmit_power_count)
+                    .bits(BitRange::from_byte(byte, 0, 3))
+                    .build(),
+                Field::builder()
+                    .title("Local Maximum Transmit Power Unit Interpretation")
+                    .value(self.local_maximum_transmit_power_unit_interpretation)
+                    .bits(BitRange::from_byte(byte, 3, 3))
+                    .build(),
+                Field::reserved(BitRange::from_byte(byte, 6, 2)),
+            ])
+            .build()
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

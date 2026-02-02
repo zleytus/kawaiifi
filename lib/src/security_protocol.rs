@@ -70,7 +70,7 @@ impl From<&[Ie]> for SecurityProtocols {
         if let Some(rsn) = rsn {
             if let Some(akm_suites) = &rsn.akm_suite_list {
                 for akm_suite in akm_suites {
-                    match akm_suite.suite_type {
+                    match akm_suite.suite_type.0 {
                         1 | 2 => security_protocols.set(SecurityProtocol::WPA2, true),
                         8 => security_protocols.set(SecurityProtocol::WPA3, true),
                         _ => continue,
