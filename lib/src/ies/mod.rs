@@ -61,6 +61,7 @@ pub mod extended_channel_switch_announcement;
 pub mod fils_indication;
 pub mod he_capabilities;
 pub mod he_operation;
+pub mod he_six_ghz_band_capabilities;
 pub mod ht_capabilities;
 pub mod ht_operation;
 pub mod ibss_parameter_set;
@@ -112,6 +113,7 @@ pub use extended_channel_switch_announcement::ExtendedChannelSwitchAnnouncement;
 pub use fils_indication::FilsIndication;
 pub use he_capabilities::HeCapabilities;
 pub use he_operation::HeOperation;
+pub use he_six_ghz_band_capabilities::HeSixGhzBandCapabilities;
 pub use ht_capabilities::HtCapabilities;
 pub use ht_operation::HtOperation;
 pub use ibss_parameter_set::IbssParameterSet;
@@ -186,6 +188,7 @@ impl Ie {
             IeData::FilsIndication(_) => FilsIndication::NAME,
             IeData::HeCapabilities(_) => HeCapabilities::NAME,
             IeData::HeOperation(_) => HeOperation::NAME,
+            IeData::HeSixGhzBandCapabilities(_) => HeSixGhzBandCapabilities::NAME,
             IeData::HtCapabilities(_) => HtCapabilities::NAME,
             IeData::HtOperation(_) => HtOperation::NAME,
             IeData::IbssParameterSet(_) => IbssParameterSet::NAME,
@@ -338,6 +341,8 @@ pub enum IeData {
     HeCapabilities(Box<HeCapabilities>),
     #[deku(id = "HeOperation::IE_ID")]
     HeOperation(HeOperation),
+    #[deku(id = "HeSixGhzBandCapabilities::IE_ID")]
+    HeSixGhzBandCapabilities(HeSixGhzBandCapabilities),
     #[deku(id = "HtCapabilities::IE_ID")]
     HtCapabilities(Box<HtCapabilities>),
     #[deku(id = "HtOperation::IE_ID")]
