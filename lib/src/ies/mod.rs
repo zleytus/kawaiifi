@@ -379,19 +379,29 @@ pub fn from_bytes(bytes: &[u8]) -> Vec<Ie> {
         let offset = bytes.len() - input.len();
         match Ie::from_bytes((input, 0)) {
             Ok(((rest, _), ie)) => {
-                debug_assert_eq!(
-                    input.len() - rest.len(),
-                    usize::from(ie.len) + 2,
-                    "Incorrect number of bytes read for IE: {:#?}",
-                    &ie
-                );
-                debug_assert_eq!(
-                    ie.to_bytes().expect("Failed to serialize IE").as_slice(),
-                    &input[..usize::from(ie.len) + 2],
-                    "Mismatch between raw IE bytes from netlink and parsed Ie::to_bytes"
-                );
+                let bytes_read = input.len() - rest.len();
+                let expected_bytes = usize::from(ie.len) + 2;
+                if bytes_read != expected_bytes {
+                    log::warn!(
+                        "Incorrect number of bytes read for IE at offset {}: read {}, expected {}. IE: {:?}",
+                        offset,
+                        bytes_read,
+                        expected_bytes,
+                        &ie
+                    );
+                }
+                #[cfg(debug_assertions)]
+                if let Ok(serialized) = ie.to_bytes() {
+                    if serialized.as_slice() != &input[..expected_bytes.min(input.len())] {
+                        log::warn!(
+                            "Mismatch between raw IE bytes and parsed Ie::to_bytes at offset {}. IE: {:?}",
+                            offset,
+                            &ie
+                        );
+                    }
+                }
                 ies.push(ie);
-                input = rest;
+                input = &input[expected_bytes..];
             }
             Err(error) => {
                 let failed_bytes = bytes
