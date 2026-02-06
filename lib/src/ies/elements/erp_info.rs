@@ -1,7 +1,7 @@
 use deku::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{BitRange, Field, ies::IeId};
+use crate::ies::{BitRange, Field, IeId};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]

@@ -44,13 +44,13 @@
 //! ```
 
 mod elements;
+mod field;
 
 pub use elements::*;
+pub use field::{BitRange, Field};
 
 use deku::{DekuContainerRead, DekuContainerWrite, DekuError, DekuRead, DekuWrite};
 use serde::{Deserialize, Serialize};
-
-use crate::Field;
 
 /// A Wi-Fi Information Element.
 ///

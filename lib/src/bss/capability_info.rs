@@ -3,7 +3,7 @@ use std::fmt::Display;
 use deku::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::Field;
+use crate::ies::Field;
 
 #[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]

@@ -8,10 +8,8 @@ use deku::{
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    BitRange, ChannelWidth, Field,
-    ies::{IeId, write_bits_lsb0},
-};
+use crate::ChannelWidth;
+use crate::ies::{BitRange, Field, IeId, write_bits_lsb0};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct HeCapabilities {

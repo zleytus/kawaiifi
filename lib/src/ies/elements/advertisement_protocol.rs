@@ -5,7 +5,7 @@ use deku::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use super::VendorSpecific;
-use crate::{BitRange, Field, ies::IeId};
+use crate::ies::{BitRange, Field, IeId};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct AdvertisementProtocol {

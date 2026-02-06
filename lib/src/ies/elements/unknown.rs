@@ -1,7 +1,7 @@
 use deku::{DekuRead, DekuWrite};
 use serde::{Deserialize, Serialize};
 
-use crate::Field;
+use crate::ies::Field;
 
 /// Represents an unrecognized or unsupported Information Element.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]

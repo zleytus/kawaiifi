@@ -3,7 +3,7 @@ use std::ops::Deref;
 use deku::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{Field, ies::IeId};
+use crate::ies::{Field, IeId};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]

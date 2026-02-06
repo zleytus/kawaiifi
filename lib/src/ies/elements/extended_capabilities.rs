@@ -3,7 +3,7 @@ use std::fmt::Display;
 use deku::{DekuError, DekuRead, DekuWrite, bitvec::*};
 use serde::{Deserialize, Serialize};
 
-use crate::{BitRange, Field, ies::IeId};
+use crate::ies::{BitRange, Field, IeId};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]

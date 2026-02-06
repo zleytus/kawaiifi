@@ -1,10 +1,7 @@
 use deku::{DekuRead, DekuWrite};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    Field,
-    ies::{Ie, IeId, from_bytes},
-};
+use crate::ies::{Field, Ie, IeId, from_bytes};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: usize")]

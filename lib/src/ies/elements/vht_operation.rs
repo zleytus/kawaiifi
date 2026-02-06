@@ -4,10 +4,8 @@ use deku::{DekuContainerWrite, DekuError, DekuRead, DekuWrite};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    ChannelWidth, Field,
-    ies::{IeId, vht_capabilities::VhtMcsMap},
-};
+use crate::ChannelWidth;
+use crate::ies::{Field, IeId, vht_capabilities::VhtMcsMap};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct VhtOperation {

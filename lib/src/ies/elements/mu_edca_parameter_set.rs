@@ -1,7 +1,7 @@
 use deku::{DekuContainerWrite, DekuRead, DekuWrite};
 use serde::{Deserialize, Serialize};
 
-use crate::{BitRange, Field, ies::IeId};
+use crate::ies::{BitRange, Field, IeId};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct MuEdcaParameterSet {
