@@ -228,6 +228,10 @@ impl Ie {
         }
     }
 
+    pub fn bytes(&self) -> Vec<u8> {
+        self.to_bytes().unwrap_or_default()
+    }
+
     pub fn summary(&self) -> String {
         match &self.data {
             IeData::AdvertisementProtocol(data) => data.summary(),
