@@ -182,27 +182,17 @@ impl Bss {
             }
         }
 
-        // Check for the existence of the most modern EHT/HE/VHT/HT Capability element and use
-        // it to perform the max rate calculation
+        // Find the max rate reported by an EHT/HE/VHT/HT Capability element
+        let channel_width = self.channel_width();
+        let rates = [
+            eht_caps.map(|c| c.max_rate(channel_width)),
+            he_caps.map(|c| c.max_rate(channel_width)),
+            vht_caps.map(|c| c.max_rate(channel_width, ht_caps.map(|h| h.as_ref()))),
+            ht_caps.map(|c| c.max_rate(channel_width)),
+        ];
 
-        if let Some(eht_caps) = eht_caps {
-            let channel_width = self.channel_width();
-            return eht_caps.max_rate(channel_width);
-        }
-
-        if let Some(he_caps) = he_caps {
-            let channel_width = self.channel_width();
-            return he_caps.max_rate(channel_width);
-        }
-
-        if let Some(vht_caps) = vht_caps {
-            let channel_width = self.channel_width();
-            return vht_caps.max_rate(channel_width, ht_caps.map(|ht_caps| ht_caps.as_ref()));
-        }
-
-        if let Some(ht_caps) = ht_caps {
-            let channel_width = self.channel_width();
-            return ht_caps.max_rate(channel_width);
+        if let Some(max_rate) = rates.into_iter().flatten().max_by(|a, b| a.total_cmp(b)) {
+            return max_rate;
         }
 
         // If we don't have an EHT/HE/VHT/HT Capability element then use the extended supported
