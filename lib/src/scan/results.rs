@@ -49,6 +49,7 @@ use crate::{
 /// # Ok(())
 /// # }
 /// ```
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Scan {
     bss_list: Vec<Bss>,
     wiphy: u32,
