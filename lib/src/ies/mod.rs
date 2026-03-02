@@ -49,6 +49,7 @@ mod ie;
 mod ie_data;
 mod ie_id;
 mod parse;
+pub mod serde_raw;
 mod write;
 
 pub use elements::*;

@@ -16,8 +16,10 @@ pub struct Bss {
     frequency_mhz: u32,
     signal_dbm: i32,
     beacon_interval_tu: u16,
+    #[serde(with = "crate::ies::serde_raw::capability_info_as_u16")]
     capability_info: CapabilityInfo,
     status: Option<BssStatus>,
+    #[serde(with = "crate::ies::serde_raw::ies_as_base64")]
     ies: Vec<Ie>,
     is_from_probe_response: bool,
     parent_bssid: Option<[u8; 6]>,
@@ -26,6 +28,7 @@ pub struct Bss {
     beacon_tsf: Option<u64>,
     frequency_offset_khz: Option<u32>,
     signal_percent: Option<u8>,
+    #[serde(with = "crate::ies::serde_raw::option_ies_as_base64")]
     beacon_ies: Option<Vec<Ie>>,
     scan_width: Option<BssScanWidth>,
     last_seen_boottime: Option<u64>,
