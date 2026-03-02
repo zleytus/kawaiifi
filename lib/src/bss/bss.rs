@@ -52,6 +52,108 @@ impl Bss {
         ChannelWidth::from(self.ies())
     }
 
+    /// The center frequency of the full channel in MHz.
+    ///
+    /// For 20 MHz channels this equals `frequency_mhz`. For wider channels,
+    /// the primary channel frequency reported by nl80211 is offset from the
+    /// true center, so this reads the center channel frequency segments from
+    /// the operation IEs (EHT > HE > VHT > HT priority).
+    pub fn center_frequency_mhz(&self) -> u32 {
+        use crate::ies::ht_operation::SecondaryChannelOffset;
+
+        let primary = self.frequency_mhz;
+        let band = self.band();
+
+        let chan_to_freq = |chan: u8| -> u32 {
+            match band {
+                Band::FiveGhz => 5000 + (chan as u32 * 5),
+                Band::SixGhz => 5950 + (chan as u32 * 5),
+                Band::TwoPointFourGhz => primary,
+            }
+        };
+
+        let (mut eht_op, mut he_op, mut vht_op, mut ht_op) = (None, None, None, None);
+        for ie in &self.ies {
+            match &ie.data {
+                IeData::EhtOperation(op) => eht_op = Some(op),
+                IeData::HeOperation(op) => he_op = Some(op),
+                IeData::VhtOperation(op) => vht_op = Some(op),
+                IeData::HtOperation(op) => ht_op = Some(op),
+                _ => {}
+            }
+        }
+
+        // EHT Operation:
+        //   CCFS1 — center of the full 160 or 320 MHz channel (when present)
+        //   CCFS0 — center for 20/40/80 MHz, or primary 80 MHz for 160 MHz,
+        //           or primary 160 MHz for 320 MHz
+        if let Some(eht_op) = eht_op {
+            if let Some(info) = eht_op.eht_operation_information {
+                if info.ccfs1 != 0 {
+                    return chan_to_freq(info.ccfs1);
+                }
+                if info.ccfs0 != 0 {
+                    return chan_to_freq(info.ccfs0);
+                }
+            }
+        }
+
+        // HE Operation: 6 GHz has its own info; 5 GHz embeds VHT operation info.
+        // CCFS1 (when 8 channels/40 MHz from CCFS0) is the 160 MHz full center.
+        if let Some(he_op) = he_op {
+            if let Some(six_ghz) = &he_op.six_ghz_operation_information {
+                let (ccfs0, ccfs1) = (
+                    six_ghz.channel_center_frequency_segment_0,
+                    six_ghz.channel_center_frequency_segment_1,
+                );
+                if ccfs1 != 0 && ccfs1.abs_diff(ccfs0) == 8 {
+                    return chan_to_freq(ccfs1);
+                }
+                if ccfs0 != 0 {
+                    return chan_to_freq(ccfs0);
+                }
+            }
+            if let Some(vht_info) = &he_op.vht_operation_information {
+                let (ccfs0, ccfs1) = (
+                    vht_info.channel_center_frequency_segment_0,
+                    vht_info.channel_center_frequency_segment_1,
+                );
+                if ccfs1 != 0 && ccfs1.abs_diff(ccfs0) == 8 {
+                    return chan_to_freq(ccfs1);
+                }
+                if ccfs0 != 0 {
+                    return chan_to_freq(ccfs0);
+                }
+            }
+        }
+
+        // VHT Operation (5 GHz): CCFS1 for 160 MHz full center, CCFS0 for 80 MHz
+        if let Some(vht_op) = vht_op {
+            let info = &vht_op.vht_operation_information;
+            let (ccfs0, ccfs1) = (
+                info.channel_center_frequency_segment_0,
+                info.channel_center_frequency_segment_1,
+            );
+            if ccfs1 != 0 && ccfs1.abs_diff(ccfs0) == 8 {
+                return chan_to_freq(ccfs1);
+            }
+            if ccfs0 != 0 {
+                return chan_to_freq(ccfs0);
+            }
+        }
+
+        // HT Operation: 40 MHz secondary channel is above or below the primary
+        if let Some(ht_op) = ht_op {
+            match ht_op.ht_operation_information.secondary_channel_offset {
+                SecondaryChannelOffset::AbovePrimary => return primary + 10,
+                SecondaryChannelOffset::BelowPrimary => return primary - 10,
+                SecondaryChannelOffset::NoSecondary => {}
+            }
+        }
+
+        primary
+    }
+
     pub fn channel_number(&self) -> u8 {
         self.ies
             .iter()
