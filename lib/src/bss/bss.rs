@@ -1,5 +1,6 @@
 use std::{collections::HashMap, fmt::Display, hash::Hash, time::Duration};
 
+use chrono::{DateTime, Utc};
 use neli::{attr::Attribute, genl::Genlmsghdr};
 use serde::{Deserialize, Serialize};
 
@@ -29,6 +30,7 @@ pub struct Bss {
     scan_width: Option<BssScanWidth>,
     last_seen_boottime: Option<u64>,
     seen_ms_ago: Option<u32>,
+    last_seen_utc: Option<DateTime<Utc>>,
     mlo_link_id: Option<u8>,
     mld_address: Option<[u8; 6]>,
 }
@@ -141,6 +143,10 @@ impl Bss {
 
     pub fn seen_ms_ago(&self) -> Option<u32> {
         self.seen_ms_ago
+    }
+
+    pub fn last_seen_utc(&self) -> Option<DateTime<Utc>> {
+        self.last_seen_utc
     }
 
     pub fn ssid(&self) -> Option<&str> {
@@ -264,6 +270,12 @@ impl PartialEq for Bss {
     }
 }
 
+fn current_boottime_ns() -> u64 {
+    let mut ts = libc::timespec { tv_sec: 0, tv_nsec: 0 };
+    unsafe { libc::clock_gettime(libc::CLOCK_BOOTTIME, &mut ts) };
+    (ts.tv_sec as u64) * 1_000_000_000 + (ts.tv_nsec as u64)
+}
+
 impl TryFrom<&Genlmsghdr<Cmd, Attr>> for Bss {
     type Error = ParseError;
 
@@ -347,6 +359,22 @@ impl TryFrom<&Genlmsghdr<Cmd, Attr>> for Bss {
             seen_ms_ago: bss_attrs
                 .get(&Nl80211Bss::SeenMsAgo)
                 .and_then(|attr| attr.get_payload_as().ok()),
+            last_seen_utc: {
+                let last_seen_boottime: Option<u64> = bss_attrs
+                    .get(&Nl80211Bss::LastSeenBoottime)
+                    .and_then(|attr| attr.get_payload_as().ok());
+                let seen_ms_ago: Option<u32> = bss_attrs
+                    .get(&Nl80211Bss::SeenMsAgo)
+                    .and_then(|attr| attr.get_payload_as().ok());
+                if let Some(boottime_ns) = last_seen_boottime {
+                    let ago_ns = current_boottime_ns().saturating_sub(boottime_ns);
+                    Utc::now().checked_sub_signed(chrono::Duration::nanoseconds(ago_ns as i64))
+                } else {
+                    seen_ms_ago.and_then(|ms| {
+                        Utc::now().checked_sub_signed(chrono::Duration::milliseconds(ms as i64))
+                    })
+                }
+            },
             mlo_link_id: bss_attrs
                 .get(&Nl80211Bss::MloLinkId)
                 .and_then(|attr| attr.get_payload_as().ok()),
