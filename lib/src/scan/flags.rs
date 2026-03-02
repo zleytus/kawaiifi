@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 /// These flags are provided by the nl80211 interface and indicate various
 /// scan parameters and optimizations used during WiFi scanning operations.
 /// They correspond to the `NL80211_ATTR_SCAN_FLAGS` attribute.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct Flags {
     /// Low priority scan - may be interrupted by higher priority operations.
