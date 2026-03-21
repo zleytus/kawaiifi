@@ -3,7 +3,9 @@ use std::{collections::HashSet, convert::From, fmt::Display, hash::Hash};
 use derive_more::{Deref, DerefMut, From};
 use num_enum::TryFromPrimitive;
 
-use crate::{Ie, IeData, nl80211::ChanWidth};
+#[cfg(target_os = "linux")]
+use crate::nl80211::ChanWidth;
+use crate::{Ie, IeData};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Ord, PartialOrd, TryFromPrimitive)]
 #[repr(u8)]
@@ -16,6 +18,7 @@ pub enum ChannelWidth {
     ThreeHundredTwentyMhz,
 }
 
+#[cfg(target_os = "linux")]
 impl From<ChanWidth> for ChannelWidth {
     fn from(chan_width: ChanWidth) -> Self {
         match chan_width {

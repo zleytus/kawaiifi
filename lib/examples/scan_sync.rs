@@ -1,8 +1,9 @@
 use std::error::Error;
 
-use kawaiifi::scan::Backend;
-
+#[cfg(target_os = "linux")]
 fn main() -> Result<(), Box<dyn Error>> {
+    use kawaiifi::scan::Backend;
+
     let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");
 
     let scan = interface.scan_blocking(Backend::NetworkManager)?;
@@ -13,6 +14,22 @@ fn main() -> Result<(), Box<dyn Error>> {
         scan.duration(),
         scan.freqs_mhz().len(),
         interface.name(),
+    );
+
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn main() -> Result<(), Box<dyn Error>> {
+    let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");
+
+    let scan = interface.scan_blocking()?;
+
+    println!(
+        "Found {} BSS(s) in {:#?} using {}",
+        scan.bss_list().len(),
+        scan.duration(),
+        interface.description()
     );
 
     Ok(())

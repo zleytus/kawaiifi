@@ -6,7 +6,6 @@ pub enum Error {
     #[error("Permission denied")]
     PermissionDenied,
 
-    #[cfg(target_os = "linux")]
     #[error("Nl80211 error: {0}")]
     Nl80211(String),
 
