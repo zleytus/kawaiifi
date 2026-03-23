@@ -1,0 +1,20 @@
+[package]
+name = "kawaiifi-ffi"
+version = "0.1.0"
+authors = ["Zach Leytus <zach.leytus@pm.me>"]
+edition = "2024"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+
+[build-dependencies]
+cbindgen = "0.29"
+
+[dependencies]
+kawaiifi = { path = "../lib" }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_System_Com"] }
+
+[lib]
+name = "kawaiifi"
+crate-type = ["cdylib", "staticlib"]
