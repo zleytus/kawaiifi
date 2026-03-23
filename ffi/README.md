@@ -24,8 +24,7 @@ int main() {
     if (!interface) return -1;
 
     Scan *scan = kawaiifi_interface_scan(interface);
-    uintptr_t count = 0;
-    kawaiifi_scan_bss_list(scan, &count);
+    uintptr_t count = kawaiifi_scan_bss_count(scan);
     int64_t duration_ms = kawaiifi_scan_end_time_utc_ms(scan) -
                           kawaiifi_scan_start_time_utc_ms(scan);
     printf("Found %zu BSS(s) in %" PRId64 " ms\n", count, duration_ms);
@@ -48,4 +47,4 @@ Functions that return heap-allocated values document how to free them:
 - `Interface *` — free with `kawaiifi_interface_free`
 - `FieldList *` — free with `kawaiifi_field_list_free`
 
-Borrowed pointers (e.g. `const Bss *` from `kawaiifi_scan_bss_list`, `const Field *` from `kawaiifi_field_subfields`) are valid only for the lifetime of the parent object and must not be freed.
+Borrowed pointers (e.g. `const Bss *` from `kawaiifi_scan_bss_get`, `const Field *` from `kawaiifi_field_subfield_get`) are valid only for the lifetime of the parent object and must not be freed.
