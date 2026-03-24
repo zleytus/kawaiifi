@@ -8,6 +8,7 @@ readme = "README.md"
 
 [build-dependencies]
 cbindgen = "0.29"
+csbindgen = "1.9.7"
 
 [dependencies]
 kawaiifi = { path = "../lib" }

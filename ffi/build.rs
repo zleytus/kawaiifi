@@ -1,4 +1,9 @@
 fn main() {
+    generate_c_bindings();
+    generate_csharp_bindings();
+}
+
+fn generate_c_bindings() {
     let crate_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
 
     let mut config = cbindgen::Config::default();
@@ -40,4 +45,38 @@ fn main() {
     cbindgen::generate_with_config(crate_dir, config)
         .expect("Unable to generate bindings")
         .write_to_file("include/kawaiifi.h");
+}
+
+fn generate_csharp_bindings() {
+    // Generate NativeMethods.g.cs for cross-platform functionality
+    csbindgen::Builder::default()
+        .input_extern_file("src/bss.rs")
+        .input_extern_file("src/common.rs")
+        .input_extern_file("src/field.rs")
+        .input_extern_file("src/ies.rs")
+        .input_extern_file("src/interface.rs")
+        .input_extern_file("src/scan.rs")
+        .csharp_dll_name("kawaiifi")
+        .generate_csharp_file("include/NativeMethods.g.cs")
+        .unwrap();
+
+    // Generate NativeMethods.Linux.g.cs for Linux-specific functionality
+    csbindgen::Builder::default()
+        .input_extern_file("src/linux/bss.rs")
+        .input_extern_file("src/linux/interface.rs")
+        .input_extern_file("src/linux/scan.rs")
+        .csharp_dll_name("kawaiifi")
+        .csharp_disable_emit_dll_name(true)
+        .generate_csharp_file("include/NativeMethods.Linux.g.cs")
+        .unwrap();
+
+    // Generate NativeMethods.Windows.g.cs for Windows-specific functionality
+    csbindgen::Builder::default()
+        .input_extern_file("src/windows/bss.rs")
+        .input_extern_file("src/windows/interface.rs")
+        .csharp_file_header("using GUID = global::System.Guid;")
+        .csharp_dll_name("kawaiifi")
+        .csharp_disable_emit_dll_name(true)
+        .generate_csharp_file("include/NativeMethods.Windows.g.cs")
+        .unwrap();
 }
