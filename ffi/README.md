@@ -35,7 +35,7 @@ int main() {
 }
 ```
 
-See [`examples/c/`](examples/c/) for a complete CMake-based example using [Corrosion](https://github.com/corrosion-rs/corrosion).
+See [`examples/c/`](examples/c/) for a complete CMake-based C example using [Corrosion](https://github.com/corrosion-rs/corrosion), or [`examples/dotnet/`](examples/dotnet/) for a C# example using the idiomatic `Kawaiifi.Net` wrapper library.
 
 ## Memory management
 

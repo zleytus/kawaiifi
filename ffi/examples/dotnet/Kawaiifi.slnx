@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Kawaiifi.Net/Kawaiifi.Net.csproj" />
+  <Project Path="examples/Scan/Scan.csproj" />
+</Solution>

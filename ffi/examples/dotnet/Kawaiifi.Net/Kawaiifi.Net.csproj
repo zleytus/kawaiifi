@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>Kawaiifi.Net</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Zach Leytus</Authors>
+    <Description>A cross-platform Wi-Fi scanning library for .NET.</Description>
+    <Copyright>Copyright (c) 2021 Zach Leytus</Copyright>
+    <PackageLicenseExpression>MIT OR Apache-2.0</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/zleytus/kawaiifi</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/zleytus/kawaiifi</PackageProjectUrl>
+    <PackageTags>wifi;wi-fi;wireless;scanning;802.11;native-wifi;nl80211</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../README.md" Pack="true" PackagePath="\" />
+    <None Include="../../../../LICENSE-MIT" Pack="true" PackagePath="\" />
+    <None Include="../../../../LICENSE-APACHE" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../../../include/NativeMethods.g.cs" />
+    <Compile Include="../../../include/NativeMethods.Linux.g.cs" />
+    <Compile Include="../../../include/NativeMethods.Windows.g.cs" />
+    <Compile Include="../../../include/NativeTypes.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+    <Content Include="../../../../target/release/libkawaiifi.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <Content Include="../../../../target/release/kawaiifi.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>
