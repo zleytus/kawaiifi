@@ -1,0 +1,126 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build-and-test-lib:
+    name: Build and test lib (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Build
+        run: cargo build -p kawaiifi
+
+      - name: Test
+        run: cargo test -p kawaiifi
+
+  build-ffi:
+    name: Build FFI (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Build
+        run: cargo build -p kawaiifi-ffi --release
+
+      - name: Upload native library
+        uses: actions/upload-artifact@v7
+        with:
+          name: native-${{ matrix.os }}
+          path: |
+            target/release/libkawaiifi.so
+            target/release/kawaiifi.dll
+          if-no-files-found: ignore
+
+  build-c:
+    name: Build C example (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Configure
+        run: cmake -B build
+        working-directory: ffi/examples/c
+
+      - name: Build
+        run: cmake --build build
+        working-directory: ffi/examples/c
+
+  build-dotnet:
+    name: Build .NET (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: build-ffi
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.x'
+
+      - name: Download native library
+        uses: actions/download-artifact@v8
+        with:
+          name: native-${{ matrix.os }}
+          path: target/release/
+
+      - name: Build
+        run: dotnet build ffi/examples/dotnet
+
+  pack-dotnet:
+    name: Pack .NET NuGet package
+    runs-on: ubuntu-latest
+    needs: build-ffi
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.x'
+
+      - name: Download Linux native library
+        uses: actions/download-artifact@v8
+        with:
+          name: native-ubuntu-latest
+          path: artifacts/linux-x64/
+
+      - name: Download Windows native library
+        uses: actions/download-artifact@v8
+        with:
+          name: native-windows-latest
+          path: artifacts/windows-x64/
+
+      - name: Pack
+        run: >
+          dotnet pack ffi/examples/dotnet/Kawaiifi.Net
+          -p:NativeLinuxX64=${{ github.workspace }}/artifacts/linux-x64/libkawaiifi.so
+          -p:NativeWindowsX64=${{ github.workspace }}/artifacts/windows-x64/kawaiifi.dll
+
+      - name: Upload NuGet package
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuget-package
+          path: ffi/examples/dotnet/Kawaiifi.Net/bin/Release/*.nupkg

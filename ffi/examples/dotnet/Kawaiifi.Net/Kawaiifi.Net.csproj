@@ -33,16 +33,29 @@
     <Compile Include="../../../include/NativeTypes.cs" />
   </ItemGroup>
 
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+  <!-- Copy native library to output directory for local development -->
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Linux')) And Exists('../../../../target/release/libkawaiifi.so')">
     <Content Include="../../../../target/release/libkawaiifi.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>false</Pack>
     </Content>
   </ItemGroup>
 
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows')) And Exists('../../../../target/release/kawaiifi.dll')">
     <Content Include="../../../../target/release/kawaiifi.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>false</Pack>
     </Content>
   </ItemGroup>
+
+  <!-- Include native libraries in NuGet package when provided via CI -->
+  <ItemGroup Condition="'$(NativeLinuxX64)' != ''">
+    <None Include="$(NativeLinuxX64)" Pack="true" PackagePath="runtimes/linux-x64/native/" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(NativeWindowsX64)' != ''">
+    <None Include="$(NativeWindowsX64)" Pack="true" PackagePath="runtimes/win-x64/native/" />
+  </ItemGroup>
+
 
 </Project>
