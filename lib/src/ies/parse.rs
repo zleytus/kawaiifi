@@ -1,4 +1,6 @@
-use deku::{DekuContainerRead, DekuContainerWrite};
+use deku::DekuContainerRead;
+#[cfg(debug_assertions)]
+use deku::DekuContainerWrite;
 
 use super::Ie;
 
