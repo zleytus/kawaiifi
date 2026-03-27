@@ -44,7 +44,7 @@ use crate::{
 /// println!("Scan took {:?}", scan.duration());
 ///
 /// for bss in scan.bss_list() {
-///     println!("{}: {} dBm", bss.ssid(), bss.signal_dbm());
+///     println!("{}: {} dBm", bss.ssid().unwrap_or(""), bss.signal_dbm());
 /// }
 /// # Ok(())
 /// # }
