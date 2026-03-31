@@ -207,17 +207,17 @@ impl Interface {
             return Ok(Vec::new());
         }
 
-        // Entries are packed end-to-end with IE data appended after each fixed struct,
-        // so we walk using variable strides (ulIeOffset + ulIeSize) rather than a simple
-        // array index.
+        // Windows packs all fixed WLAN_BSS_ENTRY structs contiguously, followed by a
+        // trailing region containing all IE blobs. Each entry's ulIeOffset is the offset
+        // to its own IE data relative to the entry pointer (pointing into that trailing
+        // region). The stride between fixed structs is therefore sizeof(WLAN_BSS_ENTRY).
         let bss_list = unsafe {
             let count = (*bss_list_ptr).dwNumberOfItems as usize;
             let mut entry_ptr = (*bss_list_ptr).wlanBssEntries.as_ptr();
             let mut results = Vec::with_capacity(count);
             for _ in 0..count {
                 results.push(Bss::from_wlan_entry(entry_ptr));
-                let stride = (*entry_ptr).ulIeOffset as usize + (*entry_ptr).ulIeSize as usize;
-                entry_ptr = (entry_ptr as *const u8).add(stride) as *const _;
+                entry_ptr = entry_ptr.add(1);
             }
             results
         };
