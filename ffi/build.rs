@@ -36,7 +36,7 @@ fn generate_c_bindings() {
         .defines
         .insert("target_os = windows".to_string(), "_WIN32".to_string());
     config.after_includes = Some(
-    "#ifdef _WIN32\n#include <guiddef.h>\n#endif\ntypedef struct Interface Interface;\ntypedef struct Bss Bss;\ntypedef struct Scan Scan;\ntypedef struct Ie Ie;\ntypedef struct FieldList FieldList;\ntypedef struct InterfaceList InterfaceList;"
+    "#ifdef _WIN32\n#include <guiddef.h>\n#endif\ntypedef struct Interface Interface;\ntypedef struct Bss Bss;\ntypedef struct Scan Scan;\ntypedef struct Ie Ie;\ntypedef struct FieldList FieldList;\ntypedef struct InterfaceList InterfaceList;\ntypedef struct BssList BssList;"
     .to_string(),
     );
 

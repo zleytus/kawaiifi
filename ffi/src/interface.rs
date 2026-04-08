@@ -1,5 +1,7 @@
 use kawaiifi::Interface;
 
+use crate::bss::BssList;
+
 pub struct InterfaceList(Vec<Interface>);
 
 /// Returns all available wireless interfaces as an opaque list.
@@ -47,3 +49,14 @@ pub unsafe extern "C" fn kawaiifi_interface_free(interface: Option<&mut Interfac
         drop(unsafe { Box::from_raw(interface) });
     }
 }
+
+/// Returns the cached BSS list for the given interface, or null if `interface` is null or an error occurs.
+/// The caller must free the returned list with `kawaiifi_interface_bss_list_free`.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kawaiifi_interface_cached_bss_list(
+    interface: Option<&Interface>,
+) -> Option<Box<BssList>> {
+    let results = interface?.cached_scan_results_blocking().ok()?;
+    Some(Box::new(BssList(results)))
+}
+

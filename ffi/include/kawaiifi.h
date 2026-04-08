@@ -14,6 +14,7 @@ typedef struct Scan Scan;
 typedef struct Ie Ie;
 typedef struct FieldList FieldList;
 typedef struct InterfaceList InterfaceList;
+typedef struct BssList BssList;
 
 /**
  * FFI-safe equivalent of kawaiifi::Band.
@@ -169,6 +170,22 @@ typedef struct Flags {
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
+
+/**
+ * Returns the number of BSSs in the list, or 0 if `list` is null.
+ */
+uintptr_t kawaiifi_bss_list_count(const struct BssList *list);
+
+/**
+ * Returns a borrowed pointer to the BSS at `index`, or null if out of bounds or `list` is null.
+ * The pointer is valid for the lifetime of the list. Do NOT free it individually.
+ */
+const struct Bss *kawaiifi_bss_list_get(const struct BssList *list, uintptr_t index);
+
+/**
+ * Frees a BSS list returned by `kawaiifi_interface_cached_bss_list`. Does nothing if `list` is null.
+ */
+void kawaiifi_interface_bss_list_free(struct BssList *list);
 
 /**
  * Returns a borrowed pointer to the BSS's 6-byte BSSID (MAC address), or null if `bss` is null.
@@ -405,6 +422,12 @@ struct Interface *kawaiifi_default_interface(void);
  * Frees an interface returned by `kawaiifi_default_interface`. Does nothing if `interface` is null.
  */
 void kawaiifi_interface_free(struct Interface *interface);
+
+/**
+ * Returns the cached BSS list for the given interface, or null if `interface` is null or an error occurs.
+ * The caller must free the returned list with `kawaiifi_interface_bss_list_free`.
+ */
+struct BssList *kawaiifi_interface_cached_bss_list(const struct Interface *interface);
 
 /**
  * Returns the number of BSSes in the scan, or 0 if `scan` is null.

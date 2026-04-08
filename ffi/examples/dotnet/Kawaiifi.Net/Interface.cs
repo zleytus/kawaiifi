@@ -457,4 +457,16 @@ public class Interface : IDisposable
             return new Scan(scan);
         }
     }
+
+    /// <summary>
+    /// Returns a list of cached BSSs from previous Wi-Fi scans.
+    /// Dispose the returned <see cref="Kawaiifi.Net.BssList"/> when done.
+    /// </summary>
+    public BssList CachedBssList()
+    {
+        unsafe
+        {
+            return new BssList(NativeMethods.kawaiifi_interface_cached_bss_list(_ptr));
+        }
+    }
 }

@@ -2,6 +2,29 @@ use kawaiifi::Bss;
 
 use crate::common::str_to_c;
 
+pub struct BssList(pub Vec<Bss>);
+
+/// Returns the number of BSSs in the list, or 0 if `list` is null.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kawaiifi_bss_list_count(list: Option<&BssList>) -> usize {
+    list.map(|l| l.0.len()).unwrap_or(0)
+}
+
+/// Returns a borrowed pointer to the BSS at `index`, or null if out of bounds or `list` is null.
+/// The pointer is valid for the lifetime of the list. Do NOT free it individually.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kawaiifi_bss_list_get(list: Option<&BssList>, index: usize) -> *const Bss {
+    list.and_then(|l| l.0.get(index))
+        .map(|b| b as *const Bss)
+        .unwrap_or(std::ptr::null())
+}
+
+/// Frees a BSS list returned by `kawaiifi_interface_cached_bss_list`. Does nothing if `list` is null.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kawaiifi_interface_bss_list_free(list: Option<Box<BssList>>) {
+    drop(list);
+}
+
 /// FFI-safe equivalent of kawaiifi::Band.
 #[repr(C)]
 pub enum Band {

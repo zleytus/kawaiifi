@@ -19,6 +19,25 @@ namespace CsBindgen
 
 
         /// <summary>
+        ///  Returns the number of BSSs in the list, or 0 if `list` is null.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_list_count", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern nuint kawaiifi_bss_list_count(BssList* list);
+
+        /// <summary>
+        ///  Returns a borrowed pointer to the BSS at `index`, or null if out of bounds or `list` is null.
+        ///  The pointer is valid for the lifetime of the list. Do NOT free it individually.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_list_get", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern Bss* kawaiifi_bss_list_get(BssList* list, nuint index);
+
+        /// <summary>
+        ///  Frees a BSS list returned by `kawaiifi_interface_cached_bss_list`. Does nothing if `list` is null.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_interface_bss_list_free", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void kawaiifi_interface_bss_list_free(BssList* list);
+
+        /// <summary>
         ///  Returns a borrowed pointer to the BSS's 6-byte BSSID (MAC address), or null if `bss` is null.
         ///  The pointer is valid for the lifetime of the BSS. Do NOT free it.
         /// </summary>
@@ -298,6 +317,13 @@ namespace CsBindgen
         internal static extern void kawaiifi_interface_free(Interface* @interface);
 
         /// <summary>
+        ///  Returns the cached BSS list for the given interface, or null if `interface` is null or an error occurs.
+        ///  The caller must free the returned list with `kawaiifi_interface_bss_list_free`.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_interface_cached_bss_list", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern BssList* kawaiifi_interface_cached_bss_list(Interface* @interface);
+
+        /// <summary>
         ///  Returns the number of BSSes in the scan, or 0 if `scan` is null.
         /// </summary>
         [DllImport(__DllName, EntryPoint = "kawaiifi_scan_bss_count", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
@@ -329,6 +355,11 @@ namespace CsBindgen
         internal static extern void kawaiifi_scan_free(Scan* scan);
 
 
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct BssList
+    {
     }
 
     /// <summary>
