@@ -53,6 +53,11 @@ public class FieldList : IReadOnlyList<Field>, IDisposable
     {
         get
         {
+            if (index < 0 || index >= Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+
             unsafe
             {
                 return new Field(NativeMethods.kawaiifi_field_list_get(_ptr, (nuint)index));

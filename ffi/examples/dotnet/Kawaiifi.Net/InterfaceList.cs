@@ -53,6 +53,11 @@ public class InterfaceList : IReadOnlyList<Interface>, IDisposable
     {
         get
         {
+            if (index < 0 || index >= Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+
             unsafe
             {
                 return Interface.FromBorrowed(NativeMethods.kawaiifi_interface_list_get(_ptr, (nuint)index));
