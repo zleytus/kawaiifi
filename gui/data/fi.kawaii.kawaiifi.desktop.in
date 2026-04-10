@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=KawaiiFi
+Comment=Wi-Fi Network Scanner
+Exec=@BINDIR@/kawaiifi
+Icon=@APP_ID@
+Terminal=false
+Type=Application
+Categories=Network;System;
+StartupNotify=true

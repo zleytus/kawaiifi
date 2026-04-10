@@ -1,0 +1,129 @@
+searchbar box {
+    background-color: transparent;
+}
+
+/* Signal strength gradient - 20 levels using GNOME HIG palette */
+/* Red (weak) → Orange → Yellow → Green (strong) */
+levelbar block.signal-00 {
+    background-color: #a51d2d;
+} /* Red 5 */
+levelbar block.signal-01 {
+    background-color: #c01c28;
+} /* Red 4 */
+levelbar block.signal-02 {
+    background-color: #e01b24;
+} /* Red 3 */
+levelbar block.signal-03 {
+    background-color: #ed333b;
+} /* Red 2 */
+levelbar block.signal-04 {
+    background-color: #f66151;
+} /* Red 1 */
+levelbar block.signal-05 {
+    background-color: #c64600;
+} /* Orange 5 */
+levelbar block.signal-06 {
+    background-color: #e66100;
+} /* Orange 4 */
+levelbar block.signal-07 {
+    background-color: #ff7800;
+} /* Orange 3 */
+levelbar block.signal-08 {
+    background-color: #ffa348;
+} /* Orange 2 */
+levelbar block.signal-09 {
+    background-color: #ffbe6f;
+} /* Orange 1 */
+levelbar block.signal-10 {
+    background-color: #e5a50a;
+} /* Yellow 5 */
+levelbar block.signal-11 {
+    background-color: #f5c211;
+} /* Yellow 4 */
+levelbar block.signal-12 {
+    background-color: #f6d32d;
+} /* Yellow 3 */
+levelbar block.signal-13 {
+    background-color: #f8e45c;
+} /* Yellow 2 */
+levelbar block.signal-14 {
+    background-color: #f9f06b;
+} /* Yellow 1 */
+levelbar block.signal-15 {
+    background-color: #8ff0a4;
+} /* Green 1 */
+levelbar block.signal-16 {
+    background-color: #57e389;
+} /* Green 2 */
+levelbar block.signal-17 {
+    background-color: #33d17a;
+} /* Green 3 */
+levelbar block.signal-18 {
+    background-color: #2ec27e;
+} /* Green 4 */
+levelbar block.signal-19 {
+    background-color: #26a269;
+} /* Green 5 */
+
+/* Channel utilization gradient - 20 levels using GNOME HIG palette */
+/* Green (low/good) → Yellow → Orange → Red (high/bad) */
+levelbar block.channel-utilization-00 {
+    background-color: #26a269;
+} /* Green 5 */
+levelbar block.channel-utilization-01 {
+    background-color: #2ec27e;
+} /* Green 4 */
+levelbar block.channel-utilization-02 {
+    background-color: #33d17a;
+} /* Green 3 */
+levelbar block.channel-utilization-03 {
+    background-color: #57e389;
+} /* Green 2 */
+levelbar block.channel-utilization-04 {
+    background-color: #8ff0a4;
+} /* Green 1 */
+levelbar block.channel-utilization-05 {
+    background-color: #f9f06b;
+} /* Yellow 1 */
+levelbar block.channel-utilization-06 {
+    background-color: #f8e45c;
+} /* Yellow 2 */
+levelbar block.channel-utilization-07 {
+    background-color: #f6d32d;
+} /* Yellow 3 */
+levelbar block.channel-utilization-08 {
+    background-color: #f5c211;
+} /* Yellow 4 */
+levelbar block.channel-utilization-09 {
+    background-color: #e5a50a;
+} /* Yellow 5 */
+levelbar block.channel-utilization-10 {
+    background-color: #ffbe6f;
+} /* Orange 1 */
+levelbar block.channel-utilization-11 {
+    background-color: #ffa348;
+} /* Orange 2 */
+levelbar block.channel-utilization-12 {
+    background-color: #ff7800;
+} /* Orange 3 */
+levelbar block.channel-utilization-13 {
+    background-color: #e66100;
+} /* Orange 4 */
+levelbar block.channel-utilization-14 {
+    background-color: #c64600;
+} /* Orange 5 */
+levelbar block.channel-utilization-15 {
+    background-color: #f66151;
+} /* Red 1 */
+levelbar block.channel-utilization-16 {
+    background-color: #ed333b;
+} /* Red 2 */
+levelbar block.channel-utilization-17 {
+    background-color: #e01b24;
+} /* Red 3 */
+levelbar block.channel-utilization-18 {
+    background-color: #c01c28;
+} /* Red 4 */
+levelbar block.channel-utilization-19 {
+    background-color: #a51d2d;
+} /* Red 5 */

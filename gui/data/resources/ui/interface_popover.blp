@@ -1,0 +1,227 @@
+using Gtk 4.0;
+
+template $InterfacePopover: Gtk.Popover {
+  Gtk.Grid {
+    margin-top: 12;
+    margin-bottom: 12;
+    margin-start: 12;
+    margin-end: 12;
+    row-spacing: 6;
+    column-spacing: 12;
+    // Interface name
+    Gtk.Label {
+      label: _("Interface:");
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 0;
+      }
+    }
+
+    Gtk.Label interface_name_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 0;
+      }
+    }
+
+    // Vendor
+    Gtk.Label {
+      label: _("Vendor:");
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 1;
+      }
+    }
+
+    Gtk.Label interface_vendor_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 1;
+      }
+    }
+
+    // Device
+    Gtk.Label {
+      label: _("Device:");
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 2;
+      }
+    }
+
+    Gtk.Label interface_device_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 2;
+      }
+    }
+
+    // Bus Type
+    Gtk.Label {
+      label: _("Bus Type:");
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 3;
+      }
+    }
+
+    Gtk.Label interface_bus_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 3;
+      }
+    }
+
+    // Driver
+    Gtk.Label {
+      label: _("Driver:");
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 4;
+      }
+    }
+
+    Gtk.Label interface_driver_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 4;
+      }
+    }
+
+    // MAC Address
+    Gtk.Label {
+      label: _("MAC:");
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 5;
+      }
+    }
+
+    Gtk.Label interface_mac_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 5;
+      }
+    }
+
+    // Index
+    Gtk.Label {
+      label: _("Index:");
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 6;
+      }
+    }
+
+    Gtk.Label interface_index_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 6;
+      }
+    }
+
+    // wiphy
+    Gtk.Label {
+      label: _("wiphy:");
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 7;
+      }
+    }
+
+    Gtk.Label interface_wiphy_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 7;
+      }
+    }
+
+    // wdev
+    Gtk.Label {
+      label: _("wdev:");
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 8;
+      }
+    }
+
+    Gtk.Label interface_wdev_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 8;
+      }
+    }
+  }
+}

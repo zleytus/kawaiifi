@@ -1,0 +1,34 @@
+using Gtk 4.0;
+
+template $BssElements: Gtk.Box {
+  orientation: vertical;
+
+  Gtk.ScrolledWindow {
+    hexpand: true;
+    vexpand: true;
+
+    ColumnView column_view {
+      show-row-separators: true;
+
+      ColumnViewColumn id_column {
+        title: "ID";
+      }
+
+      ColumnViewColumn ie_column {
+        title: "Information Element";
+        resizable: true;
+      }
+
+      ColumnViewColumn value_column {
+        title: "Value";
+        resizable: true;
+        expand: true;
+      }
+
+      ColumnViewColumn data_column {
+        title: "Data";
+        resizable: true;
+      }
+    }
+  }
+}

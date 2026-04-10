@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>@APP_ID@</id>
+  <name>KawaiiFi</name>
+  <summary>Wi-Fi network scanner</summary>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>Apache-2.0 OR MIT</project_license>
+
+  <description>
+    <p>
+      KawaiiFi scans nearby Wi-Fi networks and displays their signal strength,
+      channels, security modes, supported protocols, and advertised 802.11
+      capabilities.
+    </p>
+    <p>
+      It can filter scan results by SSID, BSSID, vendor, band, security,
+      channel width, protocol, and amendment.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">@APP_ID@.desktop</launchable>
+  <categories>
+    <category>Network</category>
+    <category>System</category>
+  </categories>
+
+  <url type="homepage">https://kawaii.fi</url>
+  <url type="bugtracker">https://github.com/zleytus/kawaiifi/issues</url>
+  <url type="vcs-browser">https://github.com/zleytus/kawaiifi</url>
+
+  <developer id="io.github.zleytus">
+    <name>Zach Leytus</name>
+  </developer>
+
+  <content_rating type="oars-1.1" />
+</component>

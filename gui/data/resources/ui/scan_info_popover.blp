@@ -1,0 +1,132 @@
+using Gtk 4.0;
+
+template $ScanInfoPopover: Gtk.Popover {
+  Gtk.Grid {
+    margin-top: 12;
+    margin-bottom: 12;
+    margin-start: 12;
+    margin-end: 12;
+    row-spacing: 6;
+    column-spacing: 12;
+
+    // Frequencies Scanned
+    Gtk.Label {
+      label: "Scanned:";
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 0;
+      }
+    }
+
+    Gtk.Label frequencies_scanned_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 0;
+      }
+    }
+
+    // IEs
+    Gtk.Label {
+      label: "IEs:";
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 1;
+      }
+    }
+
+    Gtk.Label ies_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 1;
+      }
+    }
+
+    // start time
+    Gtk.Label {
+      label: "Scan Start:";
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 2;
+      }
+    }
+
+    Gtk.Label start_time_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 2;
+      }
+    }
+
+    // end time
+    Gtk.Label {
+      label: "Scan End:";
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 3;
+      }
+    }
+
+    Gtk.Label end_time_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 3;
+      }
+    }
+
+    // duration
+    Gtk.Label {
+      label: "Duration:";
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 4;
+      }
+    }
+
+    Gtk.Label duration_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 4;
+      }
+    }
+  }
+}

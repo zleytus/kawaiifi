@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<schemalist>
+  <schema id="fi.kawaii.kawaiifi" path="/fi/kawaii/kawaiifi/">
+    <key name="show-hidden-bsss" type="b">
+      <default>true</default>
+      <summary>Show hidden BSSs</summary>
+    </key>
+    <key name="bss-retention-duration" type="i">
+      <default>300</default>
+      <summary>BSS retention duration in seconds</summary>
+    </key>
+    <key name="show-bssid-column" type="b">
+      <default>true</default>
+      <summary>Show the BSSID column</summary>
+    </key>
+    <key name="show-vendor-column" type="b">
+      <default>true</default>
+      <summary>Show the Vendor column</summary>
+    </key>
+    <key name="show-signal-column" type="b">
+      <default>true</default>
+      <summary>Show the Signal column</summary>
+    </key>
+    <key name="show-channel-column" type="b">
+      <default>true</default>
+      <summary>Show the Channel column</summary>
+    </key>
+    <key name="show-channel-width-column" type="b">
+      <default>true</default>
+      <summary>Show the Channel Width column</summary>
+    </key>
+    <key name="show-frequency-column" type="b">
+      <default>true</default>
+      <summary>Show the Frequency column</summary>
+    </key>
+    <key name="show-band-column" type="b">
+      <default>true</default>
+      <summary>Show the Band column</summary>
+    </key>
+    <key name="show-protocols-column" type="b">
+      <default>true</default>
+      <summary>Show the Protocols column</summary>
+    </key>
+    <key name="show-amendments-column" type="b">
+      <default>true</default>
+      <summary>Show the Amendments column</summary>
+    </key>
+    <key name="show-security-column" type="b">
+      <default>true</default>
+      <summary>Show the Security column</summary>
+    </key>
+    <key name="show-max-rate-column" type="b">
+      <default>true</default>
+      <summary>Show the Max Rate column</summary>
+    </key>
+    <key name="show-channel-utilization-column" type="b">
+      <default>true</default>
+      <summary>Show the Channel Utilization column</summary>
+    </key>
+    <key name="show-stations-column" type="b">
+      <default>true</default>
+      <summary>Show the Stations column</summary>
+    </key>
+    <key name="show-uptime-column" type="b">
+      <default>true</default>
+      <summary>Show the Uptime column</summary>
+    </key>
+    <key name="show-last-seen-column" type="b">
+      <default>true</default>
+      <summary>Show the Last Seen column</summary>
+    </key>
+  </schema>
+</schemalist>
