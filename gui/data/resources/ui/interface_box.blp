@@ -1,0 +1,29 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $InterfaceBox: Box {
+  orientation: horizontal;
+
+  styles [
+    "flat",
+  ]
+
+  Adw.Spinner active_scan_spinner {
+    visible: false;
+    margin-end: 5;
+  }
+
+  MenuButton {
+    styles [
+      "flat",
+    ]
+
+    Adw.ButtonContent interface_button_label {
+      label: _("");
+    }
+
+    popover: $InterfacePopover interface_popover {};
+  }
+
+  MenuButton interface_menu_button {}
+}

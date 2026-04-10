@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<gresources>
+  <gresource prefix="/com/github/kawaiifi">
+    <file compressed="true" preprocess="xml-stripblanks">ui/window.ui</file>
+    <file
+            compressed="true"
+            preprocess="xml-stripblanks"
+        >ui/interface_box.ui</file>
+    <file
+            compressed="true"
+            preprocess="xml-stripblanks"
+        >ui/interface_popover.ui</file>
+    <file
+            compressed="true"
+            preprocess="xml-stripblanks"
+        >ui/scan_info_popover.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/bss_table.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/bss_chart.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/bss_filter.ui</file>
+    <file
+            compressed="true"
+            preprocess="xml-stripblanks"
+        >ui/bss_elements.ui</file>
+    <file
+            compressed="true"
+            preprocess="xml-stripblanks"
+        >ui/bss_capability_info.ui</file>
+    <file
+            compressed="true"
+            preprocess="xml-stripblanks"
+        >ui/probe_request.ui</file>
+    <file>icons/scalable/actions/funnel-symbolic.svg</file>
+    <file>icons/scalable/actions/pci-card-symbolic.svg</file>
+    <file>icons/scalable/actions/access-point-symbolic.svg</file>
+    <file>style.css</file>
+  </gresource>
+</gresources>

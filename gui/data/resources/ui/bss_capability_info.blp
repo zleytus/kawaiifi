@@ -1,0 +1,171 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $BssCapabilityInfo: Gtk.Box {
+  width-request: 400;
+
+  Gtk.ScrolledWindow {
+      halign: fill;
+      hexpand: true;
+      vexpand: true;
+      valign: fill;
+
+    Gtk.ListBox {
+      selection-mode: none;
+      margin-top: 10;
+      margin-bottom: 10;
+      margin-start: 10;
+      margin-end: 10;
+      valign: start;
+      vexpand: false;
+
+      styles [
+        "boxed-list",
+      ]
+
+      Adw.ActionRow {
+        title: "ESS";
+        title-selectable: true;
+        subtitle: "Infrastructure network (access point, not ad-hoc)";
+        subtitle-selectable: true;
+
+        [suffix]
+        Label ess_label {
+          label: "";
+        }
+      }
+
+      Adw.ActionRow {
+        title: "IBSS";
+        title-selectable: true;
+        subtitle: "Ad-hoc/peer-to-peer network (not an access point)";
+        subtitle-selectable: true;
+
+        [suffix]
+        Label ibss_label {
+          label: "";
+        }
+      }
+
+      Adw.ActionRow {
+        title: "Privacy";
+        title-selectable: true;
+        subtitle: "Encryption/authentication required";
+        subtitle-selectable: true;
+
+        [suffix]
+        Label privacy_label {
+          label: "";
+        }
+      }
+
+      Adw.ActionRow {
+        title: "Short Preamble";
+        title-selectable: true;
+        subtitle: "Supports 802.11b short preamble";
+        subtitle-selectable: true;
+
+        [suffix]
+        Label short_preamble_label {
+          label: "";
+        }
+      }
+
+      Adw.ActionRow {
+        title: "Critical Update Flag";
+        title-selectable: true;
+        subtitle: "BSS parameters have changed";
+        subtitle-selectable: true;
+
+        [suffix]
+        Label critical_update_flag_label {
+          label: "";
+        }
+      }
+
+      Adw.ActionRow {
+        title: "Non-Tx BSSIDs Critical Update Flag";
+        title-selectable: true;
+        subtitle: "Non-transmitted BSSID profile has changed";
+        subtitle-selectable: true;
+
+        [suffix]
+        Label nontx_bssids_critical_update_flag_label {
+          label: "";
+        }
+      }
+
+      Adw.ActionRow {
+        title: "Spectrum Management";
+        title-selectable: true;
+        subtitle: "Supports 802.11h spectrum management";
+        subtitle-selectable: true;
+
+        [suffix]
+        Label spectrum_management_label {
+          label: "";
+        }
+      }
+
+      Adw.ActionRow {
+        title: "QoS";
+        title-selectable: true;
+        subtitle: "Supports 802.11e Quality of Service / WMM";
+        subtitle-selectable: true;
+
+        [suffix]
+        Label qos_label {
+          label: "";
+        }
+      }
+
+      Adw.ActionRow {
+        title: "Short Slot Time";
+        title-selectable: true;
+        subtitle: "Supports 802.11g short slot time (9μs vs 20μs)";
+        subtitle-selectable: true;
+
+        [suffix]
+        Label short_slot_time_label {
+          label: "";
+        }
+      }
+
+      Adw.ActionRow {
+        title: "APSD";
+        title-selectable: true;
+        subtitle: "Supports Automatic Power Save Delivery";
+        subtitle-selectable: true;
+
+        [suffix]
+        Label apsd_label {
+          label: "";
+        }
+      }
+
+      Adw.ActionRow {
+        title: "Radio Measurement";
+        title-selectable: true;
+        subtitle: "Supports 802.11k radio resource measurement";
+        subtitle-selectable: true;
+
+        [suffix]
+        Label radio_measurement_label {
+          label: "";
+        }
+      }
+
+      Adw.ActionRow {
+        title: "EPD";
+        title-selectable: true;
+        subtitle: "Supports sending and receiving EPD MSDUs";
+        subtitle-selectable: true;
+
+        [suffix]
+        Label epd_label {
+          label: "";
+        }
+      }
+    }
+  }
+}

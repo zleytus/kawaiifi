@@ -1,0 +1,83 @@
+using Gtk 4.0;
+
+template $BssTable: Gtk.Box {
+  orientation: vertical;
+
+  Gtk.ScrolledWindow {
+    hexpand: true;
+    vexpand: true;
+
+    ColumnView column_view {
+      show-row-separators: true;
+      show-column-separators: false;
+
+      ColumnViewColumn color_column {}
+
+      ColumnViewColumn ssid_column {
+        title: "SSID";
+        resizable: true;
+        expand: true;
+      }
+
+      ColumnViewColumn bssid_column {
+        title: "BSSID";
+      }
+
+      ColumnViewColumn vendor_column {
+        title: "Vendor";
+      }
+
+      ColumnViewColumn signal_column {
+        title: "Signal";
+      }
+
+      ColumnViewColumn channel_column {
+        title: "Channel";
+      }
+
+      ColumnViewColumn channel_width_column {
+        title: "Channel Width";
+      }
+
+      ColumnViewColumn frequency_column {
+        title: "Frequency";
+      }
+
+      ColumnViewColumn band_column {
+        title: "Band";
+      }
+
+      ColumnViewColumn protocols_column {
+        title: "Protocols";
+      }
+
+      ColumnViewColumn amendments_column {
+        title: "Amendments";
+      }
+
+      ColumnViewColumn security_column {
+        title: "Security";
+      }
+
+      ColumnViewColumn max_rate_column {
+        title: "Max Rate";
+      }
+
+      ColumnViewColumn channel_utilization_column {
+        title: "Channel Utilization";
+      }
+
+      ColumnViewColumn station_count_column {
+        title: "Stations";
+      }
+
+      ColumnViewColumn uptime_column {
+        title: "Uptime";
+      }
+
+      ColumnViewColumn last_seen_column {
+        title: "Last Seen";
+      }
+    }
+  }
+}

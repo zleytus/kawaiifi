@@ -1,0 +1,44 @@
+app-id: com.github.kawaiifi
+runtime: org.gnome.Platform
+runtime-version: '49'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: kawaiifi
+
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --device=dri
+  - --share=network
+  - --system-talk-name=org.freedesktop.NetworkManager
+  - --socket=session-bus
+  - --own-name=com.github.kawaiifi
+
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin
+  env:
+    CARGO_HOME: /run/build/kawaiifi/cargo
+    CARGO_NET_OFFLINE: 'true'
+
+modules:
+  - name: blueprint-compiler
+    buildsystem: meson
+    cleanup:
+      - '*'
+    sources:
+      - type: git
+        url: https://gitlab.gnome.org/GNOME/blueprint-compiler.git
+        tag: v0.20.0
+        commit: e6230f250949a059f9feb8095aef7d63481db62f
+
+  - name: kawaiifi
+    buildsystem: meson
+    subdir: gui
+    config-opts:
+      - -Dcargo-home=/run/build/kawaiifi/cargo
+    sources:
+      - type: dir
+        path: ../../..
+      - cargo-sources.json

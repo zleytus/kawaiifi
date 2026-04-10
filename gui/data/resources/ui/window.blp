@@ -1,0 +1,240 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $KawaiiFiWindow: Adw.ApplicationWindow {
+  default-width: 1000;
+  default-height: 700;
+  title: _("KawaiiFi");
+
+  content: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      [start]
+      Box {
+        spacing: 5;
+
+        Button start_scanning_button {
+          icon-name: "media-playback-start-symbolic";
+          tooltip-text: _("Start Scanning");
+        }
+
+        Button stop_scanning_button {
+          icon-name: "media-playback-stop-symbolic";
+          tooltip-text: _("Stop Scanning");
+        }
+      }
+
+      [end]
+      Box {
+        spacing: 5;
+
+        ToggleButton search_toggle {
+          icon-name: "funnel-symbolic";
+          tooltip-text: _("Show Filters");
+        }
+
+        MenuButton {
+          icon-name: "open-menu-symbolic";
+          menu-model: primary_menu;
+          tooltip-text: _("Main Menu");
+        }
+      }
+    }
+
+    Box {
+      orientation: vertical;
+
+      Revealer search_bar {
+        transition-type: slide_down;
+        reveal-child: false;
+        overflow: hidden;
+
+        Adw.WrapBox {
+          orientation: horizontal;
+          hexpand: true;
+          margin-bottom: 6;
+          margin-start: 6;
+          margin-end: 6;
+          child-spacing: 6;
+          line-spacing: 6;
+          line-homogeneous: true;
+
+          SearchEntry search_entry {
+            search-delay: 100;
+            placeholder-text: _("Filter by SSID/BSSID");
+            width-request: 200;
+          }
+
+          MenuButton band_filter_button {
+            styles [
+              "raised",
+            ]
+
+            label: _("Band:");
+          }
+
+          MenuButton security_filter_button {
+            styles [
+              "raised",
+            ]
+
+            label: _("Security:");
+          }
+
+          MenuButton width_filter_button {
+            styles [
+              "raised",
+            ]
+
+            label: _("Width:");
+          }
+
+          MenuButton protocols_filter_button {
+            styles [
+              "raised",
+            ]
+
+            label: _("Protocols:");
+          }
+
+          Button reset_filter_button {
+            child: Adw.ButtonContent {
+              icon-name: "view-refresh-symbolic";
+              label: _("Reset");
+              tooltip-text: _("Reset Filters");
+            };
+          }
+        }
+      }
+
+      Paned {
+        orientation: vertical;
+        position: 300;
+
+        [start]
+        $BssTable bss_table {
+          vexpand: true;
+        }
+
+        [end]
+        Adw.ViewStack bottom_stack {
+          vhomogeneous: false;
+          vexpand: false;
+          visible: false;
+
+          Adw.ViewStackPage {
+            name: "ies";
+
+            child: $BssElements bss_elements {};
+          }
+
+          Adw.ViewStackPage {
+            name: "two_point_four_ghz";
+
+            child: $BssChart bss_chart_2_4 {
+              band: "2.4 GHz";
+            };
+          }
+
+          Adw.ViewStackPage {
+            name: "five_ghz";
+
+            child: $BssChart bss_chart_5 {
+              band: "5 GHz";
+            };
+          }
+
+          Adw.ViewStackPage {
+            name: "six_ghz";
+
+            child: $BssChart bss_chart_6 {
+              band: "6 GHz";
+            };
+          }
+        }
+      }
+    }
+
+    [bottom]
+    Adw.HeaderBar {
+      show-start-title-buttons: false;
+      show-end-title-buttons: false;
+
+      [start]
+      MenuButton {
+        styles [
+          "flat",
+        ]
+
+        Adw.ButtonContent statusbar_content {
+          icon-name: "access-point-symbolic";
+        }
+
+        popover: $ScanInfoPopover scan_info_popover {};
+      }
+
+      [title]
+      Box {
+        spacing: 5;
+
+        ToggleButton ies_toggle_button {
+          styles [
+            "flat",
+          ]
+
+          label: _("IEs");
+          tooltip-text: _("Show Information Elements");
+        }
+
+        ToggleButton two_point_four_ghz_toggle_button {
+          styles [
+            "flat",
+          ]
+
+          label: _("2.4 GHz");
+          tooltip-text: _("Show 2.4 GHz");
+        }
+
+        ToggleButton five_ghz_toggle_button {
+          styles [
+            "flat",
+          ]
+
+          label: _("5 GHz");
+          tooltip-text: _("Show 5 GHz");
+        }
+
+        ToggleButton six_ghz_toggle_button {
+          styles [
+            "flat",
+          ]
+
+          label: _("6 GHz");
+          tooltip-text: _("Show 6 GHz");
+        }
+      }
+
+      [end]
+      Box {
+        $InterfaceBox interface_box {}
+
+        Label file_label {
+          label: _("");
+        }
+      }
+    }
+  };
+}
+
+menu primary_menu {
+  section {
+    item ("Open...", "win.open")
+    item ("Save All", "win.save-all")
+    item ("Save Visible", "win.save-visible")
+    item ("Save Selected", "win.save-selected")
+  }
+
+  section {
+    item ("About", "app.about")
+  }
+}
