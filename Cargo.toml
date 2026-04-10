@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["ffi", "lib"]
+members = ["ffi", "gui", "lib"]
 
 [profile.release]
 strip = true
