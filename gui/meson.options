@@ -1,0 +1,17 @@
+option(
+  'profile',
+  type: 'combo',
+  choices: [
+    'default',
+    'development'
+  ],
+  value: 'default',
+  description: 'The build profile for KawaiiFi. One of "default" or "development".'
+)
+
+option(
+  'cargo-home',
+  type: 'string',
+  value: '',
+  description: 'Override CARGO_HOME for offline builds (e.g. Flatpak). Defaults to build dir when empty.'
+)

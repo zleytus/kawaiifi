@@ -1,0 +1,78 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $ProbeRequest: Gtk.Box {
+  orientation: vertical;
+  margin-start: 20;
+  margin-end: 20;
+
+  Adw.PreferencesGroup {
+    width-request: 300;
+    title: "Request IEs";
+
+    Gtk.ListBox {
+      selection-mode: none;
+      margin-top: 20;
+      margin-bottom: 20;
+      margin-start: 20;
+      margin-end: 20;
+
+      styles [
+        "boxed-list",
+      ]
+    }
+  }
+
+  Adw.PreferencesGroup {
+    title: "Scan Flags";
+
+    Adw.SwitchRow {
+      title: "Low Span";
+      title-selectable: true;
+      subtitle: "Perform the probe request with lower span/duration";
+      subtitle-selectable: true;
+    }
+
+    Adw.SwitchRow {
+      title: "Low Power";
+      title-selectable: true;
+      subtitle: "Perform the probe request with lower span/duration";
+      subtitle-selectable: true;
+    }
+
+    Adw.SwitchRow {
+      title: "High Accuracy";
+      title-selectable: true;
+      subtitle: "Perform the probe request with lower span/duration";
+      subtitle-selectable: true;
+    }
+
+    Adw.SwitchRow {
+      title: "Flush";
+      title-selectable: true;
+      subtitle: "Flush the cache before scanning";
+      subtitle-selectable: true;
+    }
+
+    Adw.SwitchRow {
+      title: "Random Sequence Number";
+      title-selectable: true;
+      subtitle: "Randomize the sequence number in probe request frames";
+      subtitle-selectable: true;
+    }
+
+    Adw.SwitchRow {
+      title: "Low Priority";
+      title-selectable: true;
+      subtitle: "Probe request has low priority";
+      subtitle-selectable: true;
+    }
+
+    Adw.SwitchRow {
+      title: "Minimize Probe Request Content";
+      title-selectable: true;
+      subtitle: "Only include supported rates and no additional capabilities";
+      subtitle-selectable: true;
+    }
+  }
+}
