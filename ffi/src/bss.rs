@@ -220,6 +220,46 @@ pub unsafe extern "C" fn kawaiifi_bss_max_rate_mbps(bss: Option<&Bss>) -> f64 {
     bss.map(Bss::max_rate_mbps).unwrap_or_default()
 }
 
+/// Returns the fraction of time the BSS's channel is busy, as a value from 0 to 255, where 255 represents 100%.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kawaiifi_bss_channel_utilization(
+    bss: Option<&Bss>,
+    channel_utilization: Option<&mut u8>,
+) -> bool {
+    let Some(bss) = bss else {
+        return false;
+    };
+
+    if let Some(utilization) = bss.channel_utilization()
+        && let Some(channel_utilization) = channel_utilization
+    {
+        *channel_utilization = utilization;
+        true
+    } else {
+        false
+    }
+}
+
+/// Returns the number of devices associated with the BSS.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kawaiifi_bss_station_count(
+    bss: Option<&Bss>,
+    station_count: Option<&mut u16>,
+) -> bool {
+    let Some(bss) = bss else {
+        return false;
+    };
+
+    if let Some(count) = bss.station_count()
+        && let Some(station_count) = station_count
+    {
+        *station_count = count;
+        true
+    } else {
+        false
+    }
+}
+
 /// Returns the number of information elements in the BSS, or 0 if `bss` is null.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_bss_ie_count(bss: Option<&Bss>) -> usize {

@@ -138,6 +138,20 @@ namespace CsBindgen
         internal static extern double kawaiifi_bss_max_rate_mbps(Bss* bss);
 
         /// <summary>
+        ///  Returns the fraction of time the BSS's channel is busy, as a value from 0 to 255, where 255 represents 100%.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_channel_utilization", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal static extern bool kawaiifi_bss_channel_utilization(Bss* bss, byte* channel_utilization);
+
+        /// <summary>
+        ///  Returns the number of devices associated with the BSS.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_station_count", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal static extern bool kawaiifi_bss_station_count(Bss* bss, ushort* station_count);
+
+        /// <summary>
         ///  Returns the number of information elements in the BSS, or 0 if `bss` is null.
         /// </summary>
         [DllImport(__DllName, EntryPoint = "kawaiifi_bss_ie_count", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]

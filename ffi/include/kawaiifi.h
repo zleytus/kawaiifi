@@ -271,6 +271,17 @@ uint16_t kawaiifi_bss_wifi_protocols(const struct Bss *bss);
 double kawaiifi_bss_max_rate_mbps(const struct Bss *bss);
 
 /**
+ * Returns the fraction of time the BSS's channel is busy, as a value from 0 to 255, where 255 represents 100%.
+ */
+bool kawaiifi_bss_channel_utilization(const struct Bss *bss,
+                                      uint8_t *channel_utilization);
+
+/**
+ * Returns the number of devices associated with the BSS.
+ */
+bool kawaiifi_bss_station_count(const struct Bss *bss, uint16_t *station_count);
+
+/**
  * Returns the number of information elements in the BSS, or 0 if `bss` is null.
  */
 uintptr_t kawaiifi_bss_ie_count(const struct Bss *bss);

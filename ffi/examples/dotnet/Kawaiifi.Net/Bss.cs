@@ -230,6 +230,36 @@ public class Bss
         }
     }
 
+    /// <summary>The fraction of time the BSS's channel is busy, as a value from 0 to 255, where 255 represents 100%.</summary>
+    public byte? ChannelUtilization
+    {
+        get
+        {
+            unsafe
+            {
+                byte channelUtilization = 0;
+                return NativeMethods.kawaiifi_bss_channel_utilization(_ptr, &channelUtilization)
+                    ? channelUtilization
+                    : null;
+            }
+        }
+    }
+
+    /// <summary>The number of devices associated with the BSS.</summary>
+    public ushort? StationCount
+    {
+        get
+        {
+            unsafe
+            {
+                ushort stationCount = 0;
+                return NativeMethods.kawaiifi_bss_station_count(_ptr, &stationCount)
+                    ? stationCount
+                    : null;
+            }
+        } 
+    }
+
     /// <summary>
     /// The information elements (IEs) included in the BSS's beacon or probe response.
     /// The returned <see cref="Ie"/> instances borrow memory owned by the parent <see cref="Scan"/>

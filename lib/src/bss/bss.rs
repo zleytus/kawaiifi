@@ -311,6 +311,26 @@ impl Bss {
         max_rate
     }
 
+    pub fn channel_utilization(&self) -> Option<u8> {
+        self.ies.iter().find_map(|ie| {
+            if let IeData::BssLoad(bss_load) = &ie.data {
+                Some(bss_load.channel_utilization)
+            } else {
+                None
+            }
+        })
+    }
+
+    pub fn station_count(&self) -> Option<u16> {
+        self.ies.iter().find_map(|ie| {
+            if let IeData::BssLoad(bss_load) = &ie.data {
+                Some(bss_load.station_count)
+            } else {
+                None
+            }
+        })
+    }
+
     pub(crate) fn resolve_ie_dependencies(&mut self) {
         // Handle EHT + HE dependency
         let mut eht_capabilities = None;
