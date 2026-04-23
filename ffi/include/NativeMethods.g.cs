@@ -132,6 +132,12 @@ namespace CsBindgen
         internal static extern ushort kawaiifi_bss_wifi_protocols(Bss* bss);
 
         /// <summary>
+        ///  Returns the Wi-Fi amendments as a bitmask (d=1, e=2, h=4, i=8, k=16, r=32, s=64, v=128, w=256).
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_wifi_amendments", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern ushort kawaiifi_bss_wifi_amendments(Bss* bss);
+
+        /// <summary>
         ///  Returns the maximum supported data rate of the BSS in Mbps, or 0.0 if `bss` is null.
         /// </summary>
         [DllImport(__DllName, EntryPoint = "kawaiifi_bss_max_rate_mbps", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]

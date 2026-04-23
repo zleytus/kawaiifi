@@ -66,6 +66,8 @@ pub enum IeData {
     MeshConfiguration(MeshConfiguration),
     #[deku(id = "MeshId::IE_ID")]
     MeshId(#[deku(ctx = "len.0")] MeshId),
+    #[deku(id = "MobilityDomain::IE_ID")]
+    MobilityDomain(MobilityDomain),
     #[deku(id = "MuEdcaParameterSet::IE_ID")]
     MuEdcaParameterSet(MuEdcaParameterSet),
     #[deku(id = "OverlappingBssScanParams::IE_ID")]

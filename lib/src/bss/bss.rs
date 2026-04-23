@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[cfg(target_os = "linux")]
 use crate::nl80211::{BssScanWidth, BssStatus};
 use crate::{
-    Band, CapabilityInfo, ChannelWidth, SecurityProtocols, WifiProtocols,
+    Band, CapabilityInfo, ChannelWidth, SecurityProtocols, WifiAmendments, WifiProtocols,
     ies::{Ie, IeData},
 };
 
@@ -248,6 +248,10 @@ impl Bss {
 
     pub fn wifi_protocols(&self) -> WifiProtocols {
         WifiProtocols::from(self.ies.as_slice())
+    }
+
+    pub fn wifi_amendments(&self) -> WifiAmendments {
+        WifiAmendments::from(self.ies.as_slice()) | WifiAmendments::from(&self.capability_info)
     }
 
     /// The max data rate of the BSS in Mbps

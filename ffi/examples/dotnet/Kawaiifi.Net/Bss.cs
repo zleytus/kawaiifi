@@ -218,6 +218,18 @@ public class Bss
         }
     }
 
+    /// <summary>The Wi-Fi amendments supported by the BSS.</summary>
+    public WifiAmendments WifiAmendments
+    {
+        get
+        {
+            unsafe
+            {
+                return new WifiAmendments(NativeMethods.kawaiifi_bss_wifi_amendments(_ptr));
+            }
+        }
+    }
+
     /// <summary>The maximum supported data rate in Mbps.</summary>
     public double MaxRateMbps
     {

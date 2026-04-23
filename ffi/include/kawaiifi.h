@@ -266,6 +266,11 @@ uint8_t kawaiifi_bss_security_protocols(const struct Bss *bss);
 uint16_t kawaiifi_bss_wifi_protocols(const struct Bss *bss);
 
 /**
+ * Returns the Wi-Fi amendments as a bitmask (d=1, e=2, h=4, i=8, k=16, r=32, s=64, v=128, w=256).
+ */
+uint16_t kawaiifi_bss_wifi_amendments(const struct Bss *bss);
+
+/**
  * Returns the maximum supported data rate of the BSS in Mbps, or 0.0 if `bss` is null.
  */
 double kawaiifi_bss_max_rate_mbps(const struct Bss *bss);

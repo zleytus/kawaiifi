@@ -214,6 +214,12 @@ pub unsafe extern "C" fn kawaiifi_bss_wifi_protocols(bss: Option<&Bss>) -> u16 {
     bss.map(|b| b.wifi_protocols().bits()).unwrap_or_default()
 }
 
+/// Returns the Wi-Fi amendments as a bitmask (d=1, e=2, h=4, i=8, k=16, r=32, s=64, v=128, w=256).
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kawaiifi_bss_wifi_amendments(bss: Option<&Bss>) -> u16 {
+    bss.map(|b| b.wifi_amendments().bits()).unwrap_or_default()
+}
+
 /// Returns the maximum supported data rate of the BSS in Mbps, or 0.0 if `bss` is null.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_bss_max_rate_mbps(bss: Option<&Bss>) -> f64 {
