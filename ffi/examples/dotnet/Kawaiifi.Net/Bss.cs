@@ -181,6 +181,9 @@ public class Bss
         }
     }
 
+    /// <summary>The estimated time the BSS has been running, derived from its TSF timer.</summary>
+    public TimeSpan Uptime => TimeSpan.FromMicroseconds(Tsf);
+
     /// <summary>The Unix timestamp in milliseconds when the BSS was last seen, or null if unavailable.</summary>
     public long? LastSeenUtcMs
     {
