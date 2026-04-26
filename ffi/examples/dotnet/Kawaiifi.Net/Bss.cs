@@ -197,6 +197,11 @@ public class Bss
         }
     }
 
+    /// <summary>The UTC date and time when the BSS was last seen, or null if unavailable.</summary>
+    public DateTime? LastSeenUtc => LastSeenUtcMs is { } ms
+        ? DateTimeOffset.FromUnixTimeMilliseconds(ms).UtcDateTime
+        : null;
+
     /// <summary>The security protocols supported by the BSS.</summary>
     public SecurityProtocols SecurityProtocols
     {
@@ -272,7 +277,7 @@ public class Bss
                     ? stationCount
                     : null;
             }
-        } 
+        }
     }
 
     /// <summary>
