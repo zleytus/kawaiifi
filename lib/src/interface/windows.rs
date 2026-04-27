@@ -6,8 +6,9 @@ use tokio::time::timeout;
 use windows_sys::{
     Win32::NetworkManagement::WiFi::{
         L2_NOTIFICATION_DATA, WLAN_BSS_LIST, WLAN_INTERFACE_INFO, WLAN_INTERFACE_INFO_LIST,
-        WLAN_NOTIFICATION_SOURCE_ACM, WLAN_NOTIFICATION_SOURCE_NONE, WlanEnumInterfaces,
-        WlanFreeMemory, WlanGetNetworkBssList, WlanOpenHandle, WlanRegisterNotification, WlanScan,
+        WLAN_NOTIFICATION_SOURCE_ACM, WLAN_NOTIFICATION_SOURCE_NONE, WlanCloseHandle,
+        WlanEnumInterfaces, WlanFreeMemory, WlanGetNetworkBssList, WlanOpenHandle,
+        WlanRegisterNotification, WlanScan,
         dot11_BSS_type_any, wlan_notification_acm_scan_complete, wlan_notification_acm_scan_fail,
     },
     core::GUID,
@@ -38,6 +39,7 @@ pub(super) fn interfaces() -> Vec<Interface> {
     };
 
     unsafe { WlanFreeMemory(interface_list as *const _) };
+    unsafe { WlanCloseHandle(handle, null_mut()) };
 
     interfaces
 }
@@ -108,6 +110,7 @@ impl Interface {
                 null_mut(),
             );
             drop(Box::from_raw(notify_ptr));
+            WlanCloseHandle(handle, null_mut());
         }
 
         let bss_list = self.cached_scan_results_blocking()?;
@@ -176,6 +179,7 @@ impl Interface {
                 null_mut(),
             );
             drop(Box::from_raw(sync_ptr));
+            WlanCloseHandle(handle, null_mut());
         }
 
         let bss_list = self.cached_scan_results_blocking()?;
@@ -204,6 +208,7 @@ impl Interface {
         } != 0
             || bss_list_ptr.is_null()
         {
+            unsafe { WlanCloseHandle(handle, null_mut()) };
             return Ok(Vec::new());
         }
 
@@ -223,6 +228,7 @@ impl Interface {
         };
 
         unsafe { WlanFreeMemory(bss_list_ptr as *const _) };
+        unsafe { WlanCloseHandle(handle, null_mut()) };
 
         Ok(bss_list)
     }
