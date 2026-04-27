@@ -30,12 +30,13 @@ impl Bss {
                 .try_into()
                 .unwrap(),
             last_seen_utc: {
-                // Microseconds between 1601-01-01 (Windows) and 1970-01-01 (Unix)
-                const WINDOWS_TO_UNIX_EPOCH_US: u64 = 11_644_473_600_000_000;
+                // 100-nanosecond intervals between 1601-01-01 (Windows FILETIME) and 1970-01-01 (Unix)
+                const WINDOWS_TO_UNIX_EPOCH_100NS: u64 = 116_444_736_000_000_000;
 
                 let unix_us = entry_ref
                     .ullHostTimestamp
-                    .saturating_sub(WINDOWS_TO_UNIX_EPOCH_US);
+                    .saturating_sub(WINDOWS_TO_UNIX_EPOCH_100NS)
+                    / 10; // 100ns → µs
                 DateTime::from_timestamp(
                     (unix_us / 1_000_000) as i64,
                     ((unix_us % 1_000_000) * 1_000) as u32, // remainder µs → ns
