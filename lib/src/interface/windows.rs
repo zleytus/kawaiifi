@@ -55,6 +55,8 @@ impl Interface {
 
     pub fn description(&self) -> String {
         String::from_utf16_lossy(&self.wlan_interface_info.strInterfaceDescription)
+            .trim_end_matches('\0')
+            .to_string()
     }
 
     #[tracing::instrument(skip(self), fields(interface = %self.description()))]
