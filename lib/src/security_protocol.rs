@@ -7,13 +7,18 @@ use enumflags2::{BitFlags, bitflags};
 
 use crate::{Ie, IeData};
 
+/// A Wi-Fi security protocol.
 #[bitflags]
 #[derive(Copy, Clone, Debug, PartialOrd, Ord, PartialEq, Eq)]
 #[repr(u8)]
 pub enum SecurityProtocol {
+    /// Wired Equivalent Privacy (WEP).
     WEP = 1 << 0,
+    /// Wi-Fi Protected Access (WPA).
     WPA = 1 << 1,
+    /// Wi-Fi Protected Access 2 (WPA2).
     WPA2 = 1 << 2,
+    /// Wi-Fi Protected Access 3 (WPA3).
     WPA3 = 1 << 3,
 }
 
@@ -28,7 +33,7 @@ impl Display for SecurityProtocol {
     }
 }
 
-// Use the Newtype pattern to create a type alias (SecurityProtocols) and implement the From trait
+/// A set of [`SecurityProtocol`] flags indicating which security protocols a BSS supports.
 #[derive(
     Debug,
     Copy,
