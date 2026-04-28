@@ -4,6 +4,7 @@ use windows_sys::Win32::NetworkManagement::WiFi::WLAN_BSS_ENTRY;
 use crate::{Bss, ies};
 
 impl Bss {
+    /// The link quality of the BSS as a value from 0 to 100.
     pub fn link_quality(&self) -> u8 {
         self.link_quality
     }

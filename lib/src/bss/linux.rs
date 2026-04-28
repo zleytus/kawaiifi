@@ -10,54 +10,67 @@ use crate::{
 };
 
 impl Bss {
+    /// The authentication or association status of this device with the BSS, or `None` if neither authenticated nor associated.
     pub fn status(&self) -> Option<BssStatus> {
         self.status
     }
 
+    /// Whether this BSS's information came from a probe response rather than a beacon.
     pub fn is_from_probe_response(&self) -> bool {
         self.is_from_probe_response
     }
 
+    /// The 6-byte BSSID (MAC address) of the parent BSS, or `None` if unavailable.
     pub fn parent_bssid(&self) -> Option<[u8; 6]> {
         self.parent_bssid
     }
 
+    /// The timing synchronization function (TSF) timer value of the parent BSS, or `None` if unavailable.
     pub fn parent_tsf(&self) -> Option<u64> {
         self.parent_tsf
     }
 
+    /// The TSF value reported in the last beacon frame, or `None` if unavailable.
     pub fn beacon_tsf(&self) -> Option<u64> {
         self.beacon_tsf
     }
 
+    /// The frequency offset of the BSS in kHz, or `None` if unavailable.
     pub fn frequency_offset_khz(&self) -> Option<u32> {
         self.frequency_offset_khz
     }
 
+    /// The signal strength as a percentage (0–100), or `None` if unavailable.
     pub fn signal_percent(&self) -> Option<u8> {
         self.signal_percent
     }
 
+    /// The information elements (IEs) from the last beacon frame, separate from the probe response IEs in `ies()`, or `None` if unavailable.
     pub fn beacon_ies(&self) -> Option<&[Ie]> {
         self.beacon_ies.as_deref()
     }
 
+    /// The channel width of the control channel reported by the scan, or `None` if unavailable. No longer used by the kernel.
     pub fn scan_width(&self) -> Option<BssScanWidth> {
         self.scan_width
     }
 
+    /// The time the BSS was last seen as nanoseconds since boot, or `None` if unavailable.
     pub fn last_seen_boottime(&self) -> Option<u64> {
         self.last_seen_boottime
     }
 
+    /// The number of milliseconds since the BSS was last seen, or `None` if unavailable.
     pub fn seen_ms_ago(&self) -> Option<u32> {
         self.seen_ms_ago
     }
 
+    /// The Multi-Link Operation (MLO) link ID, or `None` if unavailable.
     pub fn mlo_link_id(&self) -> Option<u8> {
         self.mlo_link_id
     }
 
+    /// The 6-byte MLD address of the BSS, or `None` if unavailable.
     pub fn mld_address(&self) -> Option<&[u8; 6]> {
         self.mld_address.as_ref()
     }

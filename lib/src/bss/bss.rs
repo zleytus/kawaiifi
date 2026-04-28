@@ -10,6 +10,7 @@ use crate::{
     ies::{Ie, IeData},
 };
 
+/// A basic service set (BSS).
 #[derive(Debug, Clone, Eq, Serialize, Deserialize)]
 pub struct Bss {
     // Cross-platform
@@ -59,18 +60,22 @@ pub struct Bss {
 }
 
 impl Bss {
+    /// The 6-byte BSSID (MAC address) of the BSS.
     pub fn bssid(&self) -> &[u8; 6] {
         &self.bssid
     }
 
+    /// The operating frequency in MHz.
     pub fn frequency_mhz(&self) -> u32 {
         self.frequency_mhz
     }
 
+    /// The frequency band the BSS operates on.
     pub fn band(&self) -> Band {
         Band::from_freq_mhz(self.frequency_mhz)
     }
 
+    /// The channel width used by the BSS.
     pub fn channel_width(&self) -> ChannelWidth {
         ChannelWidth::from(self.ies())
     }
@@ -177,6 +182,7 @@ impl Bss {
         primary
     }
 
+    /// The 802.11 channel number.
     pub fn channel_number(&self) -> u8 {
         self.ies
             .iter()
@@ -198,38 +204,47 @@ impl Bss {
             })
     }
 
+    /// The received signal strength in dBm.
     pub fn signal_dbm(&self) -> i32 {
         self.signal_dbm
     }
 
+    /// The beacon interval in time units (1 TU = 1024 µs).
     pub fn beacon_interval_tu(&self) -> u16 {
         self.beacon_interval_tu
     }
 
+    /// The beacon interval in milliseconds.
     pub fn beacon_interval_ms(&self) -> f64 {
         f64::from(self.beacon_interval_tu) * 1.024
     }
 
+    /// The 802.11 capability information flags advertised by the BSS.
     pub fn capability_info(&self) -> &CapabilityInfo {
         &self.capability_info
     }
 
+    /// The information elements (IEs) included in the BSS's beacon or probe response.
     pub fn ies(&self) -> &[Ie] {
         &self.ies
     }
 
+    /// The timing synchronization function (TSF) timer value.
     pub fn tsf(&self) -> u64 {
         self.tsf
     }
 
+    /// The estimated time the BSS has been running, derived from its TSF timer.
     pub fn uptime(&self) -> Duration {
         Duration::from_micros(self.tsf)
     }
 
+    /// The UTC date and time when the BSS was last seen, or `None` if unavailable.
     pub fn last_seen_utc(&self) -> Option<DateTime<Utc>> {
         self.last_seen_utc
     }
 
+    /// The SSID (network name), or `None` for hidden networks.
     pub fn ssid(&self) -> Option<&str> {
         self.ies.iter().find_map(|ie| {
             if let IeData::Ssid(ssid) = &ie.data
@@ -242,19 +257,22 @@ impl Bss {
         })
     }
 
+    /// The security protocols supported by the BSS.
     pub fn security_protocols(&self) -> SecurityProtocols {
         SecurityProtocols::from(self.ies.as_slice())
     }
 
+    /// The Wi-Fi protocols supported by the BSS.
     pub fn wifi_protocols(&self) -> WifiProtocols {
         WifiProtocols::from(self.ies.as_slice())
     }
 
+    /// The Wi-Fi amendments supported by the BSS.
     pub fn wifi_amendments(&self) -> WifiAmendments {
         WifiAmendments::from(self.ies.as_slice()) | WifiAmendments::from(&self.capability_info)
     }
 
-    /// The max data rate of the BSS in Mbps
+    /// The maximum supported data rate in Mbps.
     pub fn max_rate_mbps(&self) -> f64 {
         // Iterate once through the IEs and find all of the following IEs that can be used
         // to figure out the max rate
@@ -315,6 +333,7 @@ impl Bss {
         max_rate
     }
 
+    /// The fraction of time the BSS's channel is busy, as a value from 0 to 255, where 255 represents 100%, or `None` if unavailable.
     pub fn channel_utilization(&self) -> Option<u8> {
         self.ies.iter().find_map(|ie| {
             if let IeData::BssLoad(bss_load) = &ie.data {
@@ -325,6 +344,7 @@ impl Bss {
         })
     }
 
+    /// The number of devices associated with the BSS, or `None` if unavailable.
     pub fn station_count(&self) -> Option<u16> {
         self.ies.iter().find_map(|ie| {
             if let IeData::BssLoad(bss_load) = &ie.data {
