@@ -7,18 +7,28 @@ use enumflags2::{BitFlags, bitflags};
 
 use crate::{CapabilityInfo, Ie, IeData};
 
+/// An 802.11 amendment supported by a BSS.
 #[bitflags]
 #[derive(Copy, Clone, Debug, PartialEq, Ord, PartialOrd, Eq)]
 #[repr(u16)]
 pub enum WifiAmendment {
+    /// 802.11d — operation in additional regulatory domains.
     D = 1 << 0,
+    /// 802.11e — QoS enhancements and EDCA.
     E = 1 << 1,
+    /// 802.11h — spectrum management (DFS and TPC) for 5 GHz.
     H = 1 << 2,
+    /// 802.11i — RSN security (WPA2).
     I = 1 << 3,
+    /// 802.11k — radio resource measurement.
     K = 1 << 4,
+    /// 802.11r — fast BSS transition (FT roaming).
     R = 1 << 5,
+    /// 802.11s — mesh networking.
     S = 1 << 6,
+    /// 802.11v — BSS transition management.
     V = 1 << 7,
+    /// 802.11w — management frame protection (MFP).
     W = 1 << 8,
 }
 
@@ -38,7 +48,7 @@ impl Display for WifiAmendment {
     }
 }
 
-// Use the Newtype pattern to create a type alias (WifiAmendments) and implement the From trait
+/// A set of [`WifiAmendment`] flags indicating which 802.11 amendments a BSS supports.
 #[derive(
     Debug,
     Copy,
