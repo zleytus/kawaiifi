@@ -44,21 +44,25 @@ pub(super) fn interfaces() -> Vec<Interface> {
     interfaces
 }
 
+/// A Wi-Fi interface obtained from the Windows WLAN API.
 pub struct Interface {
     wlan_interface_info: WLAN_INTERFACE_INFO,
 }
 
 impl Interface {
+    /// The GUID identifying this interface to the Windows WLAN API.
     pub fn guid(&self) -> GUID {
         self.wlan_interface_info.InterfaceGuid
     }
 
+    /// The human-readable description of the interface.
     pub fn description(&self) -> String {
         String::from_utf16_lossy(&self.wlan_interface_info.strInterfaceDescription)
             .trim_end_matches('\0')
             .to_string()
     }
 
+    /// Triggers a new scan and returns the results.
     #[tracing::instrument(skip(self), fields(interface = %self.description()))]
     pub async fn scan(&self) -> Result<Scan, scan::Error> {
         let mut version = 0;
@@ -120,6 +124,7 @@ impl Interface {
         Ok(Scan::new(bss_list, start_time, end_time))
     }
 
+    /// Triggers a new scan and returns the results, blocking the current thread.
     #[tracing::instrument(skip(self), fields(interface = %self.description()))]
     pub fn scan_blocking(&self) -> Result<Scan, scan::Error> {
         let mut version = 0;
@@ -189,6 +194,7 @@ impl Interface {
         Ok(Scan::new(bss_list, start_time, end_time))
     }
 
+    /// Returns the most recently cached scan results without triggering a new scan, blocking the current thread.
     pub fn cached_scan_results_blocking(&self) -> Result<Vec<Bss>, scan::Error> {
         let mut version = 0;
         let mut handle = null_mut();

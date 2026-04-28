@@ -50,6 +50,7 @@ pub(super) fn interfaces() -> Result<Vec<Interface>, Error> {
     Ok(interfaces)
 }
 
+/// A Wi-Fi interface obtained via nl80211.
 #[derive(Debug, Clone, Eq)]
 pub struct Interface {
     name: CString,
@@ -71,70 +72,87 @@ pub struct Interface {
 }
 
 impl Interface {
+    /// The interface name (e.g., `wlan0`).
     pub fn name(&self) -> &str {
         self.name.to_str().unwrap_or_default()
     }
 
+    /// The kernel interface index.
     pub fn index(&self) -> u32 {
         self.index
     }
 
+    /// The interface type (e.g., station, AP, monitor).
     pub fn interface_type(&self) -> IfType {
         self.interface_type
     }
 
+    /// The index of the physical wireless device (wiphy) this interface belongs to.
     pub fn wiphy(&self) -> u32 {
         self.wiphy
     }
 
+    /// The wireless device identifier (wdev).
     pub fn wdev(&self) -> u64 {
         self.wdev
     }
 
+    /// The 6-byte MAC address of the interface.
     pub fn mac_address(&self) -> [u8; 6] {
         self.mac_address
     }
 
+    /// The interface generation counter, incremented each time the interface list changes.
     pub fn generation(&self) -> u32 {
         self.generation
     }
 
+    /// Whether 4-address (WDS) mode is enabled on this interface.
     pub fn four_address(&self) -> bool {
         self.four_address
     }
 
+    /// The SSID the interface is currently associated with, or `None` if not associated.
     pub fn ssid(&self) -> Option<&str> {
         self.ssid.as_deref()
     }
 
+    /// The frequency the interface is currently operating on in MHz, or `None` if not connected.
     pub fn wiphy_freq_mhz(&self) -> Option<u32> {
         self.wiphy_freq_mhz
     }
 
+    /// The frequency offset in kHz, or `None` if unavailable.
     pub fn wiphy_freq_offset_khz(&self) -> Option<u32> {
         self.wiphy_freq_offset_khz
     }
 
+    /// The transmit power level in mBm (100 × dBm), or `None` if unavailable.
     pub fn wiphy_tx_power_level_mbm(&self) -> Option<u32> {
         self.wiphy_tx_power_level_mbm
     }
 
+    /// The center frequency of the first channel segment in MHz, or `None` if unavailable.
     pub fn center_freq_1_mhz(&self) -> Option<u32> {
         self.center_freq_1_mhz
     }
 
+    /// The center frequency of the second channel segment in MHz, or `None` if unavailable.
     pub fn center_freq_2_mhz(&self) -> Option<u32> {
         self.center_freq_2_mhz
     }
 
+    /// The channel width the interface is currently using, or `None` if not connected.
     pub fn channel_width(&self) -> Option<ChannelWidth> {
         self.channel_width
     }
 
+    /// The radio mask for this virtual interface, or `None` if unavailable.
     pub fn vif_radio_mask(&self) -> Option<u32> {
         self.vif_radio_mask
     }
 
+    /// The vendor name of the Wi-Fi adapter looked up from PCI/USB IDs, or `None` if unknown.
     pub fn vendor_name(&self) -> Option<String> {
         // Fall back to database lookup using vendor ID
         let vendor_id = self.vendor_id()?;
@@ -152,6 +170,7 @@ impl Interface {
         None
     }
 
+    /// The device name of the Wi-Fi adapter looked up from PCI/USB IDs, or `None` if unknown.
     pub fn device_name(&self) -> Option<String> {
         // Fall back to database lookup
         let vendor_id = self.vendor_id()?;
@@ -174,6 +193,7 @@ impl Interface {
         None
     }
 
+    /// The PCI or USB vendor ID of the Wi-Fi adapter, or `None` if unavailable.
     pub fn vendor_id(&self) -> Option<u16> {
         let uevent =
             std::fs::read_to_string(format!("/sys/class/net/{}/device/uevent", self.name()))
@@ -195,6 +215,7 @@ impl Interface {
         None
     }
 
+    /// The PCI or USB device ID of the Wi-Fi adapter, or `None` if unavailable.
     pub fn device_id(&self) -> Option<u16> {
         let uevent =
             std::fs::read_to_string(format!("/sys/class/net/{}/device/uevent", self.name()))
@@ -216,6 +237,7 @@ impl Interface {
         None
     }
 
+    /// The kernel driver name for this interface, or `None` if unavailable.
     pub fn driver(&self) -> Option<String> {
         let uevent =
             std::fs::read_to_string(format!("/sys/class/net/{}/device/uevent", self.name()))
@@ -230,6 +252,7 @@ impl Interface {
         None
     }
 
+    /// The bus type (PCIe, USB, SDIO) the adapter uses.
     pub fn bus_type(&self) -> BusType {
         let subsystem_path = format!("/sys/class/net/{}/device/subsystem", self.name());
 
@@ -248,11 +271,13 @@ impl Interface {
         BusType::Unknown
     }
 
+    /// Triggers a new scan and returns the results.
     #[tracing::instrument(skip(self), fields(interface = %self.name()))]
     pub async fn scan(&self, backend: scan::Backend) -> Result<Scan, scan::Error> {
         scan::scan(self, backend).await
     }
 
+    /// Triggers a new scan and returns the results, blocking the current thread.
     #[tracing::instrument(skip(self), fields(interface = %self.name()))]
     pub fn scan_blocking(&self, backend: scan::Backend) -> Result<Scan, scan::Error> {
         tokio::runtime::Builder::new_current_thread()
@@ -261,6 +286,7 @@ impl Interface {
             .block_on(scan::scan(self, backend))
     }
 
+    /// Returns the most recently cached scan results without triggering a new scan.
     pub async fn cached_scan_results(&self) -> Result<Vec<Bss>, scan::Error> {
         let (socket, _) = neli::router::asynchronous::NlRouter::connect(
             neli::consts::socket::NlFamily::Generic,
@@ -271,6 +297,7 @@ impl Interface {
         scan::scan_results(self, &socket).await
     }
 
+    /// Returns the most recently cached scan results without triggering a new scan, blocking the current thread.
     pub fn cached_scan_results_blocking(&self) -> Result<Vec<Bss>, scan::Error> {
         let (socket, _) = neli::router::synchronous::NlRouter::connect(
             neli::consts::socket::NlFamily::Generic,
@@ -386,6 +413,7 @@ impl TryFrom<&Genlmsghdr<Cmd, Attr>> for Interface {
     }
 }
 
+/// The bus type used to connect a Wi-Fi adapter to the system.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BusType {
     Pci,
