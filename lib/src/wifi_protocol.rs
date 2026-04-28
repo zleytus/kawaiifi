@@ -10,16 +10,24 @@ use crate::{
     ies::supported_rates::{DataRate, ExtendedSupportedRates, SupportedRates},
 };
 
+/// An 802.11 Wi-Fi protocol generation supported by a BSS.
 #[bitflags]
 #[derive(Copy, Clone, Debug, PartialEq, Ord, PartialOrd, Eq)]
 #[repr(u16)]
 pub enum WifiProtocol {
+    /// 802.11a — 5 GHz OFDM.
     A = 1 << 0,
+    /// 802.11b — 2.4 GHz DSSS.
     B = 1 << 1,
+    /// 802.11g — 2.4 GHz OFDM.
     G = 1 << 2,
+    /// 802.11n — HT (Wi-Fi 4).
     N = 1 << 3,
+    /// 802.11ac — VHT (Wi-Fi 5).
     AC = 1 << 4,
+    /// 802.11ax — HE (Wi-Fi 6/6E).
     AX = 1 << 5,
+    /// 802.11be — EHT (Wi-Fi 7).
     BE = 1 << 6,
 }
 
@@ -37,7 +45,7 @@ impl Display for WifiProtocol {
     }
 }
 
-// Use the Newtype pattern to create a type alias (WifiProtocols) and implement the From trait
+/// A set of [`WifiProtocol`] flags indicating which 802.11 protocol generations a BSS supports.
 #[derive(
     Debug,
     Copy,
