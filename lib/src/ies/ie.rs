@@ -8,10 +8,14 @@ use super::{Field, IeData, IeId, elements::*};
 /// Contains the element ID, length, optional extension ID, and parsed data.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 pub struct Ie {
+    /// The element ID.
     pub id: u8,
+    /// The length of the element data in bytes, excluding the ID and length fields.
     pub len: u8,
+    /// The element extension ID, present only when `id` is 255.
     #[deku(cond = "*id == 255")]
     pub id_ext: Option<u8>,
+    /// The parsed element data.
     #[deku(
         bytes = "Ie::compute_data_len(*len, *id_ext)?",
         ctx = "IeId { id: *id, id_ext: *id_ext }"
@@ -20,6 +24,7 @@ pub struct Ie {
 }
 
 impl Ie {
+    /// The human-readable name of this information element.
     pub const fn name(&self) -> &'static str {
         match self.data {
             IeData::AdvertisementProtocol(_) => AdvertisementProtocol::NAME,
@@ -80,10 +85,12 @@ impl Ie {
         }
     }
 
+    /// The raw bytes of this information element, including the ID, length, and data fields.
     pub fn bytes(&self) -> Vec<u8> {
         self.to_bytes().unwrap_or_default()
     }
 
+    /// A short human-readable summary of the element's contents.
     pub fn summary(&self) -> String {
         match &self.data {
             IeData::AdvertisementProtocol(data) => data.summary(),
@@ -142,6 +149,7 @@ impl Ie {
         }
     }
 
+    /// The parsed fields of this information element.
     pub fn fields(&self) -> Vec<Field> {
         match &self.data {
             IeData::AdvertisementProtocol(data) => data.fields(),
