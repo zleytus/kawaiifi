@@ -1,0 +1,46 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { tv } from "tailwind-variants";
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Custom pattern ID (auto-generated if not provided) */
+  patternId?: string;
+  /** Spacing between dots in pixels */
+  spacing?: number;
+  /** Dot radius in pixels */
+  dotSize?: number;
+  /** Dot opacity (0-1) */
+  opacity?: number;
+}
+
+const patternStyles = tv({
+  base: "pointer-events-none absolute inset-0",
+});
+
+const {
+  patternId: customPatternId,
+  spacing = 24,
+  dotSize = 1,
+  opacity = 0.4,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const patternId = customPatternId ?? `bg-03-${Math.random().toString(36).slice(2, 9)}`;
+---
+
+<div class={patternStyles({ class: className })} aria-hidden="true" {...rest}>
+  <svg class="text-muted-foreground size-full" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id={patternId} width={spacing} height={spacing} patternUnits="userSpaceOnUse">
+        <circle
+          cx={spacing / 2}
+          cy={spacing / 2}
+          r={dotSize}
+          fill="currentColor"
+          fill-opacity={opacity}></circle>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill={`url(#${patternId})`}></rect>
+  </svg>
+</div>

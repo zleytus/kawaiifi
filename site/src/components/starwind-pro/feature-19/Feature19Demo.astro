@@ -1,0 +1,50 @@
+---
+import IconBolt from "@tabler/icons/outline/bolt.svg";
+import IconCloud from "@tabler/icons/outline/cloud.svg";
+import IconLock from "@tabler/icons/outline/lock.svg";
+
+import Feature19, { type FeatureCard } from "./Feature19.astro";
+
+const features: FeatureCard[] = [
+  {
+    icon: IconBolt,
+    title: "Lightning Fast",
+    description: "Edge caching and minimal JavaScript for instant page loads.",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=450&fit=crop",
+    imageAlt: "Analytics dashboard",
+    title: "Real-time Analytics",
+    description: "Track interactions with detailed dashboards and insights.",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=450&fit=crop",
+    imageAlt: "Team collaborating",
+    title: "Team Collaboration",
+    description: "Work together seamlessly with real-time updates.",
+  },
+  {
+    icon: IconLock,
+    title: "Enterprise Security",
+    description: "SOC 2 compliant with end-to-end encryption.",
+  },
+  {
+    icon: IconCloud,
+    title: "Global CDN",
+    description: "Content delivered from edge locations worldwide.",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=450&fit=crop",
+    imageAlt: "Dashboard metrics",
+    title: "Custom Dashboards",
+    description: "Build personalized views for your unique workflow.",
+  },
+];
+---
+
+<Feature19
+  badge="Capabilities"
+  heading="Everything you need to scale"
+  description="A comprehensive toolkit designed for modern development teams."
+  features={features}
+/>

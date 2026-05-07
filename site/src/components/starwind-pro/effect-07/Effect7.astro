@@ -1,0 +1,90 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { tv } from "tailwind-variants";
+
+interface Props extends HTMLAttributes<"div"> {
+  /**
+   * Length of the corner border segments in pixels
+   * @default 16
+   */
+  cornerLength?: number;
+  /**
+   * Thickness of the corner borders in pixels
+   * @default 3
+   */
+  borderWidth?: number;
+}
+
+const cornerBumperEffect = tv({
+  base: "relative",
+});
+
+const { cornerLength = 16, borderWidth = 3, class: className, ...rest } = Astro.props;
+---
+
+<div
+  class={cornerBumperEffect({ class: className })}
+  style={`--corner-length: ${cornerLength}px; --border-width: ${borderWidth}px;`}
+  {...rest}
+>
+  <!-- Top-left corner -->
+  <span class="corner-bumper corner-top-left" aria-hidden="true"></span>
+
+  <!-- Top-right corner -->
+  <span class="corner-bumper corner-top-right" aria-hidden="true"></span>
+
+  <!-- Bottom-left corner -->
+  <span class="corner-bumper corner-bottom-left" aria-hidden="true"></span>
+
+  <!-- Bottom-right corner -->
+  <span class="corner-bumper corner-bottom-right" aria-hidden="true"></span>
+
+  <slot />
+</div>
+
+<style>
+  .corner-bumper {
+    position: absolute;
+    pointer-events: none;
+  }
+
+  /* Top-left corner */
+  .corner-top-left {
+    top: 0;
+    left: 0;
+    width: var(--corner-length);
+    height: var(--corner-length);
+    border-top: var(--border-width) solid var(--border);
+    border-left: var(--border-width) solid var(--border);
+  }
+
+  /* Top-right corner */
+  .corner-top-right {
+    top: 0;
+    right: 0;
+    width: var(--corner-length);
+    height: var(--corner-length);
+    border-top: var(--border-width) solid var(--border);
+    border-right: var(--border-width) solid var(--border);
+  }
+
+  /* Bottom-left corner */
+  .corner-bottom-left {
+    bottom: 0;
+    left: 0;
+    width: var(--corner-length);
+    height: var(--corner-length);
+    border-bottom: var(--border-width) solid var(--border);
+    border-left: var(--border-width) solid var(--border);
+  }
+
+  /* Bottom-right corner */
+  .corner-bottom-right {
+    bottom: 0;
+    right: 0;
+    width: var(--corner-length);
+    height: var(--corner-length);
+    border-bottom: var(--border-width) solid var(--border);
+    border-right: var(--border-width) solid var(--border);
+  }
+</style>

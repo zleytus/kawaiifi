@@ -1,0 +1,338 @@
+---
+import IconBrandGithub from "@tabler/icons/outline/brand-github.svg";
+import IconChevronDown from "@tabler/icons/outline/chevron-down.svg";
+import IconMenu from "@tabler/icons/outline/menu-deep.svg";
+import IconX from "@tabler/icons/outline/x.svg";
+import ThemeSwitcher from "@/components/starwind-pro/theme-switcher-03/ThemeSwitcher3.astro";
+import type { HTMLAttributes } from "astro/types";
+import { tv } from "tailwind-variants";
+
+import { Button } from "@/components/starwind/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/starwind/collapsible";
+import {
+  Dropdown,
+  DropdownContent,
+  DropdownItem,
+  DropdownTrigger,
+} from "@/components/starwind/dropdown";
+import { Separator } from "@/components/starwind/separator";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/starwind/sheet";
+
+/** Navigation link structure */
+export interface NavLink {
+  /** Display text for the link */
+  label: string;
+  /** URL the link points to */
+  href?: string;
+  /** Nested sub-links */
+  children?: NavLink[];
+}
+
+interface Props extends HTMLAttributes<"nav"> {
+  /** Site name displayed when no logo slot is provided */
+  siteName?: string;
+  /** Array of navigation links */
+  links?: NavLink[];
+  /** Primary CTA button text */
+  ctaText?: string;
+  /** Primary CTA button href */
+  ctaHref?: string;
+  /** Secondary button text (optional) */
+  secondaryText?: string;
+  /** Secondary button href */
+  secondaryHref?: string;
+  /** GitHub repository URL (displays a GitHub icon button when provided) */
+  githubHref?: string;
+}
+
+// you could also swap "sticky" for "fixed"
+const navStyles = tv({
+  base: "data-scrolled:bg-background/40 sticky @container inset-x-0 top-0 z-50 border-transparent transition-all duration-300 border-b data-scrolled:border-border data-scrolled:backdrop-blur",
+});
+
+const {
+  siteName = "Starwind Pro",
+  links = [],
+  ctaText = "Get Started",
+  ctaHref = "#",
+  secondaryText,
+  secondaryHref = "#",
+  githubHref,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+<nav class={navStyles({ class: className })} data-navbar-2 {...rest}>
+  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
+    <!-- Logo / Site Name -->
+    <div class="flex shrink-0 items-baseline">
+      <slot name="logo">
+        <a href="/" class="text-lg font-semibold">
+          {siteName}
+        </a>
+      </slot>
+
+      <!-- Desktop Navigation Links -->
+      <div class="ml-6 hidden items-center gap-1 @2xl:flex">
+        {
+          links.map((link) => {
+            if (link.children && link.children.length > 0) {
+              return (
+                <Dropdown>
+                  <DropdownTrigger asChild>
+                    <button
+                      type="button"
+                      class="text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-1 rounded-md px-3 py-2 transition-colors"
+                    >
+                      {link.label}
+                      <IconChevronDown class="size-4" />
+                    </button>
+                  </DropdownTrigger>
+                  <DropdownContent align="start">
+                    {link.children.map((child) => (
+                      <DropdownItem as="a" href={child.href}>
+                        {child.label}
+                      </DropdownItem>
+                    ))}
+                  </DropdownContent>
+                </Dropdown>
+              );
+            }
+
+            return (
+              <a
+                href={link.href}
+                class="text-muted-foreground hover:text-foreground rounded-md px-3 py-2 transition-colors"
+              >
+                {link.label}
+              </a>
+            );
+          })
+        }
+      </div>
+    </div>
+
+    <!-- Desktop CTA Buttons -->
+    <div class="hidden items-center gap-2 @2xl:flex">
+      {
+        secondaryText && (
+          <Button variant="ghost" href={secondaryHref}>
+            {secondaryText}
+          </Button>
+        )
+      }
+      {
+        githubHref ? (
+          <Button variant="ghost" href={githubHref}>
+            <IconBrandGithub />
+            GitHub
+          </Button>
+        ) : (
+          <Button href={ctaHref}>{ctaText}</Button>
+        )
+      }
+      <ThemeSwitcher />
+    </div>
+
+    <!-- Mobile Menu Button -->
+    <div class="@2xl:hidden">
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="icon" class="[&_svg]:size-8" aria-label="Open menu">
+            <IconMenu />
+          </Button>
+        </SheetTrigger>
+        <SheetContent
+          id="navbar-2-sheet-content"
+          side="right"
+          class="max-w-[280px] sm:max-w-[300px]"
+        >
+          <SheetHeader>
+            <SheetTitle>
+              <slot name="logo">
+                <span class="text-xl font-semibold">{siteName}</span>
+              </slot>
+            </SheetTitle>
+            <Separator class="mt-2" />
+          </SheetHeader>
+
+          <div class="-mt-5 flex flex-col px-4" data-nav-links>
+            {
+              links.map((link, index) => {
+                if (link.children && link.children.length > 0) {
+                  return (
+                    <Collapsible
+                      class="group w-full opacity-0"
+                      style={`--link-index: ${index}`}
+                      data-nav-link
+                    >
+                      <CollapsibleTrigger asChild>
+                        <button
+                          type="button"
+                          class="text-muted-foreground hover:text-foreground -mx-3 flex w-full items-center justify-between rounded-md px-3 py-2 text-xl transition-colors"
+                        >
+                          {link.label}
+                          <IconChevronDown class="size-5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                        </button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent class="flex flex-col pl-4">
+                        {link.children.map((child) => (
+                          <SheetClose asChild>
+                            <a
+                              href={child.href}
+                              class="text-muted-foreground hover:text-foreground w-full rounded-md py-2 text-lg transition-colors"
+                            >
+                              {child.label}
+                            </a>
+                          </SheetClose>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
+                  );
+                }
+
+                return (
+                  <SheetClose asChild>
+                    <a
+                      href={link.href}
+                      class="text-muted-foreground hover:text-foreground -mx-3 rounded-md px-3 py-2 text-xl opacity-0 transition-colors"
+                      style={`--link-index: ${index}`}
+                      data-nav-link
+                    >
+                      {link.label}
+                    </a>
+                  </SheetClose>
+                );
+              })
+            }
+          </div>
+          <SheetFooter class="flex-col gap-2">
+            {
+              secondaryText && (
+                <SheetClose asChild>
+                  <Button variant="outline" href={secondaryHref} class="w-full">
+                    {secondaryText}
+                  </Button>
+                </SheetClose>
+              )
+            }
+            {
+              githubHref ? (
+                <SheetClose asChild>
+                  <Button variant="outline" href={githubHref} class="w-full">
+                    <IconBrandGithub />
+                    GitHub
+                  </Button>
+                </SheetClose>
+              ) : (
+                <SheetClose asChild>
+                  <Button href={ctaHref} class="w-full">{ctaText}</Button>
+                </SheetClose>
+              )
+            }
+            <ThemeSwitcher class="w-full justify-center" />
+          </SheetFooter>
+          <IconX class="size-7" slot="icon" />
+        </SheetContent>
+      </Sheet>
+    </div>
+  </div>
+</nav>
+
+<style>
+  [data-nav-link].animate-in {
+    animation: slide-in 0.3s ease-out forwards;
+    animation-delay: calc(var(--link-index) * 75ms);
+  }
+
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(-1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+</style>
+
+<script>
+  function initNavbar2() {
+    // Watch for sheet open state changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "attributes" && mutation.attributeName === "data-state") {
+          const target = mutation.target as HTMLElement;
+          const isOpen = target.getAttribute("data-state") === "open";
+          const navLinks = target.querySelectorAll("[data-nav-link]");
+
+          if (isOpen) {
+            // Wait for sheet animation to complete (500ms), then animate links
+            setTimeout(() => {
+              navLinks.forEach((link) => {
+                link.classList.add("animate-in");
+              });
+            }, 425);
+          } else {
+            // Reset animation state when sheet closes
+            navLinks.forEach((link) => {
+              link.classList.remove("animate-in");
+            });
+          }
+        }
+      });
+    });
+
+    // Observe the specific sheet content element
+    const sheetContent = document.getElementById("navbar-2-sheet-content");
+    if (sheetContent) {
+      observer.observe(sheetContent, { attributes: true });
+    }
+  }
+
+  initNavbar2();
+  document.addEventListener("astro:after-swap", initNavbar2);
+
+  // Handle scroll-based navbar styling
+  function initNavbarScroll() {
+    const navbar = document.querySelector("[data-navbar-2]");
+    if (!navbar) return;
+
+    // Find the scrollable parent container
+    const scrollContainer = navbar.closest(".overflow-y-auto, .overflow-y-scroll") || window;
+
+    const updateNavbarStyle = () => {
+      const scrollTop =
+        scrollContainer === window ? window.scrollY : (scrollContainer as HTMLElement).scrollTop;
+
+      if (scrollTop > 10) {
+        navbar.setAttribute("data-scrolled", "");
+      } else {
+        navbar.removeAttribute("data-scrolled");
+      }
+    };
+
+    // Initial check
+    updateNavbarStyle();
+
+    // Listen for scroll events
+    scrollContainer.addEventListener("scroll", updateNavbarStyle, { passive: true });
+  }
+
+  initNavbarScroll();
+  document.addEventListener("astro:after-swap", initNavbarScroll);
+</script>

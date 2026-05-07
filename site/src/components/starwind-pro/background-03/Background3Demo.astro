@@ -1,0 +1,29 @@
+---
+/**
+ * Dot Matrix Background
+ *
+ * A subtle dot pattern perfect for tech-focused designs and modern interfaces.
+ * Creates a clean, professional look without overwhelming the content.
+ *
+ * Usage:
+ * 1. Use the starwind cli to add this component to your project `npx starwind@latest add @starwind-pro/background-03`
+ * 2. Import the `Background3` component and position it absolutely within a relative container
+ *
+ * Props:
+ * - patternId: string (auto-generated) - Custom pattern ID for SVG reference
+ * - spacing: number (default: 24) - Spacing between dots in pixels
+ * - dotSize: number (default: 1) - Dot radius in pixels
+ * - opacity: number (default: 0.4) - Dot opacity (0-1)
+ * - class: string - Additional CSS classes
+ */
+import Background3 from "./Background3.astro";
+---
+
+<div class="bg-background relative flex min-h-[500px] w-full items-center justify-center">
+  <Background3 />
+  <div class="relative z-10 text-center">
+    <h2 class="text-foreground text-2xl font-semibold">Dot Matrix</h2>
+    <p class="text-muted-foreground mt-2">Subtle dot pattern for tech-focused designs</p>
+    <p class="text-muted-foreground mt-4 text-sm">Customize spacing, dot size, and opacity</p>
+  </div>
+</div>

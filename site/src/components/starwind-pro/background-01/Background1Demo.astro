@@ -1,0 +1,28 @@
+---
+/**
+ * Simple Grid Background
+ *
+ * A clean, minimal grid pattern that adds subtle texture to any section.
+ * Perfect for hero sections, cards, or anywhere you need understated visual interest.
+ *
+ * Usage:
+ * 1. Use the starwind cli to add this component to your project `npx starwind@latest add @starwind-pro/background-01`
+ * 2. Import the `Background1` component and position it absolutely within a relative container
+ *
+ * Props:
+ * - patternId: string (auto-generated) - Custom pattern ID for SVG reference
+ * - cellSize: number (default: 40) - Grid cell size in pixels
+ * - opacity: number (default: 0.2) - Stroke opacity (0-1)
+ * - class: string - Additional CSS classes
+ */
+import Background1 from "./Background1.astro";
+---
+
+<div class="bg-background relative flex min-h-[500px] w-full items-center justify-center">
+  <Background1 opacity={0.2} />
+  <div class="relative z-10 text-center">
+    <h2 class="text-foreground text-2xl font-semibold">Simple Grid</h2>
+    <p class="text-muted-foreground mt-2">A clean, minimal grid pattern for subtle texture</p>
+    <p class="text-muted-foreground mt-4 text-sm">Customize cell size and opacity</p>
+  </div>
+</div>

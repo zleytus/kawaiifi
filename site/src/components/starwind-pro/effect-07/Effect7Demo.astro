@@ -1,0 +1,38 @@
+---
+/**
+ * Corner Bumper Effect
+ *
+ * A decorative effect that adds thick border segments only at the corners of a container,
+ * creating a modern "bumper" or bracket-style frame without rounded corners.
+ *
+ * Usage:
+ * 1. Use the starwind cli to add this component to your project `npx starwind@latest add @starwind-pro/effect-07`
+ * 2. Import the `Effect7` component and wrap it around any element you want the effect on
+ *
+ * Props:
+ * - cornerLength: number (default: 24) - Length of corner segments
+ * - borderWidth: number (default: 2) - Thickness of the borders
+ * - class: string
+ */
+import IconFrame from "@tabler/icons/outline/frame.svg";
+
+import CornerBumperEffect from "./Effect7.astro";
+---
+
+<section id="effect-07" class="@container mx-auto w-full max-w-7xl px-4 py-24">
+  <div class="flex items-center justify-center">
+    <!-- Corner Bumper Card Example -->
+    <CornerBumperEffect class="w-full max-w-md p-8" cornerLength={16} borderWidth={3}>
+      <div class="text-center">
+        <div class="bg-primary-accent/10 mx-auto mb-6 inline-flex rounded-xl p-4">
+          <IconFrame class="text-primary-accent size-8" aria-hidden="true" />
+        </div>
+        <h3 class="font-heading mb-3 text-xl font-semibold">Corner Bumper Effect</h3>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+          A sharp, modern frame effect with thick border segments only at the corners. Perfect for
+          creating a technical or editorial aesthetic.
+        </p>
+      </div>
+    </CornerBumperEffect>
+  </div>
+</section>
