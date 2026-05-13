@@ -316,6 +316,25 @@ public class Bss
         }
     }
 
+    /// <summary>The authentication or association status of this device with the BSS, or null if not authenticated or associated.</summary>
+    [SupportedOSPlatform("linux")]
+    public BssStatus? Status
+    {
+        get
+        {
+            unsafe
+            {
+                return NativeMethods.kawaiifi_bss_status(_ptr) switch
+                {
+                    CsBindgen.BssStatus.Authenticated => BssStatus.Authenticated,
+                    CsBindgen.BssStatus.Associated => BssStatus.Associated,
+                    CsBindgen.BssStatus.IbssJoined => BssStatus.IbssJoined,
+                    _ => null,
+                };
+            }
+        }
+    }
+
     /// <summary>Whether this BSS's information came from a probe response rather than a beacon.</summary>
     [SupportedOSPlatform("linux")]
     public bool IsFromProbeResponse

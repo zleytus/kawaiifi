@@ -41,6 +41,26 @@ typedef enum ChannelWidth {
 
 #if defined(__linux__)
 /**
+ * FFI-safe equivalent of kawaiifi::BssStatus.
+ */
+typedef enum BssStatus {
+#if defined(__linux__)
+  BSS_STATUS_AUTHENTICATED,
+#endif
+#if defined(__linux__)
+  BSS_STATUS_ASSOCIATED,
+#endif
+#if defined(__linux__)
+  BSS_STATUS_IBSS_JOINED,
+#endif
+#if defined(__linux__)
+  BSS_STATUS_UNKNOWN,
+#endif
+} BssStatus;
+#endif
+
+#if defined(__linux__)
+/**
  * FFI-safe equivalent of kawaiifi::BusType.
  */
 typedef enum BusType {
@@ -470,6 +490,14 @@ int64_t kawaiifi_scan_end_time_utc_ms(const struct Scan *scan);
  * Frees a scan returned by `kawaiifi_interface_scan`. Does nothing if `scan` is null.
  */
 void kawaiifi_scan_free(struct Scan *scan);
+
+#if defined(__linux__)
+/**
+ * Returns the authentication/association status of this device with the BSS.
+ * Returns `Unknown` if not authenticated or associated, or if `bss` is null.
+ */
+enum BssStatus kawaiifi_bss_status(const struct Bss *bss);
+#endif
 
 #if defined(__linux__)
 /**

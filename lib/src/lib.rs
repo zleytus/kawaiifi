@@ -17,6 +17,8 @@ pub use ies::{Ie, IeData};
 #[cfg(target_os = "linux")]
 pub use interface::BusType;
 pub use interface::{Interface, default_interface, interfaces};
+#[cfg(target_os = "linux")]
+pub use nl80211::BssStatus;
 pub use scan::Scan;
 pub use security_protocol::{SecurityProtocol, SecurityProtocols};
 pub use wifi_amendment::{WifiAmendment, WifiAmendments};

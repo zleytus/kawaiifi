@@ -13,6 +13,7 @@ pub enum BssScanWidth {
     TwoMhz,
 }
 
+/// cbindgen:ignore
 /// The status of a BSS.
 /// Based on nl80211_bss_status from linux/include/uapi/linux/nl80211.h
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive, Serialize, Deserialize)]

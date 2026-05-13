@@ -19,6 +19,13 @@ namespace CsBindgen
 
 
         /// <summary>
+        ///  Returns the authentication/association status of this device with the BSS.
+        ///  Returns `Unknown` if not authenticated or associated, or if `bss` is null.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_status", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern BssStatus kawaiifi_bss_status(Bss* bss);
+
+        /// <summary>
         ///  Returns true if the BSS information came from a probe response, or false if from a beacon or if `bss` is null.
         /// </summary>
         [DllImport(__DllName, EntryPoint = "kawaiifi_bss_is_from_probe_response", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
@@ -360,6 +367,17 @@ namespace CsBindgen
         [MarshalAs(UnmanagedType.U1)] public bool colocated_6ghz;
     }
 
+
+    /// <summary>
+    ///  FFI-safe equivalent of kawaiifi::BssStatus.
+    /// </summary>
+    internal enum BssStatus : uint
+    {
+        Authenticated,
+        Associated,
+        IbssJoined,
+        Unknown,
+    }
 
     /// <summary>
     ///  FFI-safe equivalent of kawaiifi::BusType.
