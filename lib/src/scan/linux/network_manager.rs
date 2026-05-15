@@ -26,7 +26,7 @@ pub(crate) async fn device_path(
     interface_name: &str,
 ) -> Result<zbus::zvariant::OwnedObjectPath, Error> {
     // Create proxy for NetworkManager main interface
-    let nm_proxy = NetworkManagerProxy::new(&connection).await?;
+    let nm_proxy = NetworkManagerProxy::new(connection).await?;
 
     // Get device path by interface name
     Ok(nm_proxy.get_device_by_ip_iface(interface_name).await?)
