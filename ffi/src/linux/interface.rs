@@ -181,9 +181,13 @@ pub unsafe extern "C" fn kawaiifi_interface_channel_width(
                     kawaiifi::ChannelWidth::TwentyMhz => ChannelWidth::TwentyMhz,
                     kawaiifi::ChannelWidth::FortyMhz => ChannelWidth::FortyMhz,
                     kawaiifi::ChannelWidth::EightyMhz => ChannelWidth::EightyMhz,
-                    kawaiifi::ChannelWidth::EightyPlusEightyMhz => ChannelWidth::EightyPlusEightyMhz,
+                    kawaiifi::ChannelWidth::EightyPlusEightyMhz => {
+                        ChannelWidth::EightyPlusEightyMhz
+                    }
                     kawaiifi::ChannelWidth::OneSixtyMhz => ChannelWidth::OneSixtyMhz,
-                    kawaiifi::ChannelWidth::ThreeHundredTwentyMhz => ChannelWidth::ThreeHundredTwentyMhz,
+                    kawaiifi::ChannelWidth::ThreeHundredTwentyMhz => {
+                        ChannelWidth::ThreeHundredTwentyMhz
+                    }
                 };
             }
             true

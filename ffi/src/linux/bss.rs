@@ -83,7 +83,10 @@ pub unsafe extern "C" fn kawaiifi_bss_frequency_offset_khz(
 
 /// Writes the signal strength as a percentage (0–100) into `out`. Returns false if unavailable or `bss` is null.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn kawaiifi_bss_signal_percent(bss: Option<&Bss>, out: Option<&mut u8>) -> bool {
+pub unsafe extern "C" fn kawaiifi_bss_signal_percent(
+    bss: Option<&Bss>,
+    out: Option<&mut u8>,
+) -> bool {
     match bss.and_then(Bss::signal_percent) {
         Some(val) => {
             if let Some(out) = out {
@@ -116,7 +119,10 @@ pub unsafe extern "C" fn kawaiifi_bss_last_seen_boottime_ns(
 /// Writes the number of milliseconds since the BSS was last seen into `out`.
 /// Returns false if unavailable or `bss` is null.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn kawaiifi_bss_seen_ms_ago(bss: Option<&Bss>, out: Option<&mut u32>) -> bool {
+pub unsafe extern "C" fn kawaiifi_bss_seen_ms_ago(
+    bss: Option<&Bss>,
+    out: Option<&mut u32>,
+) -> bool {
     match bss.and_then(Bss::seen_ms_ago) {
         Some(val) => {
             if let Some(out) = out {

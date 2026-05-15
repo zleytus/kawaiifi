@@ -59,4 +59,3 @@ pub unsafe extern "C" fn kawaiifi_interface_cached_bss_list(
     let results = interface?.cached_scan_results_blocking().ok()?;
     Some(Box::new(BssList(results)))
 }
-
