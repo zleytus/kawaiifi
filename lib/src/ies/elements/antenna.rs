@@ -17,7 +17,7 @@ impl Antenna {
     pub const LENGTH: usize = 1;
 
     pub fn summary(&self) -> String {
-        format!("ID: {}", self.antenna_id.to_string())
+        format!("ID: {}", self.antenna_id)
     }
 
     pub fn fields(&self) -> Vec<Field> {

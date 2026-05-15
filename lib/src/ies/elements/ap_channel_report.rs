@@ -31,14 +31,13 @@ impl ApChannelReport {
                 .build(),
             Field::builder()
                 .title("Channel List")
-                .value(format!(
-                    "{}",
+                .value(
                     self.channel_list
                         .iter()
                         .map(|channel| channel.to_string())
                         .collect::<Vec<String>>()
-                        .join(", ")
-                ))
+                        .join(", "),
+                )
                 .bytes(self.channel_list.clone())
                 .build(),
         ]

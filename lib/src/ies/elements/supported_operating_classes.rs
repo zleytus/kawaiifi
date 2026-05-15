@@ -31,14 +31,13 @@ impl SupportedOperatingClasses {
                 .build(),
             Field::builder()
                 .title("Operating Classes")
-                .value(format!(
-                    "{}",
+                .value(
                     self.operating_classes
                         .iter()
                         .map(|operating_class| operating_class.to_string())
                         .collect::<Vec<String>>()
-                        .join(", ")
-                ))
+                        .join(", "),
+                )
                 .bytes(self.operating_classes.clone())
                 .build(),
         ]
