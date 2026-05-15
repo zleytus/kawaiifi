@@ -191,11 +191,11 @@ impl std::convert::From<u8> for UnitInterpretation {
     }
 }
 
-impl Into<u8> for UnitInterpretation {
-    fn into(self) -> u8 {
-        match self {
-            Self::Eirp => 0,
-            Self::Unknown(val) => val,
+impl From<UnitInterpretation> for u8 {
+    fn from(value: UnitInterpretation) -> Self {
+        match value {
+            UnitInterpretation::Eirp => 0,
+            UnitInterpretation::Unknown(val) => val,
         }
     }
 }
