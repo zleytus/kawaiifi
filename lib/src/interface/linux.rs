@@ -346,7 +346,7 @@ impl TryFrom<&Genlmsghdr<Cmd, Attr>> for Interface {
                     .as_ref()
                     .to_vec(),
             )
-            .unwrap_or_default(),
+            .map_err(|_| ParseError::InvalidCString("Attr::Ifname"))?,
             index: interface_attrs
                 .get(&Attr::Ifindex)
                 .ok_or(ParseError::MissingAttribute("Attr::Ifindex"))?
@@ -401,10 +401,13 @@ impl TryFrom<&Genlmsghdr<Cmd, Attr>> for Interface {
                 .and_then(|attr| attr.get_payload_as().ok()),
             channel_width: interface_attrs
                 .get(&Attr::ChannelWidth)
-                .and_then(|attr| attr.get_payload_as().ok())
-                .map(|channel_width: u8| {
-                    ChanWidth::try_from(channel_width).unwrap_or(ChanWidth::TwentyMhz)
-                })
+                .and_then(|attr| attr.get_payload_as::<u8>().ok())
+                .map(ChanWidth::try_from)
+                .transpose()
+                .map_err(|_| ParseError::TryFromPrimitive {
+                    primitive: "u8",
+                    expected_type: "ChanWidth",
+                })?
                 .map(ChannelWidth::from),
             vif_radio_mask: interface_attrs
                 .get(&Attr::VifRadioMask)

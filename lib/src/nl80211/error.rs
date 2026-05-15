@@ -5,6 +5,9 @@ pub(crate) enum ParseError {
     #[error("Missing required attribute: {0}")]
     MissingAttribute(&'static str),
 
+    #[error("Invalid C string in attribute: {0}")]
+    InvalidCString(&'static str),
+
     #[error("Unexpected command type: expected {expected:?}, got {got:?}")]
     UnexpectedCommand {
         expected: super::Cmd,
