@@ -29,6 +29,7 @@ pub(super) fn interfaces() -> Vec<Interface> {
     if unsafe { WlanEnumInterfaces(handle, null(), &mut interface_list) } != 0
         || interface_list.is_null()
     {
+        unsafe { WlanCloseHandle(handle, null_mut()) };
         return Vec::new();
     }
 
