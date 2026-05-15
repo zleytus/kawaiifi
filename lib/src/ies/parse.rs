@@ -52,6 +52,15 @@ pub fn from_bytes(bytes: &[u8]) -> Vec<Ie> {
                     );
                 }
                 ies.push(ie);
+                if expected_bytes > input.len() {
+                    log::warn!(
+                        "IE at offset {} declares {} bytes but only {} bytes remain",
+                        offset,
+                        expected_bytes,
+                        input.len()
+                    );
+                    break;
+                }
                 input = &input[expected_bytes..];
             }
             Err(error) => {
@@ -71,4 +80,16 @@ pub fn from_bytes(bytes: &[u8]) -> Vec<Ie> {
     }
 
     ies
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_bytes_stops_on_truncated_ie() {
+        let ies = from_bytes(&[0x00, 0x05, b'H', b'i']);
+
+        assert!(ies.is_empty());
+    }
 }
