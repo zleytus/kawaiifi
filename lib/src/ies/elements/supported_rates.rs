@@ -21,13 +21,7 @@ impl SupportedRates {
     pub fn rates(&self) -> HashSet<DataRate> {
         self.bytes
             .iter()
-            .filter_map(|byte| {
-                if let Ok(rate) = DataRate::try_from(*byte) {
-                    Some(rate)
-                } else {
-                    None
-                }
-            })
+            .filter_map(|byte| DataRate::try_from(*byte).ok())
             .collect()
     }
 

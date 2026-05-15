@@ -177,17 +177,17 @@ impl Interface {
         let device_id = self.device_id()?;
 
         // Try USB database
-        if let Some(vendor) = usb_ids::Vendor::from_id(vendor_id) {
-            if let Some(device) = vendor.devices().find(|d| d.id() == device_id) {
-                return Some(device.name().to_string());
-            }
+        if let Some(vendor) = usb_ids::Vendor::from_id(vendor_id)
+            && let Some(device) = vendor.devices().find(|d| d.id() == device_id)
+        {
+            return Some(device.name().to_string());
         }
 
         // Try PCI database
-        if let Some(vendor) = pci_ids::Vendor::from_id(vendor_id) {
-            if let Some(device) = vendor.devices().find(|d| d.id() == device_id) {
-                return Some(device.name().to_string());
-            }
+        if let Some(vendor) = pci_ids::Vendor::from_id(vendor_id)
+            && let Some(device) = vendor.devices().find(|d| d.id() == device_id)
+        {
+            return Some(device.name().to_string());
         }
 
         None

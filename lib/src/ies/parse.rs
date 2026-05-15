@@ -42,14 +42,14 @@ pub fn from_bytes(bytes: &[u8]) -> Vec<Ie> {
                     );
                 }
                 #[cfg(debug_assertions)]
-                if let Ok(serialized) = ie.to_bytes() {
-                    if serialized.as_slice() != &input[..expected_bytes.min(input.len())] {
-                        log::warn!(
-                            "Mismatch between raw IE bytes and parsed Ie::to_bytes at offset {}. IE: {:?}",
-                            offset,
-                            &ie
-                        );
-                    }
+                if let Ok(serialized) = ie.to_bytes()
+                    && serialized.as_slice() != &input[..expected_bytes.min(input.len())]
+                {
+                    log::warn!(
+                        "Mismatch between raw IE bytes and parsed Ie::to_bytes at offset {}. IE: {:?}",
+                        offset,
+                        &ie
+                    );
                 }
                 ies.push(ie);
                 input = &input[expected_bytes..];

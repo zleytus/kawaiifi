@@ -56,10 +56,10 @@ pub(crate) async fn trigger_scan(
     // Wait for the message we just sent to be acknowledged
     let mut ack_received = false;
     while let Some(msg) = responses.next::<u16, Genlmsghdr<Cmd, Attr>>().await {
-        if let Ok(msg) = msg {
-            if matches!(msg.nl_payload(), NlPayload::Ack(_)) {
-                ack_received = true;
-            }
+        if let Ok(msg) = msg
+            && matches!(msg.nl_payload(), NlPayload::Ack(_))
+        {
+            ack_received = true;
         }
     }
 
