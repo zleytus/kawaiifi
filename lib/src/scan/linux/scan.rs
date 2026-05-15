@@ -225,7 +225,6 @@ pub(crate) async fn scan_results(
         match response {
             Ok(response) => {
                 let Some(payload) = response.get_payload() else {
-                    tracing::warn!("Skipping scan response without payload");
                     continue;
                 };
                 match Bss::try_from(payload) {
@@ -282,7 +281,6 @@ pub(crate) fn scan_results_blocking(
         match response {
             Ok(response) => {
                 let Some(payload) = response.get_payload() else {
-                    tracing::warn!("Skipping scan response without payload");
                     continue;
                 };
                 match Bss::try_from(payload) {
