@@ -15,7 +15,7 @@ use crate::CapabilityInfo;
 pub mod ies_as_base64 {
     use super::*;
 
-    pub fn serialize<S: Serializer>(ies: &Vec<Ie>, serializer: S) -> Result<S::Ok, S::Error> {
+    pub fn serialize<S: Serializer>(ies: &[Ie], serializer: S) -> Result<S::Ok, S::Error> {
         let bytes = ies_to_bytes(ies);
         STANDARD.encode(&bytes).serialize(serializer)
     }
