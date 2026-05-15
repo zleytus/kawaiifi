@@ -115,14 +115,14 @@ impl Bss {
         //   CCFS1 — center of the full 160 or 320 MHz channel (when present)
         //   CCFS0 — center for 20/40/80 MHz, or primary 80 MHz for 160 MHz,
         //           or primary 160 MHz for 320 MHz
-        if let Some(eht_op) = eht_op {
-            if let Some(info) = eht_op.eht_operation_information {
-                if info.ccfs1 != 0 {
-                    return chan_to_freq(info.ccfs1);
-                }
-                if info.ccfs0 != 0 {
-                    return chan_to_freq(info.ccfs0);
-                }
+        if let Some(eht_op) = eht_op
+            && let Some(info) = eht_op.eht_operation_information
+        {
+            if info.ccfs1 != 0 {
+                return chan_to_freq(info.ccfs1);
+            }
+            if info.ccfs0 != 0 {
+                return chan_to_freq(info.ccfs0);
             }
         }
 
@@ -370,7 +370,7 @@ impl Bss {
         if let Some(eht_capabilities) = eht_capabilities
             && let Some(he_capabilities) = he_capabilities
         {
-            _ = eht_capabilities.parse_with_he_capabilities(&he_capabilities);
+            _ = eht_capabilities.parse_with_he_capabilities(he_capabilities);
         }
     }
 }

@@ -1,4 +1,4 @@
-mod bss;
+mod basic_service_set;
 mod capability_info;
 
 #[cfg(target_os = "linux")]
@@ -7,5 +7,5 @@ mod linux;
 #[cfg(target_os = "windows")]
 mod windows;
 
-pub use bss::Bss;
+pub use basic_service_set::Bss;
 pub use capability_info::CapabilityInfo;
