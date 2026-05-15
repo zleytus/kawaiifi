@@ -155,7 +155,7 @@ impl Display for BitRange {
         let mut result = String::new();
         let end = self.start + self.length;
 
-        let num_bytes = (self.bits.len() + 7) / 8;
+        let num_bytes = self.bits.len().div_ceil(8);
 
         // Display bytes in reverse order (MSB first) so multi-byte fields read naturally
         for byte_idx in (0..num_bytes).rev() {
