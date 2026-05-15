@@ -338,12 +338,9 @@ impl SupportedMcsSet {
             return None;
         }
         let base_mcs = (stream - 1) * 8;
-        for mcs_index in (0..8).rev() {
-            if self.is_mcs_supported(base_mcs + mcs_index) {
-                return Some(mcs_index);
-            }
-        }
-        None
+        (0..8)
+            .rev()
+            .find(|&mcs_index| self.is_mcs_supported(base_mcs + mcs_index))
     }
 
     pub fn to_field(&self, title: &str) -> Field {
