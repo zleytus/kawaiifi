@@ -5,7 +5,7 @@ use deku::DekuContainerRead;
 use neli::{attr::Attribute, genl::Genlmsghdr};
 use serde::{Deserialize, Serialize};
 
-use super::Flags;
+use super::{Error, Flags};
 use crate::{
     Bss,
     ies::{self, Ie},
@@ -62,8 +62,12 @@ pub struct Scan {
 }
 
 impl Scan {
-    pub(super) fn new(scans: Vec<ScanInternal>) -> Self {
-        Self {
+    pub(super) fn new(scans: Vec<ScanInternal>) -> Result<Self, Error> {
+        if scans.is_empty() {
+            return Err(Error::EmptyScan);
+        }
+
+        Ok(Self {
             bss_list: scans
                 .iter()
                 .flat_map(|scan| scan.bss_list.iter().cloned())
@@ -86,7 +90,7 @@ impl Scan {
                 .last()
                 .map(|last_scan| last_scan.end_time())
                 .unwrap_or_default(),
-        }
+        })
     }
 
     /// Returns all BSSs (access points) discovered during the scan.
@@ -300,5 +304,15 @@ impl TryFrom<&Genlmsghdr<Cmd, Attr>> for ScanParams {
             ies,
             flags,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn scan_new_rejects_empty_sub_scan_list() {
+        assert!(matches!(Scan::new(Vec::new()), Err(Error::EmptyScan)));
     }
 }

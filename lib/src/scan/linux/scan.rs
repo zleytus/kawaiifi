@@ -168,7 +168,7 @@ pub(crate) async fn scan(interface: &Interface, backend: Backend) -> Result<Scan
                                 io::Error::new(io::ErrorKind::TimedOut, "Scanning timed out").into()
                             }))
                         } else {
-                            Ok(Scan::new(scans))
+                            Scan::new(scans)
                         }
                     }
 
@@ -183,7 +183,7 @@ pub(crate) async fn scan(interface: &Interface, backend: Backend) -> Result<Scan
     }
 
     // All scans completed, combine and return
-    Ok(Scan::new(scans))
+    Scan::new(scans)
 }
 
 #[tracing::instrument(skip(interface, socket), fields(interface = %interface.name(), ifindex = interface.index()))]

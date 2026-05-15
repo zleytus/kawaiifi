@@ -12,6 +12,9 @@ pub enum Error {
     #[error("Network Manager error: {0}")]
     NetworkManager(#[from] zbus::Error),
 
+    #[error("scan did not produce any results")]
+    EmptyScan,
+
     #[error(transparent)]
     IOError(#[from] std::io::Error),
 }
