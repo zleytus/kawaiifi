@@ -79,6 +79,7 @@ pub(crate) async fn scan(interface: &Interface, backend: Backend) -> Result<Scan
 
     // Collect all scan results (may be multiple sub-scans from NetworkManager)
     let mut scans = Vec::new();
+    let mut first_scan_results_error = None;
 
     loop {
         select! {
@@ -126,8 +127,13 @@ pub(crate) async fn scan(interface: &Interface, backend: Backend) -> Result<Scan
                         }
 
                         // Fetch the actual BSS results
-                        let Ok(bss_list) = scan_results(interface, &socket).await else {
-                            continue;
+                        let bss_list = match scan_results(interface, &socket).await {
+                            Ok(bss_list) => bss_list,
+                            Err(error) => {
+                                tracing::warn!(error = %error, "Failed to fetch scan results");
+                                first_scan_results_error.get_or_insert(error);
+                                continue;
+                            }
                         };
 
                         // Pair the trigger and completion events with results
@@ -158,7 +164,9 @@ pub(crate) async fn scan(interface: &Interface, backend: Backend) -> Result<Scan
                         // If we got some results before timing out, return them
                         // Otherwise, this is a timeout error
                         return if scans.is_empty() {
-                            Err(io::Error::new(io::ErrorKind::TimedOut, "Scanning timed out").into())
+                            Err(first_scan_results_error.unwrap_or_else(|| {
+                                io::Error::new(io::ErrorKind::TimedOut, "Scanning timed out").into()
+                            }))
                         } else {
                             Ok(Scan::new(scans))
                         }
