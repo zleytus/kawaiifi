@@ -202,7 +202,7 @@ impl AdvertisementProtocolId {
                         Field::builder()
                             .title("Length")
                             .value(len)
-                            .units(if *len == 1 { "bytes" } else { "bytes" })
+                            .units(if *len == 1 { "byte" } else { "bytes" })
                             .byte(*len)
                             .build(),
                     ];
