@@ -84,22 +84,22 @@ pub struct VhtOperationInformation {
 impl VhtOperationInformation {
     pub fn channel_width(&self) -> Option<ChannelWidth> {
         match self.channel_width {
-            VhtChannelWidth::TwentyOrFortyMhz => return None,
+            VhtChannelWidth::TwentyOrFortyMhz => None,
             VhtChannelWidth::EightyOrOneHundredSixtyOrEightyPlusEightyMhz => {
                 if self.channel_center_frequency_segment_1 == 0 {
-                    return Some(ChannelWidth::EightyMhz);
+                    Some(ChannelWidth::EightyMhz)
                 } else if self
                     .channel_center_frequency_segment_1
                     .abs_diff(self.channel_center_frequency_segment_0)
                     == 8
                 {
-                    return Some(ChannelWidth::OneSixtyMhz);
+                    Some(ChannelWidth::OneSixtyMhz)
                 } else {
-                    return Some(ChannelWidth::EightyPlusEightyMhz);
+                    Some(ChannelWidth::EightyPlusEightyMhz)
                 }
             }
-            VhtChannelWidth::OneHundredSixtyMhz => return Some(ChannelWidth::OneSixtyMhz),
-            VhtChannelWidth::EightyPlusEightyMhz => return Some(ChannelWidth::EightyPlusEightyMhz),
+            VhtChannelWidth::OneHundredSixtyMhz => Some(ChannelWidth::OneSixtyMhz),
+            VhtChannelWidth::EightyPlusEightyMhz => Some(ChannelWidth::EightyPlusEightyMhz),
         }
     }
 
