@@ -182,7 +182,7 @@ pub struct TbttInformation {
     pub twenty_mhz_psd: Option<i8>,
     #[deku(
         cond = "tbtt_information_length > 13",
-        count = "tbtt_information_length.checked_sub(13).unwrap_or_default()"
+        count = "tbtt_information_length.saturating_sub(13)"
     )]
     reserved: Option<Vec<u8>>,
 }

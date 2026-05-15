@@ -12,9 +12,9 @@ pub struct Country {
     pub country_code: [u8; 2],
     #[deku(bytes = 1)]
     pub environment: u8,
-    #[deku(count = "len.checked_sub(3).unwrap_or_default() / 3")]
+    #[deku(count = "len.saturating_sub(3) / 3")]
     pub triplets: Vec<Triplet>,
-    #[deku(cond = "len.checked_sub(3 + triplets.len() * 3).unwrap_or_default() == 1")]
+    #[deku(cond = "len.saturating_sub(3 + triplets.len() * 3) == 1")]
     padding: Option<u8>,
 }
 

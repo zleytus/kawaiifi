@@ -8,7 +8,7 @@ use crate::ies::{Field, IeId};
 pub struct SupportedOperatingClasses {
     #[deku(bytes = 1)]
     pub current_operating_class: u8,
-    #[deku(count = "len.checked_sub(1).unwrap_or_default()")]
+    #[deku(count = "len.saturating_sub(1)")]
     pub operating_classes: Vec<u8>,
 }
 

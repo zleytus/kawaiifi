@@ -28,7 +28,7 @@ pub struct TimeAdvertisement {
     pub time_update_counter: Option<u8>,
     #[deku(
         cond = "matches!(*timing_capabilities, TimingCapabilities::Reserved(_))",
-        count = "len.checked_sub(1).unwrap_or_default()"
+        count = "len.saturating_sub(1)"
     )]
     pub reserved: Option<Vec<u8>>,
 }

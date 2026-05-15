@@ -19,7 +19,7 @@ use crate::ies::{BitRange, Field, IeId, write_bits_lsb0};
 pub struct EhtCapabilities {
     pub eht_mac_capabilities_information: EhtMacCapabilitiesInformation,
     pub eht_phy_capabilities_information: EhtPhyCapabilitiesInformation,
-    #[deku(count = "len.checked_sub(11).unwrap_or_default()")]
+    #[deku(count = "len.saturating_sub(11)")]
     rest: Vec<u8>,
     #[deku(skip)]
     pub supported_eht_mcs_and_nss_set: Option<SupportedEhtMcsAndNssSet>,

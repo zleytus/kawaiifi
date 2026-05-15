@@ -8,7 +8,7 @@ use crate::ies::{Field, Ie, IeId, from_bytes};
 pub struct MeasurementPilotTransmission {
     #[deku(bytes = 1)]
     pub measurement_pilot_interval_tu: u8,
-    #[deku(count = "len.checked_sub(1).unwrap_or_default()")]
+    #[deku(count = "len.saturating_sub(1)")]
     subelements: Vec<u8>,
 }
 

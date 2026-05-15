@@ -8,7 +8,7 @@ use crate::ies::{Field, IeId};
 pub struct TwentyFortyBssIntolerantChannelReport {
     #[deku(bytes = 1)]
     pub operating_class: u8,
-    #[deku(count = "len.checked_sub(1).unwrap_or_default()")]
+    #[deku(count = "len.saturating_sub(1)")]
     pub channel_list: Vec<u8>,
 }
 

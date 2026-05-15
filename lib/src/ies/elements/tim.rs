@@ -12,7 +12,7 @@ pub struct Tim {
     pub dtim_period: u8,
     #[deku(cond = "len >= 3")]
     pub bitmap_control: Option<BitmapControl>,
-    #[deku(cond = "len >= 4", count = "len.checked_sub(3).unwrap_or_default()")]
+    #[deku(cond = "len >= 4", count = "len.saturating_sub(3)")]
     pub partial_virtual_bitmap: Option<Vec<u8>>,
 }
 
