@@ -16,7 +16,7 @@ pub mod ies_as_base64 {
     use super::*;
 
     pub fn serialize<S: Serializer>(ies: &[Ie], serializer: S) -> Result<S::Ok, S::Error> {
-        let bytes = ies_to_bytes(ies);
+        let bytes = ies_to_bytes(ies).map_err(serde::ser::Error::custom)?;
         STANDARD.encode(&bytes).serialize(serializer)
     }
 
@@ -39,7 +39,7 @@ pub mod option_ies_as_base64 {
     ) -> Result<S::Ok, S::Error> {
         match ies {
             Some(ies) => {
-                let bytes = ies_to_bytes(ies);
+                let bytes = ies_to_bytes(ies).map_err(serde::ser::Error::custom)?;
                 Some(STANDARD.encode(&bytes)).serialize(serializer)
             }
             None => serializer.serialize_none(),
@@ -83,12 +83,11 @@ pub mod capability_info_as_u16 {
     }
 }
 
-fn ies_to_bytes(ies: &[Ie]) -> Vec<u8> {
+fn ies_to_bytes(ies: &[Ie]) -> Result<Vec<u8>, deku::DekuError> {
     let mut bytes = Vec::new();
     for ie in ies {
-        if let Ok(ie_bytes) = ie.to_bytes() {
-            bytes.extend_from_slice(&ie_bytes);
-        }
+        let ie_bytes = ie.to_bytes()?;
+        bytes.extend_from_slice(&ie_bytes);
     }
-    bytes
+    Ok(bytes)
 }
