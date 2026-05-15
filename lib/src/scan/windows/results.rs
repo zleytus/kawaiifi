@@ -16,8 +16,16 @@ pub struct Scan {
 }
 
 impl Scan {
-    pub(crate) fn new(bss_list: Vec<Bss>, start_time: DateTime<Utc>, end_time: DateTime<Utc>) -> Self {
-        Self { bss_list, start_time, end_time }
+    pub(crate) fn new(
+        bss_list: Vec<Bss>,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
+    ) -> Self {
+        Self {
+            bss_list,
+            start_time,
+            end_time,
+        }
     }
 
     /// Returns all BSSs (access points) discovered during the scan.

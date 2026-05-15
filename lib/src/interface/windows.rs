@@ -8,8 +8,8 @@ use windows_sys::{
         L2_NOTIFICATION_DATA, WLAN_BSS_LIST, WLAN_INTERFACE_INFO, WLAN_INTERFACE_INFO_LIST,
         WLAN_NOTIFICATION_SOURCE_ACM, WLAN_NOTIFICATION_SOURCE_NONE, WlanCloseHandle,
         WlanEnumInterfaces, WlanFreeMemory, WlanGetNetworkBssList, WlanOpenHandle,
-        WlanRegisterNotification, WlanScan,
-        dot11_BSS_type_any, wlan_notification_acm_scan_complete, wlan_notification_acm_scan_fail,
+        WlanRegisterNotification, WlanScan, dot11_BSS_type_any,
+        wlan_notification_acm_scan_complete, wlan_notification_acm_scan_fail,
     },
     core::GUID,
 };
