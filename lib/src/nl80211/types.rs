@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 /// Based on nl80211_bss_scan_width from linux/include/uapi/linux/nl80211.h
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive, Serialize, Deserialize)]
 #[repr(u32)]
+// Keep the MHz suffix so scan-width values stay explicit in logs, serialization, and matches.
+#[allow(clippy::enum_variant_names)]
 pub enum BssScanWidth {
     TwentyMhz,
     TenMhz,
