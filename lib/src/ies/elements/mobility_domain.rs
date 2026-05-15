@@ -43,7 +43,7 @@ pub struct FtCapabilityAndPolicy {
 }
 
 impl FtCapabilityAndPolicy {
-    fn to_field(&self) -> Field {
+    fn to_field(self) -> Field {
         let byte = self
             .to_bytes()
             .unwrap_or_default()
