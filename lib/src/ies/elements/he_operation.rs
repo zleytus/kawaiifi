@@ -284,7 +284,7 @@ impl Control {
             .byte(
                 self.to_bytes()
                     .ok()
-                    .and_then(|bytes| bytes.get(0).cloned())
+                    .and_then(|bytes| bytes.first().cloned())
                     .unwrap_or_default(),
             )
             .subfields([

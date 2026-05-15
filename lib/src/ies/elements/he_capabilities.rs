@@ -1063,12 +1063,12 @@ impl PpeThresholds {
             Field::builder()
                 .title("NSTS")
                 .value(self.nsts)
-                .bits(BitRange::from_byte(*bytes.get(0).unwrap_or(&0), 0, 3))
+                .bits(BitRange::from_byte(*bytes.first().unwrap_or(&0), 0, 3))
                 .build(),
             Field::builder()
                 .title("RU Index Bitmask")
                 .value(self.ru_index_bitmask)
-                .bits(BitRange::from_byte(*bytes.get(0).unwrap_or(&0), 3, 4))
+                .bits(BitRange::from_byte(*bytes.first().unwrap_or(&0), 3, 4))
                 .build(),
         ];
         for (i, ppe_threshold_info) in self.ppe_thresholds_info.iter().enumerate() {

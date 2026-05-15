@@ -37,7 +37,7 @@ impl MeshConfiguration {
             Field::builder()
                 .title("Active Path Selection Protocol ID")
                 .value(self.active_path_selection_protocol_identifier)
-                .byte(*bytes.get(0).unwrap_or(&0))
+                .byte(*bytes.first().unwrap_or(&0))
                 .build(),
             Field::builder()
                 .title("Active Path Selection Metric ID")
