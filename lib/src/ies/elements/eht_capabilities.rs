@@ -704,7 +704,7 @@ impl EhtMcsMap {
 
     /// Get the maximum MCS supported for a given spatial stream
     pub fn max_mcs_for_stream(&self, stream: u8) -> Option<u8> {
-        if stream < 1 || stream > 8 {
+        if !(1..=8).contains(&stream) {
             return None;
         }
 
