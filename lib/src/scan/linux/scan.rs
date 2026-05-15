@@ -214,11 +214,22 @@ pub(crate) async fn scan_results(
     // Process responses and extract BSS information
     let mut scan_results = Vec::new();
     while let Some(response) = responses.next::<u16, Genlmsghdr<Cmd, Attr>>().await {
-        if let Ok(response) = &response
-            && let Some(payload) = response.get_payload()
-            && let Ok(bss) = Bss::try_from(payload)
-        {
-            scan_results.push(bss);
+        match response {
+            Ok(response) => {
+                let Some(payload) = response.get_payload() else {
+                    tracing::warn!("Skipping scan response without payload");
+                    continue;
+                };
+                match Bss::try_from(payload) {
+                    Ok(bss) => scan_results.push(bss),
+                    Err(error) => {
+                        tracing::warn!(error = %error, "Skipping malformed BSS scan result");
+                    }
+                }
+            }
+            Err(error) => {
+                tracing::warn!(error = %error, "Skipping failed scan response");
+            }
         }
     }
 
@@ -258,11 +269,26 @@ pub(crate) fn scan_results_blocking(
     )?;
 
     // Process responses and extract BSS information
-    let scan_results: Vec<Bss> = responses
-        .into_iter()
-        .filter_map(|msghdr| msghdr.ok())
-        .filter_map(|msghdr| Bss::try_from(msghdr.get_payload()?).ok())
-        .collect();
+    let mut scan_results = Vec::new();
+    for response in responses {
+        match response {
+            Ok(response) => {
+                let Some(payload) = response.get_payload() else {
+                    tracing::warn!("Skipping scan response without payload");
+                    continue;
+                };
+                match Bss::try_from(payload) {
+                    Ok(bss) => scan_results.push(bss),
+                    Err(error) => {
+                        tracing::warn!(error = %error, "Skipping malformed BSS scan result");
+                    }
+                }
+            }
+            Err(error) => {
+                tracing::warn!(error = %error, "Skipping failed scan response");
+            }
+        }
+    }
 
     tracing::debug!(bss_count = scan_results.len(), "Retrieved scan results");
     Ok(scan_results)
