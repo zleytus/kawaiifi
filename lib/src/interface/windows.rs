@@ -1,3 +1,4 @@
+use std::io;
 use std::ptr::{null, null_mut};
 use std::sync::{Condvar, Mutex};
 
@@ -17,6 +18,10 @@ use windows_sys::{
 use crate::{Bss, Scan, scan};
 
 const SCAN_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
+
+fn wlan_error(operation: &str, code: u32) -> io::Error {
+    io::Error::other(format!("{operation} failed with error code {code}"))
+}
 
 pub(super) fn interfaces() -> Vec<Interface> {
     let mut version = 0;
@@ -72,39 +77,77 @@ impl Interface {
             return Err(std::io::Error::other("WlanOpenHandle failed").into());
         }
 
-        let notify = Box::new(tokio::sync::Notify::new());
-        let notify_ptr = Box::into_raw(notify);
+        let scan_state = Box::new((Mutex::new(None), tokio::sync::Notify::new()));
+        let scan_state_ptr = Box::into_raw(scan_state);
 
         unsafe extern "system" fn on_notification(
             data: *mut L2_NOTIFICATION_DATA,
             context: *mut core::ffi::c_void,
         ) {
+            if data.is_null() || context.is_null() {
+                return;
+            }
             let code = unsafe { (*data).NotificationCode as i32 };
             if code == wlan_notification_acm_scan_complete
                 || code == wlan_notification_acm_scan_fail
             {
-                let notify = unsafe { &*(context as *const tokio::sync::Notify) };
-                notify.notify_one();
+                let (notification_code, notify) =
+                    unsafe { &*(context as *const (Mutex<Option<i32>>, tokio::sync::Notify)) };
+                if let Ok(mut notification_code) = notification_code.lock() {
+                    notification_code.replace(code);
+                    notify.notify_one();
+                }
             }
         }
 
         let start_time = Utc::now();
 
-        unsafe {
+        let result = unsafe {
             WlanRegisterNotification(
                 handle,
                 WLAN_NOTIFICATION_SOURCE_ACM,
                 1, // ignore duplicates
                 Some(on_notification),
-                notify_ptr as *const _,
+                scan_state_ptr as *const _,
                 null(),
                 null_mut(),
-            );
-            WlanScan(handle, &self.guid(), null(), null(), null());
+            )
+        };
+        if result != 0 {
+            unsafe {
+                drop(Box::from_raw(scan_state_ptr));
+                WlanCloseHandle(handle, null_mut());
+            }
+            return Err(wlan_error("WlanRegisterNotification", result).into());
         }
 
-        let notify = unsafe { &*notify_ptr };
-        timeout(SCAN_TIMEOUT, notify.notified()).await.ok();
+        let result = unsafe { WlanScan(handle, &self.guid(), null(), null(), null()) };
+        if result != 0 {
+            unsafe {
+                WlanRegisterNotification(
+                    handle,
+                    WLAN_NOTIFICATION_SOURCE_NONE,
+                    0,
+                    None,
+                    null(),
+                    null(),
+                    null_mut(),
+                );
+                drop(Box::from_raw(scan_state_ptr));
+                WlanCloseHandle(handle, null_mut());
+            }
+            return Err(wlan_error("WlanScan", result).into());
+        }
+
+        let scan_state = unsafe { &*scan_state_ptr };
+        let timed_out = timeout(SCAN_TIMEOUT, scan_state.1.notified())
+            .await
+            .is_err();
+        let notification_code = scan_state
+            .0
+            .lock()
+            .map_err(|_| io::Error::other("scan notification mutex poisoned"))
+            .map(|notification_code| *notification_code);
 
         unsafe {
             WlanRegisterNotification(
@@ -116,8 +159,16 @@ impl Interface {
                 null(),
                 null_mut(),
             );
-            drop(Box::from_raw(notify_ptr));
+            drop(Box::from_raw(scan_state_ptr));
             WlanCloseHandle(handle, null_mut());
+        }
+
+        let notification_code = notification_code?;
+        if timed_out {
+            return Err(io::Error::new(io::ErrorKind::TimedOut, "Scanning timed out").into());
+        }
+        if notification_code == Some(wlan_notification_acm_scan_fail) {
+            return Err(io::Error::other("WlanScan failed").into());
         }
 
         let bss_list = self.cached_scan_results_blocking()?;
@@ -137,26 +188,31 @@ impl Interface {
         // Allocate the sync primitive on the heap and pass a raw pointer as the
         // callback context. The callback borrows it; we own it and drop it after
         // unregistering notifications.
-        let sync = Box::new((Mutex::new(false), Condvar::new()));
+        let sync = Box::new((Mutex::new(None), Condvar::new()));
         let sync_ptr = Box::into_raw(sync);
 
         unsafe extern "system" fn on_notification(
             data: *mut L2_NOTIFICATION_DATA,
             context: *mut core::ffi::c_void,
         ) {
+            if data.is_null() || context.is_null() {
+                return;
+            }
             let code = unsafe { (*data).NotificationCode as i32 };
             if code == wlan_notification_acm_scan_complete
                 || code == wlan_notification_acm_scan_fail
             {
-                let pair = unsafe { &*(context as *const (Mutex<bool>, Condvar)) };
-                *pair.0.lock().unwrap() = true;
-                pair.1.notify_one();
+                let pair = unsafe { &*(context as *const (Mutex<Option<i32>>, Condvar)) };
+                if let Ok(mut notification_code) = pair.0.lock() {
+                    notification_code.replace(code);
+                    pair.1.notify_one();
+                }
             }
         }
 
         let start_time = Utc::now();
 
-        unsafe {
+        let result = unsafe {
             WlanRegisterNotification(
                 handle,
                 WLAN_NOTIFICATION_SOURCE_ACM,
@@ -165,15 +221,48 @@ impl Interface {
                 sync_ptr as *const _,
                 null(),
                 null_mut(),
-            );
-            WlanScan(handle, &self.guid(), null(), null(), null());
+            )
+        };
+        if result != 0 {
+            unsafe {
+                drop(Box::from_raw(sync_ptr));
+                WlanCloseHandle(handle, null_mut());
+            }
+            return Err(wlan_error("WlanRegisterNotification", result).into());
+        }
+
+        let result = unsafe { WlanScan(handle, &self.guid(), null(), null(), null()) };
+        if result != 0 {
+            unsafe {
+                WlanRegisterNotification(
+                    handle,
+                    WLAN_NOTIFICATION_SOURCE_NONE,
+                    0,
+                    None,
+                    null(),
+                    null(),
+                    null_mut(),
+                );
+                drop(Box::from_raw(sync_ptr));
+                WlanCloseHandle(handle, null_mut());
+            }
+            return Err(wlan_error("WlanScan", result).into());
         }
 
         // Block until the scan completes (or times out)
         let sync = unsafe { &*sync_ptr };
-        sync.1
-            .wait_timeout_while(sync.0.lock().unwrap(), SCAN_TIMEOUT, |done| !*done)
-            .ok();
+        let wait_result = sync
+            .0
+            .lock()
+            .map_err(|_| io::Error::other("scan notification mutex poisoned"))
+            .and_then(|notification_code| {
+                sync.1
+                    .wait_timeout_while(notification_code, SCAN_TIMEOUT, |code| code.is_none())
+                    .map_err(|_| io::Error::other("scan notification mutex poisoned"))
+                    .map(|(notification_code, wait_result)| {
+                        (*notification_code, wait_result.timed_out())
+                    })
+            });
 
         // Unregister before dropping the sync primitive so the callback can't fire after the drop
         unsafe {
@@ -188,6 +277,14 @@ impl Interface {
             );
             drop(Box::from_raw(sync_ptr));
             WlanCloseHandle(handle, null_mut());
+        }
+
+        let (notification_code, timed_out) = wait_result?;
+        if timed_out {
+            return Err(io::Error::new(io::ErrorKind::TimedOut, "Scanning timed out").into());
+        }
+        if notification_code == Some(wlan_notification_acm_scan_fail) {
+            return Err(io::Error::other("WlanScan failed").into());
         }
 
         let bss_list = self.cached_scan_results_blocking()?;
