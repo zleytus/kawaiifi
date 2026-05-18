@@ -1,12 +1,13 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use egui_plot::{Line, Text};
 use gtk::subclass::prelude::*;
-use gtk::{FilterListModel, SingleSelection, gio, glib, prelude::*};
-use gtk_egui_area::egui::{Color32, Visuals};
-use gtk_egui_area::{EguiArea, egui};
+use gtk::{gio, glib, prelude::*, FilterListModel, SingleSelection};
 use kawaiifi::{Band, ChannelWidth};
+use plotters::element::DashedPathElement;
+use plotters::prelude::*;
+use plotters::style::text_anchor::{HPos, Pos, VPos};
+use plotters_cairo::CairoBackend;
 
 use crate::objects::BssObject;
 
@@ -17,7 +18,7 @@ pub struct BssChartData {
     pub freq: f64,
     pub signal: f64,
     pub width: f64, // half-width in MHz
-    pub color: egui::Color32,
+    pub color: (u8, u8, u8),
     pub selected: bool,
 }
 
@@ -36,18 +37,15 @@ mod imp {
         // Chart-specific filter (only the chart's band)
         pub(crate) band_filter_model: OnceCell<FilterListModel>,
 
-        // Shared data for the egui chart
+        // Shared data for the chart
         pub(super) chart_data: Rc<RefCell<Vec<BssChartData>>>,
-
-        // Store the EguiArea so we can trigger redraws
-        pub(super) egui_area: RefCell<Option<EguiArea>>,
     }
 
     #[glib::object_subclass]
     impl ObjectSubclass for BssChart {
         const NAME: &'static str = "BssChart";
         type Type = super::BssChart;
-        type ParentType = gtk::Box;
+        type ParentType = gtk::DrawingArea;
 
         fn class_init(klass: &mut Self::Class) {
             klass.bind_template();
@@ -62,18 +60,16 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             let obj = self.obj();
-            obj.setup_egui_plot();
+            obj.setup_plot();
         }
 
         fn properties() -> &'static [glib::ParamSpec] {
             use std::sync::OnceLock;
             static PROPERTIES: OnceLock<Vec<glib::ParamSpec>> = OnceLock::new();
             PROPERTIES.get_or_init(|| {
-                vec![
-                    glib::ParamSpecString::builder("band")
-                        .construct_only()
-                        .build(),
-                ]
+                vec![glib::ParamSpecString::builder("band")
+                    .construct_only()
+                    .build()]
             })
         }
 
@@ -114,14 +110,14 @@ mod imp {
         }
     }
     impl WidgetImpl for BssChart {}
-    impl BoxImpl for BssChart {}
+    impl DrawingAreaImpl for BssChart {}
 }
 
 glib::wrapper! {
     pub struct BssChart(ObjectSubclass<imp::BssChart>)
-        @extends gtk::Widget, gtk::Box,
+        @extends gtk::Widget, gtk::DrawingArea,
         @implements gio::ActionGroup, gio::ActionMap, gtk::Accessible, gtk::Buildable,
-                    gtk::ConstraintTarget, gtk::Orientable;
+                    gtk::ConstraintTarget;
 }
 
 impl BssChart {
@@ -159,7 +155,7 @@ impl BssChart {
             #[weak(rename_to = chart)]
             self,
             move |_, _, _, _| {
-                chart.update_egui_chart_data();
+                chart.update_chart_data();
                 chart.queue_draw();
             }
         ));
@@ -169,17 +165,17 @@ impl BssChart {
             #[weak(rename_to = chart)]
             self,
             move |_, _, _| {
-                chart.update_egui_chart_data();
+                chart.update_chart_data();
                 chart.queue_draw();
             }
         ));
 
         // Trigger initial draw
-        self.update_egui_chart_data();
+        self.update_chart_data();
         self.queue_draw();
     }
 
-    fn update_egui_chart_data(&self) {
+    fn update_chart_data(&self) {
         let imp = self.imp();
 
         let Some(model) = imp.band_filter_model.get() else {
@@ -216,19 +212,15 @@ impl BssChart {
                 freq: bss.center_frequency_mhz() as f64,
                 signal: bss.signal_strength() as f64,
                 width: half_width,
-                color: egui::Color32::from_rgba_unmultiplied(
+                color: (
                     (color.red() * 255.0) as u8,
                     (color.green() * 255.0) as u8,
                     (color.blue() * 255.0) as u8,
-                    200,
                 ),
             });
         }
 
-        // Trigger egui redraw
-        if let Some(egui_area) = imp.egui_area.borrow().as_ref() {
-            egui_area.queue_draw();
-        }
+        self.queue_draw();
     }
 
     fn frequency_to_channel(freq: i32, band: kawaiifi::Band) -> String {
@@ -253,11 +245,11 @@ impl BssChart {
         }
     }
 
-    fn bss_shape_points(bss: &BssChartData, band: kawaiifi::Band) -> Vec<[f64; 2]> {
+    fn bss_shape_points(bss: &BssChartData, band: kawaiifi::Band) -> Vec<(f64, f64)> {
+        const CHART_FLOOR: f64 = -100.0;
         const NOISE_FLOOR: f64 = -110.0;
-        const STEP: f64 = 1.0;
 
-        let corners = match band {
+        match band {
             kawaiifi::Band::TwoPointFourGhz => {
                 // The 802.11a/g OFDM spectral mask is trapezoidal: flat at 0 dBr out to
                 // ±9 MHz from center, then rolling off to -20 dBr at ±11 MHz. We map the
@@ -266,45 +258,19 @@ impl BssChart {
                 let flat = bss.width * 0.9;
                 let base = bss.width * 1.1;
                 vec![
-                    [bss.freq - base, NOISE_FLOOR],
-                    [bss.freq - flat, bss.signal],
-                    [bss.freq + flat, bss.signal],
-                    [bss.freq + base, NOISE_FLOOR],
+                    (bss.freq - base, CHART_FLOOR),
+                    (bss.freq - flat, bss.signal),
+                    (bss.freq + flat, bss.signal),
+                    (bss.freq + base, CHART_FLOOR),
                 ]
             }
-            kawaiifi::Band::FiveGhz | kawaiifi::Band::SixGhz => {
-                vec![
-                    [bss.freq - bss.width, NOISE_FLOOR],
-                    [bss.freq - bss.width, bss.signal],
-                    [bss.freq + bss.width, bss.signal],
-                    [bss.freq + bss.width, NOISE_FLOOR],
-                ]
-            }
-        };
-
-        Self::densify_points(&corners, STEP)
-    }
-
-    /// Inserts interpolated points along each segment at roughly `step`-unit
-    /// intervals, applied independently to both axes so that vertical segments
-    /// are densified by dBm and horizontal segments by MHz.
-    fn densify_points(points: &[[f64; 2]], step: f64) -> Vec<[f64; 2]> {
-        let mut result = Vec::new();
-        for pair in points.windows(2) {
-            let [x0, y0] = pair[0];
-            let [x1, y1] = pair[1];
-            let steps = ((x1 - x0).abs() / step)
-                .ceil()
-                .max((y1 - y0).abs() / step)
-                .ceil() as usize;
-            let steps = steps.max(1);
-            for i in 0..steps {
-                let t = i as f64 / steps as f64;
-                result.push([x0 + t * (x1 - x0), y0 + t * (y1 - y0)]);
-            }
+            kawaiifi::Band::FiveGhz | kawaiifi::Band::SixGhz => vec![
+                (bss.freq - bss.width, NOISE_FLOOR),
+                (bss.freq - bss.width, bss.signal),
+                (bss.freq + bss.width, bss.signal),
+                (bss.freq + bss.width, NOISE_FLOOR),
+            ],
         }
-        result.push(*points.last().unwrap());
-        result
     }
 
     fn get_channel_frequencies(band: kawaiifi::Band) -> Vec<i32> {
@@ -330,162 +296,139 @@ impl BssChart {
         }
     }
 
-    fn setup_egui_plot(&self) {
+    fn major_signal_gridlines() -> impl Iterator<Item = f64> {
+        (-90..=-20).step_by(10).map(f64::from)
+    }
+
+    fn setup_plot(&self) {
         let imp = self.imp();
         let band = imp.band.get();
-        let (freq_start, freq_end) = Self::get_band_frequency_range(band);
-
         let chart_data = imp.chart_data.clone();
-
-        // Get channel frequencies for axis labels and grid
-        let channel_freqs: Vec<i32> = Self::get_channel_frequencies(band);
-
-        let font_definitions = self.gtk_font_definitions();
-
+        let channel_freqs = Self::get_channel_frequencies(band);
         let style_manager = adw::StyleManager::default();
+        let style_manager_for_draw = style_manager.clone();
 
-        let egui_area = EguiArea::new(move |ui| {
-            Self::set_theme_visuals(ui, &style_manager);
-            egui::CentralPanel::default()
-                .frame(egui::Frame::NONE.inner_margin(egui::Margin {
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    bottom: 5,
-                }))
-                .show_inside(ui, |ui| {
-                    egui_plot::Plot::new("bss_chart")
-                        .allow_zoom(false)
-                        .allow_drag(false)
-                        .allow_scroll(false)
-                        .allow_boxed_zoom(false)
-                        .allow_double_click_reset(false)
-                        .auto_bounds(egui::Vec2b::FALSE)
-                        .show_axes([true, true])
-                        .show_grid([false, true])
-                        .cursor_color(Color32::TRANSPARENT)
-                        .include_x(freq_start as f64)
-                        .include_x(freq_end as f64)
-                        .include_y(-100.0)
-                        .include_y(-15.0)
-                        .default_y_bounds(-100.0, -15.0)
-                        .label_formatter(|name, value| {
-                            if !name.is_empty() {
-                                format!("{}\nx = {:.1} MHz\ny = {:.1} dBm", name, value.x, value.y)
-                            } else {
-                                format!("x = {:.1} MHz\ny = {:.1} dBm", value.x, value.y)
-                            }
-                        })
-                        .custom_x_axes(vec![
-                            egui_plot::AxisHints::new_x()
-                                .formatter(move |x, _range| {
-                                    Self::frequency_to_channel(x.value as i32, band)
-                                })
-                                .placement(egui_plot::VPlacement::Bottom),
-                        ])
-                        .x_grid_spacer({
-                            let channel_freqs = channel_freqs.clone();
-                            // Use larger step_size for wider bands so marks aren't filtered out
-                            let step = (freq_end - freq_start) as f64;
-                            move |input| {
-                                channel_freqs
-                                    .iter()
-                                    .filter_map(|&f| {
-                                        let f = f as f64;
-                                        if f >= input.bounds.0 && f <= input.bounds.1 {
-                                            Some(egui_plot::GridMark {
-                                                value: f,
-                                                step_size: step,
-                                            })
-                                        } else {
-                                            None
-                                        }
-                                    })
-                                    .collect()
-                            }
-                        })
-                        .show(ui, |plot_ui| {
-                            let data = chart_data.borrow();
-                            for bss in data.iter() {
-                                let points = Self::bss_shape_points(bss, band);
-                                let name = bss.ssid.clone().unwrap_or_else(|| "Hidden".to_string());
-                                plot_ui.line(
-                                    Line::new(name.clone(), points)
-                                        .color(bss.color)
-                                        .width(2.0)
-                                        .fill(-130.0)
-                                        .fill_alpha(if bss.selected { 0.25 } else { 0.0 }),
-                                );
-                                plot_ui.text(
-                                    Text::new(
-                                        name.clone(),
-                                        egui_plot::PlotPoint::new(bss.freq, bss.signal + 0.75),
-                                        egui::RichText::new(name).size(16.0),
-                                    )
-                                    .anchor(egui::Align2::CENTER_BOTTOM)
-                                    .color(bss.color),
-                                );
-                            }
-                        });
-                });
+        self.set_draw_func(move |_, cr, width, height| {
+            if width <= 0 || height <= 0 {
+                return;
+            }
+
+            if let Err(err) = Self::draw_plot(
+                cr,
+                width as u32,
+                height as u32,
+                band,
+                &channel_freqs,
+                &chart_data.borrow(),
+                style_manager_for_draw.is_dark(),
+            ) {
+                tracing::warn!(error = %err, "Failed to draw BSS chart");
+            }
         });
 
-        if let Some(fonts) = font_definitions {
-            egui_area.egui_ctx().set_fonts(fonts);
-        }
+        self.set_hexpand(true);
+        self.set_vexpand(true);
 
-        egui_area.set_hexpand(true);
-        egui_area.set_vexpand(true);
-
-        self.append(&egui_area);
-        imp.egui_area.replace(Some(egui_area));
+        style_manager.connect_dark_notify(glib::clone!(
+            #[weak(rename_to = chart)]
+            self,
+            move |_| chart.queue_draw()
+        ));
     }
 
-    fn gtk_font_definitions(&self) -> Option<egui::FontDefinitions> {
-        self.load_gtk_font().map(|font_data| {
-            let mut fonts = egui::FontDefinitions::default();
-            fonts.font_data.insert(
-                "gtk_font".to_owned(),
-                egui::FontData::from_owned(font_data).into(),
-            );
+    fn draw_plot(
+        cr: &gtk::cairo::Context,
+        width: u32,
+        height: u32,
+        band: kawaiifi::Band,
+        channel_freqs: &[i32],
+        chart_data: &[BssChartData],
+        is_dark: bool,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let (freq_start, freq_end) = Self::get_band_frequency_range(band);
+        // plotters-cairo expects cairo-rs 0.21; GTK provides cairo-rs 0.22.
+        // Both wrap the same cairo_t, so borrow the raw pointer for the draw call.
+        let cairo_context = unsafe {
+            cairo_021::Context::from_raw_none(cr.to_raw_none() as *mut cairo_021::ffi::cairo_t)
+        };
+        let backend = CairoBackend::new(&cairo_context, (width, height))?;
+        let root = backend.into_drawing_area();
 
-            fonts
-                .families
-                .get_mut(&egui::FontFamily::Proportional)
-                .unwrap()
-                .insert(0, "gtk_font".to_owned());
-            fonts
-                .families
-                .get_mut(&egui::FontFamily::Monospace)
-                .unwrap()
-                .insert(0, "gtk_font".to_owned());
-
-            fonts
-        })
-    }
-
-    fn set_theme_visuals(ui: &mut egui::Ui, style_manager: &adw::StyleManager) {
-        if style_manager.is_dark() {
-            ui.set_visuals(Visuals::dark());
+        let (background, text, grid) = if is_dark {
+            (BLACK, WHITE, RGBColor(82, 82, 82))
         } else {
-            ui.set_visuals(Visuals::light());
+            (WHITE, RGBColor(46, 52, 54), RGBColor(140, 140, 140))
+        };
+
+        root.fill(&background)?;
+
+        let mut chart = ChartBuilder::on(&root)
+            .margin(8)
+            .x_label_area_size(28)
+            .y_label_area_size(42)
+            .build_cartesian_2d(freq_start as f64..freq_end as f64, -100.0f64..-15.0f64)?;
+
+        chart
+            .configure_mesh()
+            .disable_x_mesh()
+            .axis_style(text)
+            .label_style(("sans-serif", 12).into_font().color(&text))
+            .light_line_style(TRANSPARENT)
+            .bold_line_style(TRANSPARENT)
+            .x_labels(0)
+            .y_label_formatter(&|signal| format!("{signal:.0}"))
+            .draw()?;
+
+        chart.draw_series(Self::major_signal_gridlines().map(|signal| {
+            DashedPathElement::new(
+                vec![(freq_start as f64, signal), (freq_end as f64, signal)],
+                2,
+                6,
+                grid.mix(0.85),
+            )
+        }))?;
+
+        let x_label_style = ("sans-serif", 12)
+            .into_font()
+            .color(&text)
+            .pos(Pos::new(HPos::Center, VPos::Top));
+        chart.draw_series(channel_freqs.iter().map(|freq| {
+            EmptyElement::at((*freq as f64, -100.0))
+                + Text::new(
+                    Self::frequency_to_channel(*freq, band),
+                    (0, 8),
+                    x_label_style.clone(),
+                )
+        }))?;
+
+        for bss in chart_data {
+            let points = Self::bss_shape_points(bss, band);
+            let (red, green, blue) = bss.color;
+            let color = RGBColor(red, green, blue);
+
+            if bss.selected {
+                chart.draw_series(AreaSeries::new(points.clone(), -130.0, color.mix(0.25)))?;
+            }
+
+            chart.draw_series(LineSeries::new(
+                points,
+                color
+                    .mix(0.9)
+                    .stroke_width(if bss.selected { 3 } else { 2 }),
+            ))?;
+
+            let name = bss.ssid.clone().unwrap_or_else(|| "Hidden".to_string());
+            let label_style = ("sans-serif", 16)
+                .into_font()
+                .color(&color)
+                .pos(Pos::new(HPos::Center, VPos::Bottom));
+            chart.draw_series(std::iter::once(
+                EmptyElement::at((bss.freq, bss.signal)) + Text::new(name, (0, -6), label_style),
+            ))?;
         }
-    }
 
-    fn load_gtk_font(&self) -> Option<Vec<u8>> {
-        use fontconfig::Fontconfig;
-
-        // Get font family from GTK's Pango context
-        let pango_context = self.pango_context();
-        let font_desc = pango_context.font_description()?;
-        let family = font_desc.family()?.to_string();
-
-        // Use fontconfig to find the font file
-        let fc = Fontconfig::new()?;
-        let font = fc.find(&family, None)?;
-
-        // Load the font file
-        std::fs::read(&font.path).ok()
+        root.present()?;
+        Ok(())
     }
 }
 

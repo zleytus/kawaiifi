@@ -292,8 +292,9 @@ impl KawaiiFiWindow {
 
         let window = self.clone();
         glib::spawn_future_local(async move {
+            let scan_result = receiver.recv().await;
             window.imp().active_scan_spinner.set_visible(false);
-            match receiver.recv().await {
+            match scan_result {
                 Ok(scan_and_processing_result) => {
                     window.handle_scan_result(scan_and_processing_result);
                 }
