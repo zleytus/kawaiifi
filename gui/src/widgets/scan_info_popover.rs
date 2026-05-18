@@ -11,10 +11,6 @@ mod imp {
     #[template(resource = "/fi/kawaii/kawaiifi/ui/scan_info_popover.ui")]
     pub struct ScanInfoPopover {
         #[template_child]
-        pub(crate) frequencies_scanned_label: TemplateChild<Label>,
-        #[template_child]
-        pub(crate) ies_label: TemplateChild<Label>,
-        #[template_child]
         pub(crate) start_time_label: TemplateChild<Label>,
         #[template_child]
         pub(crate) end_time_label: TemplateChild<Label>,
@@ -60,18 +56,6 @@ impl ScanInfoPopover {
     pub fn set_scan_info(&self, scan: &Scan) {
         let imp = self.imp();
 
-        imp.frequencies_scanned_label
-            .set_label(&format!("{} frequencies", scan.freqs_mhz().len()));
-
-        imp.ies_label.set_label(
-            &scan
-                .ies()
-                .iter()
-                .map(|ie| ie.name().to_string())
-                .collect::<Vec<String>>()
-                .join(", "),
-        );
-
         imp.start_time_label.set_label(
             &scan
                 .start_time()
@@ -93,8 +77,6 @@ impl ScanInfoPopover {
     pub fn clear(&self) {
         let imp = self.imp();
 
-        imp.frequencies_scanned_label.set_label("");
-        imp.ies_label.set_label("");
         imp.start_time_label.set_label("");
         imp.end_time_label.set_label("");
         imp.duration_label.set_label("");

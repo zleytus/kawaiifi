@@ -8,58 +8,9 @@ template $ScanInfoPopover: Gtk.Popover {
     margin-end: 12;
     row-spacing: 6;
     column-spacing: 12;
-
-    // Frequencies Scanned
+    // Scan start time
     Gtk.Label {
-      label: "Scanned:";
-      halign: end;
-
-      styles [
-        "dim-label",
-      ]
-
-      layout {
-        column: 0;
-        row: 0;
-      }
-    }
-
-    Gtk.Label frequencies_scanned_label {
-      halign: start;
-
-      layout {
-        column: 1;
-        row: 0;
-      }
-    }
-
-    // IEs
-    Gtk.Label {
-      label: "IEs:";
-      halign: end;
-
-      styles [
-        "dim-label",
-      ]
-
-      layout {
-        column: 0;
-        row: 1;
-      }
-    }
-
-    Gtk.Label ies_label {
-      halign: start;
-
-      layout {
-        column: 1;
-        row: 1;
-      }
-    }
-
-    // start time
-    Gtk.Label {
-      label: "Scan Start:";
+      label: _("Scan Start:");
       halign: end;
 
       styles [
@@ -81,9 +32,9 @@ template $ScanInfoPopover: Gtk.Popover {
       }
     }
 
-    // end time
+    // Scan end time
     Gtk.Label {
-      label: "Scan End:";
+      label: _("Scan End:");
       halign: end;
 
       styles [
@@ -105,9 +56,9 @@ template $ScanInfoPopover: Gtk.Popover {
       }
     }
 
-    // duration
+    // Scan duration
     Gtk.Label {
-      label: "Duration:";
+      label: _("Duration:");
       halign: end;
 
       styles [
