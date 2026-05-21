@@ -70,3 +70,72 @@ impl VendorCache {
         self.by_uptime.clear();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const BSSID: [u8; 6] = [0x10, 0x22, 0x33, 0x44, 0x55, 0x66];
+
+    #[test]
+    fn uptime_lookup_takes_priority_over_partial_bssid_matches() {
+        let mut cache = VendorCache::default();
+        cache.insert(&BSSID, "Partial Vendor".to_string());
+        cache.insert_uptime(Duration::from_secs(123), "Uptime Vendor".to_string());
+
+        let vendor = cache.get(&BSSID, Duration::from_secs(123));
+
+        assert_eq!(vendor.as_deref(), Some("Uptime Vendor"));
+    }
+
+    #[test]
+    fn lookup_matches_last_three_bssid_bytes() {
+        let mut cache = VendorCache::default();
+        cache.insert(&BSSID, "Tail Vendor".to_string());
+
+        let vendor = cache.get(
+            &[0xaa, 0xbb, 0xcc, 0x44, 0x55, 0x66],
+            Duration::from_secs(999),
+        );
+
+        assert_eq!(vendor.as_deref(), Some("Tail Vendor"));
+    }
+
+    #[test]
+    fn lookup_matches_first_five_bssid_bytes() {
+        let mut cache = VendorCache::default();
+        cache.insert(&BSSID, "First Five Vendor".to_string());
+
+        let vendor = cache.get(
+            &[0x10, 0x22, 0x33, 0x44, 0x55, 0xff],
+            Duration::from_secs(999),
+        );
+
+        assert_eq!(vendor.as_deref(), Some("First Five Vendor"));
+    }
+
+    #[test]
+    fn lookup_matches_first_three_and_last_two_bssid_bytes() {
+        let mut cache = VendorCache::default();
+        cache.insert(&BSSID, "Skipped Byte Vendor".to_string());
+
+        let vendor = cache.get(
+            &[0x10, 0x22, 0x33, 0xff, 0x55, 0x66],
+            Duration::from_secs(999),
+        );
+
+        assert_eq!(vendor.as_deref(), Some("Skipped Byte Vendor"));
+    }
+
+    #[test]
+    fn clear_uptime_map_keeps_partial_bssid_matches() {
+        let mut cache = VendorCache::default();
+        cache.insert(&BSSID, "Partial Vendor".to_string());
+        cache.insert_uptime(Duration::from_secs(123), "Uptime Vendor".to_string());
+
+        cache.clear_uptime_map();
+
+        let vendor = cache.get(&BSSID, Duration::from_secs(123));
+        assert_eq!(vendor.as_deref(), Some("Partial Vendor"));
+    }
+}
