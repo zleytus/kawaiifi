@@ -3,6 +3,7 @@ use gtk::gio::prelude::SettingsExt;
 use kawaiifi::{Band, ChannelWidths, SecurityProtocols, WifiAmendments, WifiProtocols};
 
 use crate::objects::BssObject;
+use crate::widgets::CHANNEL_WIDTH_FILTER_OPTIONS;
 
 use super::KawaiiFiWindow;
 
@@ -43,7 +44,7 @@ impl BssFilterState {
             show_open,
             band_all: band_state.iter().all(|&b| b),
             security_all: show_open && security_state.is_all(),
-            width_all: width_state.len() == 6,
+            width_all: all_channel_widths_selected(&width_state),
             protocol_all: protocol_state.is_all(),
             amendment_all: amendment_state.is_all(),
             security_state,
@@ -127,5 +128,39 @@ impl BssFilterState {
         // "open" checkbox rather than by SecurityProtocols.
         (self.show_open && security.is_empty())
             || (!security.is_empty() && !(*security & *self.security_state).is_empty())
+    }
+}
+
+fn all_channel_widths_selected(widths: &ChannelWidths) -> bool {
+    CHANNEL_WIDTH_FILTER_OPTIONS
+        .iter()
+        .all(|width| widths.contains(width))
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+
+    use kawaiifi::ChannelWidth;
+
+    use super::*;
+
+    fn selected_widths(widths: &[ChannelWidth]) -> ChannelWidths {
+        ChannelWidths::from(widths.iter().copied().collect::<HashSet<_>>())
+    }
+
+    #[test]
+    fn all_channel_widths_selected_uses_filter_option_list() {
+        assert!(all_channel_widths_selected(&selected_widths(
+            &CHANNEL_WIDTH_FILTER_OPTIONS
+        )));
+    }
+
+    #[test]
+    fn all_channel_widths_selected_rejects_partial_selection() {
+        assert!(!all_channel_widths_selected(&selected_widths(&[
+            ChannelWidth::TwentyMhz,
+            ChannelWidth::FortyMhz,
+        ])));
     }
 }

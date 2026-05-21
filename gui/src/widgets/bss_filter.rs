@@ -10,6 +10,15 @@ use kawaiifi::{
     WifiAmendments, WifiProtocol, WifiProtocols,
 };
 
+pub(crate) const CHANNEL_WIDTH_FILTER_OPTIONS: [ChannelWidth; 6] = [
+    ChannelWidth::TwentyMhz,
+    ChannelWidth::FortyMhz,
+    ChannelWidth::EightyMhz,
+    ChannelWidth::EightyPlusEightyMhz,
+    ChannelWidth::OneSixtyMhz,
+    ChannelWidth::ThreeHundredTwentyMhz,
+];
+
 mod imp {
     use std::cell::Cell;
 
@@ -263,84 +272,64 @@ impl BssFilter {
     pub fn width_state(&self) -> ChannelWidths {
         let imp = self.imp();
         let mut widths = std::collections::HashSet::new();
-        if imp.width_20_check.is_active() {
-            widths.insert(ChannelWidth::TwentyMhz);
+
+        for (check, width) in [
+            (&imp.width_20_check, ChannelWidth::TwentyMhz),
+            (&imp.width_40_check, ChannelWidth::FortyMhz),
+            (&imp.width_80_check, ChannelWidth::EightyMhz),
+            (&imp.width_80_80_check, ChannelWidth::EightyPlusEightyMhz),
+            (&imp.width_160_check, ChannelWidth::OneSixtyMhz),
+            (&imp.width_320_check, ChannelWidth::ThreeHundredTwentyMhz),
+        ] {
+            if check.is_active() {
+                widths.insert(width);
+            }
         }
-        if imp.width_40_check.is_active() {
-            widths.insert(ChannelWidth::FortyMhz);
-        }
-        if imp.width_80_check.is_active() {
-            widths.insert(ChannelWidth::EightyMhz);
-        }
-        if imp.width_80_80_check.is_active() {
-            widths.insert(ChannelWidth::EightyPlusEightyMhz);
-        }
-        if imp.width_160_check.is_active() {
-            widths.insert(ChannelWidth::OneSixtyMhz);
-        }
-        if imp.width_320_check.is_active() {
-            widths.insert(ChannelWidth::ThreeHundredTwentyMhz);
-        }
+
         ChannelWidths::from(widths)
     }
 
     pub fn protocol_state(&self) -> WifiProtocols {
         let imp = self.imp();
         let mut flags: BitFlags<WifiProtocol> = BitFlags::empty();
-        if imp.protocol_b_check.is_active() {
-            flags |= WifiProtocol::B;
+
+        for (check, protocol) in [
+            (&imp.protocol_b_check, WifiProtocol::B),
+            (&imp.protocol_a_check, WifiProtocol::A),
+            (&imp.protocol_g_check, WifiProtocol::G),
+            (&imp.protocol_n_check, WifiProtocol::N),
+            (&imp.protocol_ac_check, WifiProtocol::AC),
+            (&imp.protocol_ax_check, WifiProtocol::AX),
+            (&imp.protocol_be_check, WifiProtocol::BE),
+        ] {
+            if check.is_active() {
+                flags |= protocol;
+            }
         }
-        if imp.protocol_a_check.is_active() {
-            flags |= WifiProtocol::A;
-        }
-        if imp.protocol_g_check.is_active() {
-            flags |= WifiProtocol::G;
-        }
-        if imp.protocol_n_check.is_active() {
-            flags |= WifiProtocol::N;
-        }
-        if imp.protocol_ac_check.is_active() {
-            flags |= WifiProtocol::AC;
-        }
-        if imp.protocol_ax_check.is_active() {
-            flags |= WifiProtocol::AX;
-        }
-        if imp.protocol_be_check.is_active() {
-            flags |= WifiProtocol::BE;
-        }
+
         WifiProtocols::from(flags)
     }
 
     pub fn amendment_state(&self) -> WifiAmendments {
         let imp = self.imp();
         let mut flags: BitFlags<WifiAmendment> = BitFlags::empty();
-        if imp.amendment_d_check.is_active() {
-            flags |= WifiAmendment::D;
+
+        for (check, amendment) in [
+            (&imp.amendment_d_check, WifiAmendment::D),
+            (&imp.amendment_e_check, WifiAmendment::E),
+            (&imp.amendment_h_check, WifiAmendment::H),
+            (&imp.amendment_i_check, WifiAmendment::I),
+            (&imp.amendment_k_check, WifiAmendment::K),
+            (&imp.amendment_r_check, WifiAmendment::R),
+            (&imp.amendment_s_check, WifiAmendment::S),
+            (&imp.amendment_v_check, WifiAmendment::V),
+            (&imp.amendment_w_check, WifiAmendment::W),
+        ] {
+            if check.is_active() {
+                flags |= amendment;
+            }
         }
-        if imp.amendment_e_check.is_active() {
-            flags |= WifiAmendment::E;
-        }
-        if imp.amendment_h_check.is_active() {
-            flags |= WifiAmendment::H;
-        }
-        if imp.amendment_i_check.is_active() {
-            flags |= WifiAmendment::I;
-        }
-        if imp.amendment_k_check.is_active() {
-            flags |= WifiAmendment::K;
-        }
-        if imp.amendment_r_check.is_active() {
-            flags |= WifiAmendment::R;
-        }
-        if imp.amendment_s_check.is_active() {
-            flags |= WifiAmendment::S;
-        }
-        if imp.amendment_v_check.is_active() {
-            flags |= WifiAmendment::V;
-        }
-        if imp.amendment_w_check.is_active() {
-            flags |= WifiAmendment::W;
-        }
+
         WifiAmendments::from(flags)
     }
 
