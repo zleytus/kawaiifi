@@ -1,13 +1,15 @@
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::gio::prelude::{FileExt, ListModelExt, ListModelExtManual};
+use gtk::gio::prelude::ListModelExt;
 use gtk::{gio, glib};
 
 use crate::config;
 use crate::objects::BssObject;
 use crate::widgets::{BssChart, BssElements, BssFilter, BssTable};
 
+mod filtering;
 mod scan_file_dialog;
+mod scan_processing;
 mod scanning;
 mod setup;
 
@@ -113,14 +115,9 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            // Create the ListStore for all BSSs
             let store = gio::ListStore::new::<BssObject>();
 
-            // Create the FilterModel
-            let filter = gtk::CustomFilter::new(|_| {
-                // Initially show all items
-                true
-            });
+            let filter = gtk::CustomFilter::new(|_| true);
             let filter_model = gtk::FilterListModel::new(Some(store.clone()), Some(filter.clone()));
             filter_model.connect_items_changed(glib::clone!(
                 #[weak(rename_to = window)]
@@ -130,7 +127,6 @@ mod imp {
                 }
             ));
 
-            // Store the models
             self.bss_list_store.set(store).unwrap();
             self.bss_custom_filter.set(filter).unwrap();
             self.bss_filter_model.set(filter_model).unwrap();
@@ -138,7 +134,6 @@ mod imp {
                 .set(gio::Settings::new(config::app_id()))
                 .unwrap();
 
-            // Initialize the vendor cache
             self.vendor_cache
                 .set(Arc::new(Mutex::new(VendorCache::default())))
                 .unwrap();
