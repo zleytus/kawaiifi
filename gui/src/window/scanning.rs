@@ -149,11 +149,11 @@ impl KawaiiFiWindow {
         let imp = self.imp();
         imp.scanning_enabled.set(false);
 
-        // Cancel the timer
         if let Some(source_id) = imp.scan_source_id.take() {
             source_id.remove();
         }
 
+        imp.active_scan_spinner.set_visible(false);
         imp.start_scanning_button.set_sensitive(true);
         imp.stop_scanning_button.set_sensitive(false);
     }
