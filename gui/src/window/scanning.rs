@@ -1,10 +1,4 @@
-use std::{
-    collections::HashMap,
-    path::Path,
-    sync::{Arc, MutexGuard},
-    thread,
-    time::Duration,
-};
+use std::{path::Path, sync::Arc, thread, time::Duration};
 
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::{
@@ -148,32 +142,55 @@ impl KawaiiFiWindow {
             return;
         };
 
-        let scan_results = match interface.cached_scan_results_blocking() {
-            Ok(scan_results) => scan_results,
-            Err(scan_error) => {
-                tracing::warn!(error = %scan_error, "Failed to read cached scan results");
-                return;
+        let existing_bss_data = self.current_bss_data();
+        let vendor_cache = Arc::clone(self.imp().vendor_cache.get().unwrap());
+        let (sender, receiver) = async_channel::unbounded();
+
+        // Cached scan retrieval is blocking, so keep it off the UI thread.
+        thread::spawn(move || {
+            let result = interface.cached_scan_results_blocking();
+            let mut vendor_cache = vendor_cache.lock().unwrap();
+            match result {
+                Ok(scan_results) => {
+                    // Cached results are from before this app run, so keep the existing
+                    // uptime cache rather than treating this as a fresh scan boundary.
+                    let bss_count = scan_results.len();
+                    let merged_bss_list = merge_new_scan_results_with_existing(
+                        &existing_bss_data,
+                        &scan_results,
+                        &mut vendor_cache,
+                    );
+                    _ = sender.send_blocking(CachedScanResult::Ok {
+                        bss_count,
+                        merged_bss_list,
+                    });
+                }
+                Err(scan_error) => {
+                    _ = sender.send_blocking(CachedScanResult::Err { scan_error });
+                }
             }
-        };
+        });
 
-        tracing::info!(
-            bss_count = scan_results.len(),
-            "Received cached scan results"
-        );
-
-        let existing_bss_data: Vec<BssInternal> = self
-            .bss_list_store()
-            .iter::<BssObject>()
-            .filter_map(|obj| obj.ok())
-            .map(|obj: BssObject| obj.bss().clone())
-            .collect();
-        let merged_bss_list = merge_new_scan_results_with_existing(
-            &existing_bss_data,
-            &scan_results,
-            self.imp().vendor_cache.get().unwrap().lock().unwrap(),
-        );
-
-        self.apply_merged_results(merged_bss_list);
+        let window = self.clone();
+        glib::spawn_future_local(async move {
+            // GTK widgets must be updated from the main thread; the worker only sends
+            // processed data back through the channel.
+            match receiver.recv().await {
+                Ok(CachedScanResult::Ok {
+                    bss_count,
+                    merged_bss_list,
+                }) => {
+                    tracing::info!(bss_count, "Received cached scan results");
+                    window.apply_merged_results(merged_bss_list);
+                }
+                Ok(CachedScanResult::Err { scan_error }) => {
+                    tracing::warn!(error = %scan_error, "Failed to read cached scan results");
+                }
+                Err(recv_error) => {
+                    tracing::warn!(error = %recv_error, "Cached scan worker stopped before sending results");
+                }
+            }
+        });
     }
 
     pub fn start_scanning(&self, interval_seconds: u32) {
