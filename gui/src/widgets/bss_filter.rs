@@ -11,6 +11,8 @@ use kawaiifi::{
 };
 
 mod imp {
+    use std::cell::Cell;
+
     use gtk::{Button, CheckButton};
 
     use super::*;
@@ -97,6 +99,8 @@ mod imp {
 
         #[template_child]
         pub reset_filter_button: TemplateChild<Button>,
+
+        pub suppress_filter_changed: Cell<bool>,
     }
 
     #[glib::object_subclass]
@@ -129,7 +133,7 @@ mod imp {
                 entry.connect_text_notify(glib::clone!(
                     #[weak]
                     obj,
-                    move |_| obj.emit_by_name::<()>("filter-changed", &[])
+                    move |_| obj.imp().emit_filter_changed()
                 ));
             }
 
@@ -137,9 +141,7 @@ mod imp {
                 check.connect_active_notify(glib::clone!(
                     #[weak(rename_to = filter)]
                     obj,
-                    move |_| {
-                        filter.emit_by_name::<()>("filter-changed", &[]);
-                    }
+                    move |_| filter.imp().emit_filter_changed()
                 ));
             }
         }
@@ -193,13 +195,26 @@ mod imp {
             ]
         }
 
+        fn emit_filter_changed(&self) {
+            if !self.suppress_filter_changed.get() {
+                self.obj().emit_by_name::<()>("filter-changed", &[]);
+            }
+        }
+
         pub fn reset(&self) {
+            self.suppress_filter_changed.set(true);
             for check in self.check_buttons() {
-                check.set_active(true);
+                if !check.is_active() {
+                    check.set_active(true);
+                }
             }
             for entry in self.text_entries() {
-                entry.set_text("");
+                if !entry.text().is_empty() {
+                    entry.set_text("");
+                }
             }
+            self.suppress_filter_changed.set(false);
+            self.emit_filter_changed();
         }
     }
 }
