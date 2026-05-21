@@ -5,9 +5,9 @@ use gtk::{gio, glib};
 
 use crate::config;
 use crate::objects::BssObject;
-use crate::scan_file::ScanFile;
 use crate::widgets::{BssChart, BssElements, BssFilter, BssTable};
 
+mod scan_file_dialog;
 mod scanning;
 mod setup;
 
@@ -208,152 +208,11 @@ impl KawaiiFiWindow {
         self.imp().bss_filter_model.get().unwrap()
     }
 
-    fn kwifi_file_filter() -> gtk::FileFilter {
-        let filter = gtk::FileFilter::new();
-        filter.set_name(Some("KawaiiFi Scan (.kwifi)"));
-        filter.add_suffix("kwifi");
-        filter
-    }
-
-    fn show_error(&self, heading: &str, body: impl AsRef<str>) {
+    pub(super) fn show_error(&self, heading: &str, body: impl AsRef<str>) {
         let dialog = adw::AlertDialog::new(Some(heading), Some(body.as_ref()));
         dialog.add_response("ok", "_OK");
         dialog.set_default_response(Some("ok"));
         dialog.present(Some(self));
-    }
-
-    pub fn open(&self) {
-        let filters = gio::ListStore::new::<gtk::FileFilter>();
-        filters.append(&Self::kwifi_file_filter());
-
-        let dialog = gtk::FileDialog::builder()
-            .title("Open")
-            .filters(&filters)
-            .build();
-
-        dialog.open(
-            Some(self),
-            None::<&gio::Cancellable>,
-            glib::clone!(
-                #[weak(rename_to = window)]
-                self,
-                move |result| {
-                    let Ok(file) = result else {
-                        return;
-                    };
-                    let Some(path) = file.path() else {
-                        window.show_error(
-                            "Could Not Open File",
-                            "The selected file is not available as a local path.",
-                        );
-                        return;
-                    };
-                    match std::fs::read_to_string(&path) {
-                        Ok(json) => match ScanFile::from_json(&json) {
-                            Ok(scan_file) => {
-                                window.stop_scanning();
-                                window.apply_loaded_scan(scan_file, &path);
-                            }
-                            Err(e) => {
-                                tracing::error!(error = %e, "Failed to parse scan file");
-                                window.show_error(
-                                    "Could Not Open Scan",
-                                    format!("The scan file could not be parsed.\n\n{e}"),
-                                );
-                            }
-                        },
-                        Err(e) => {
-                            tracing::error!(error = %e, "Failed to read scan file");
-                            window.show_error(
-                                "Could Not Read File",
-                                format!("The scan file could not be read.\n\n{e}"),
-                            );
-                        }
-                    }
-                }
-            ),
-        );
-    }
-
-    pub fn save_all(&self) {
-        let bss_list: Vec<kawaiifi::Bss> = self
-            .bss_list_store()
-            .iter::<BssObject>()
-            .filter_map(|obj| obj.ok())
-            .map(|obj| kawaiifi::Bss::clone(&obj.bss()))
-            .collect();
-        if !bss_list.is_empty() {
-            self.save("All", "All-BSSs", bss_list);
-        }
-    }
-
-    pub fn save_visible(&self) {
-        let bss_list: Vec<kawaiifi::Bss> = self
-            .bss_filter_model()
-            .iter::<BssObject>()
-            .filter_map(|obj| obj.ok())
-            .map(|obj| kawaiifi::Bss::clone(&obj.bss()))
-            .collect();
-        if !bss_list.is_empty() {
-            self.save("Visible", "Visible-BSSs", bss_list);
-        }
-    }
-
-    pub fn save_selected(&self) {
-        let bss_list: Vec<kawaiifi::Bss> = self
-            .imp()
-            .bss_table
-            .selected_bss()
-            .map(|obj| kawaiifi::Bss::clone(&obj.bss()))
-            .into_iter()
-            .collect();
-        if !bss_list.is_empty() {
-            self.save("Selected", "Selected-BSSs", bss_list);
-        }
-    }
-
-    fn save(&self, title: &str, initial_name: &str, bss_list: Vec<kawaiifi::Bss>) {
-        let filters = gio::ListStore::new::<gtk::FileFilter>();
-        filters.append(&Self::kwifi_file_filter());
-
-        let dialog = gtk::FileDialog::builder()
-            .title(title)
-            .initial_name(format!("{}.kwifi", initial_name))
-            .filters(&filters)
-            .build();
-
-        let window = self.clone();
-        dialog.save(Some(self), None::<&gio::Cancellable>, move |result| {
-            let Ok(file) = result else {
-                return;
-            };
-            let Some(path) = file.path() else {
-                window.show_error(
-                    "Could Not Save File",
-                    "The selected file is not available as a local path.",
-                );
-                return;
-            };
-            let scan_file = ScanFile::new(bss_list);
-            match scan_file.to_json() {
-                Ok(json) => {
-                    if let Err(e) = std::fs::write(&path, json) {
-                        tracing::error!(error = %e, "Failed to write scan file");
-                        window.show_error(
-                            "Could Not Save File",
-                            format!("The scan file could not be written.\n\n{e}"),
-                        );
-                    }
-                }
-                Err(e) => {
-                    tracing::error!(error = %e, "Failed to serialize scan file");
-                    window.show_error(
-                        "Could Not Save Scan",
-                        format!("The scan file could not be serialized.\n\n{e}"),
-                    );
-                }
-            }
-        });
     }
 
     fn update_status_bar(&self) {
