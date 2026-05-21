@@ -15,6 +15,24 @@ use crate::objects::BssObject;
 use crate::widgets::column_view;
 use columns::update_last_seen_label;
 
+pub(super) mod column_settings {
+    pub const SHOW_BSSID: &str = "show-bssid-column";
+    pub const SHOW_VENDOR: &str = "show-vendor-column";
+    pub const SHOW_SIGNAL: &str = "show-signal-column";
+    pub const SHOW_CHANNEL: &str = "show-channel-column";
+    pub const SHOW_CHANNEL_WIDTH: &str = "show-channel-width-column";
+    pub const SHOW_FREQUENCY: &str = "show-frequency-column";
+    pub const SHOW_BAND: &str = "show-band-column";
+    pub const SHOW_PROTOCOLS: &str = "show-protocols-column";
+    pub const SHOW_AMENDMENTS: &str = "show-amendments-column";
+    pub const SHOW_SECURITY: &str = "show-security-column";
+    pub const SHOW_MAX_RATE: &str = "show-max-rate-column";
+    pub const SHOW_CHANNEL_UTILIZATION: &str = "show-channel-utilization-column";
+    pub const SHOW_STATIONS: &str = "show-stations-column";
+    pub const SHOW_UPTIME: &str = "show-uptime-column";
+    pub const SHOW_LAST_SEEN: &str = "show-last-seen-column";
+}
+
 mod imp {
     use std::cell::OnceCell;
 

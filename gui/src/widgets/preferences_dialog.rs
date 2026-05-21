@@ -10,6 +10,7 @@ mod imp {
         prelude::{SettingsExt, SettingsExtManual},
     };
 
+    use super::super::bss_table::column_settings;
     use super::*;
 
     #[derive(Default, gtk::CompositeTemplate)]
@@ -123,46 +124,64 @@ mod imp {
 
         fn setup_column_bindings(&self, settings: &gio::Settings) {
             for (key, row) in [
-                ("show-bssid-column", &*self.show_bssid_column_switch_row),
-                ("show-vendor-column", &*self.show_vendor_column_switch_row),
-                ("show-signal-column", &*self.show_signal_column_switch_row),
-                ("show-channel-column", &*self.show_channel_column_switch_row),
                 (
-                    "show-channel-width-column",
+                    column_settings::SHOW_BSSID,
+                    &*self.show_bssid_column_switch_row,
+                ),
+                (
+                    column_settings::SHOW_VENDOR,
+                    &*self.show_vendor_column_switch_row,
+                ),
+                (
+                    column_settings::SHOW_SIGNAL,
+                    &*self.show_signal_column_switch_row,
+                ),
+                (
+                    column_settings::SHOW_CHANNEL,
+                    &*self.show_channel_column_switch_row,
+                ),
+                (
+                    column_settings::SHOW_CHANNEL_WIDTH,
                     &*self.show_channel_width_column_switch_row,
                 ),
                 (
-                    "show-frequency-column",
+                    column_settings::SHOW_FREQUENCY,
                     &*self.show_frequency_column_switch_row,
                 ),
-                ("show-band-column", &*self.show_band_column_switch_row),
                 (
-                    "show-protocols-column",
+                    column_settings::SHOW_BAND,
+                    &*self.show_band_column_switch_row,
+                ),
+                (
+                    column_settings::SHOW_PROTOCOLS,
                     &*self.show_protocols_column_switch_row,
                 ),
                 (
-                    "show-amendments-column",
+                    column_settings::SHOW_AMENDMENTS,
                     &*self.show_amendments_column_switch_row,
                 ),
                 (
-                    "show-security-column",
+                    column_settings::SHOW_SECURITY,
                     &*self.show_security_column_switch_row,
                 ),
                 (
-                    "show-max-rate-column",
+                    column_settings::SHOW_MAX_RATE,
                     &*self.show_max_rate_column_switch_row,
                 ),
                 (
-                    "show-channel-utilization-column",
+                    column_settings::SHOW_CHANNEL_UTILIZATION,
                     &*self.show_channel_utilization_column_switch_row,
                 ),
                 (
-                    "show-stations-column",
+                    column_settings::SHOW_STATIONS,
                     &*self.show_stations_column_switch_row,
                 ),
-                ("show-uptime-column", &*self.show_uptime_column_switch_row),
                 (
-                    "show-last-seen-column",
+                    column_settings::SHOW_UPTIME,
+                    &*self.show_uptime_column_switch_row,
+                ),
+                (
+                    column_settings::SHOW_LAST_SEEN,
                     &*self.show_last_seen_column_switch_row,
                 ),
             ] {

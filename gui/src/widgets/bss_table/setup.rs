@@ -3,7 +3,7 @@ use gtk::gio::{self, prelude::SettingsExtManual};
 
 use crate::config;
 
-use super::{BssTable, columns::*};
+use super::{BssTable, column_settings, columns::*};
 
 impl BssTable {
     pub(super) fn setup_columns(&self) {
@@ -84,61 +84,89 @@ impl BssTable {
         let settings = gio::Settings::new(config::app_id());
 
         settings
-            .bind("show-bssid-column", &*imp.bssid_column, "visible")
+            .bind(column_settings::SHOW_BSSID, &*imp.bssid_column, "visible")
             .build();
         settings
-            .bind("show-vendor-column", &*imp.vendor_column, "visible")
+            .bind(column_settings::SHOW_VENDOR, &*imp.vendor_column, "visible")
             .build();
         settings
-            .bind("show-signal-column", &*imp.signal_column, "visible")
-            .build();
-        settings
-            .bind("show-channel-column", &*imp.channel_column, "visible")
+            .bind(column_settings::SHOW_SIGNAL, &*imp.signal_column, "visible")
             .build();
         settings
             .bind(
-                "show-channel-width-column",
+                column_settings::SHOW_CHANNEL,
+                &*imp.channel_column,
+                "visible",
+            )
+            .build();
+        settings
+            .bind(
+                column_settings::SHOW_CHANNEL_WIDTH,
                 &*imp.channel_width_column,
                 "visible",
             )
             .build();
         settings
-            .bind("show-frequency-column", &*imp.frequency_column, "visible")
+            .bind(
+                column_settings::SHOW_FREQUENCY,
+                &*imp.frequency_column,
+                "visible",
+            )
             .build();
         settings
-            .bind("show-band-column", &*imp.band_column, "visible")
-            .build();
-        settings
-            .bind("show-protocols-column", &*imp.protocols_column, "visible")
-            .build();
-        settings
-            .bind("show-amendments-column", &*imp.amendments_column, "visible")
-            .build();
-        settings
-            .bind("show-security-column", &*imp.security_column, "visible")
-            .build();
-        settings
-            .bind("show-max-rate-column", &*imp.max_rate_column, "visible")
+            .bind(column_settings::SHOW_BAND, &*imp.band_column, "visible")
             .build();
         settings
             .bind(
-                "show-channel-utilization-column",
+                column_settings::SHOW_PROTOCOLS,
+                &*imp.protocols_column,
+                "visible",
+            )
+            .build();
+        settings
+            .bind(
+                column_settings::SHOW_AMENDMENTS,
+                &*imp.amendments_column,
+                "visible",
+            )
+            .build();
+        settings
+            .bind(
+                column_settings::SHOW_SECURITY,
+                &*imp.security_column,
+                "visible",
+            )
+            .build();
+        settings
+            .bind(
+                column_settings::SHOW_MAX_RATE,
+                &*imp.max_rate_column,
+                "visible",
+            )
+            .build();
+        settings
+            .bind(
+                column_settings::SHOW_CHANNEL_UTILIZATION,
                 &*imp.channel_utilization_column,
                 "visible",
             )
             .build();
         settings
             .bind(
-                "show-stations-column",
+                column_settings::SHOW_STATIONS,
                 &*imp.station_count_column,
                 "visible",
             )
             .build();
         settings
-            .bind("show-uptime-column", &*imp.uptime_column, "visible")
+            .bind(column_settings::SHOW_UPTIME, &*imp.uptime_column, "visible")
             .build();
         settings
-            .bind("show-last-seen-column", &*imp.last_seen_column, "visible")
+            .bind(
+                column_settings::SHOW_LAST_SEEN,
+                &*imp.last_seen_column,
+                "visible",
+            )
             .build();
     }
 }
