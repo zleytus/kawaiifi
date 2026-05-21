@@ -103,10 +103,7 @@ impl IeTreeItem {
         match &*self.imp().kind.borrow() {
             imp::ItemKind::Ie(ie) => {
                 // Get fields from the IE and wrap them
-                ie.fields()
-                    .into_iter()
-                    .map(Self::from_field)
-                    .collect()
+                ie.fields().into_iter().map(Self::from_field).collect()
             }
             imp::ItemKind::Field(field) => {
                 // Get subfields and wrap them
