@@ -119,13 +119,22 @@ mod tests {
             last_seen_text(Some(Duration::from_secs(30))),
             "30 seconds ago"
         );
-        assert_eq!(last_seen_text(Some(Duration::from_secs(60))), "1 minute ago");
+        assert_eq!(
+            last_seen_text(Some(Duration::from_secs(60))),
+            "1 minute ago"
+        );
         assert_eq!(
             last_seen_text(Some(Duration::from_secs(120))),
             "2 minutes ago"
         );
-        assert_eq!(last_seen_text(Some(Duration::from_secs(3600))), "1 hour ago");
-        assert_eq!(last_seen_text(Some(Duration::from_secs(7200))), "2 hours ago");
+        assert_eq!(
+            last_seen_text(Some(Duration::from_secs(3600))),
+            "1 hour ago"
+        );
+        assert_eq!(
+            last_seen_text(Some(Duration::from_secs(7200))),
+            "2 hours ago"
+        );
         assert_eq!(last_seen_text(None), "Unknown");
     }
 

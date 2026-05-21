@@ -16,6 +16,11 @@ mod station_count;
 mod uptime;
 mod vendor;
 
+use gtk::SignalListItemFactory;
+use gtk::prelude::*;
+
+use crate::objects::BssObject;
+
 pub(super) fn set_bss_label(label: &gtk::Label, text: impl AsRef<str>, associated: bool) {
     let text = text.as_ref();
     if associated {
@@ -23,6 +28,53 @@ pub(super) fn set_bss_label(label: &gtk::Label, text: impl AsRef<str>, associate
     } else {
         label.set_label(text);
     }
+}
+
+pub(super) fn create_bss_text_factory<F>(
+    halign: gtk::Align,
+    text_for_bss: F,
+) -> SignalListItemFactory
+where
+    F: Fn(&BssObject) -> Option<String> + 'static,
+{
+    let factory = SignalListItemFactory::new();
+
+    factory.connect_setup(move |_, list_item| {
+        let label = gtk::Label::new(None);
+        label.set_halign(halign);
+        list_item
+            .downcast_ref::<gtk::ListItem>()
+            .unwrap()
+            .set_child(Some(&label));
+    });
+
+    factory.connect_bind(move |_, list_item| {
+        let list_item = list_item.downcast_ref::<gtk::ListItem>().unwrap();
+        let bss = list_item.item().and_downcast::<BssObject>().unwrap();
+        let label = list_item.child().and_downcast::<gtk::Label>().unwrap();
+
+        if let Some(text) = text_for_bss(&bss) {
+            label.set_visible(true);
+            set_bss_label(&label, text, bss.is_associated());
+        } else {
+            label.set_label("");
+            label.set_visible(false);
+        }
+    });
+
+    factory
+}
+
+pub(super) fn create_bss_sorter_by<K, F>(key_for_bss: F) -> gtk::CustomSorter
+where
+    K: Ord + 'static,
+    F: Fn(&BssObject) -> K + 'static,
+{
+    gtk::CustomSorter::new(move |obj1, obj2| {
+        let bss1 = obj1.downcast_ref::<BssObject>().unwrap();
+        let bss2 = obj2.downcast_ref::<BssObject>().unwrap();
+        key_for_bss(bss1).cmp(&key_for_bss(bss2)).into()
+    })
 }
 
 fn associated_markup(text: &str) -> String {

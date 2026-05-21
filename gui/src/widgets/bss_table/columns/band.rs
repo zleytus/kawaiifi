@@ -1,41 +1,19 @@
 use gtk::SignalListItemFactory;
-use gtk::prelude::*;
 use kawaiifi::Band;
 
-use super::set_bss_label;
-use crate::objects::BssObject;
+use super::{create_bss_sorter_by, create_bss_text_factory};
 
 pub fn create_band_factory() -> SignalListItemFactory {
-    let factory = SignalListItemFactory::new();
-
-    factory.connect_setup(move |_, list_item| {
-        let label = gtk::Label::new(None);
-        label.set_halign(gtk::Align::End);
-        list_item
-            .downcast_ref::<gtk::ListItem>()
-            .unwrap()
-            .set_child(Some(&label));
-    });
-
-    factory.connect_bind(move |_, list_item| {
-        let list_item = list_item.downcast_ref::<gtk::ListItem>().unwrap();
-        let bss = list_item.item().and_downcast::<BssObject>().unwrap();
-        let label = list_item.child().and_downcast::<gtk::Label>().unwrap();
+    create_bss_text_factory(gtk::Align::End, |bss| {
         let band = match bss.band() {
             Band::TwoPointFourGhz => "2.4",
             Band::FiveGhz => "5",
             Band::SixGhz => "6",
         };
-        set_bss_label(&label, format!("{band} GHz"), bss.is_associated());
-    });
-
-    factory
+        Some(format!("{band} GHz"))
+    })
 }
 
 pub fn create_band_sorter() -> gtk::CustomSorter {
-    gtk::CustomSorter::new(|obj1, obj2| {
-        let bss1 = obj1.downcast_ref::<BssObject>().unwrap();
-        let bss2 = obj2.downcast_ref::<BssObject>().unwrap();
-        bss1.band().cmp(&bss2.band()).into()
-    })
+    create_bss_sorter_by(|bss| bss.band())
 }
