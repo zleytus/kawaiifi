@@ -9,11 +9,10 @@ use gtk::{
     glib::{self, object::Cast},
     prelude::{ButtonExt, ToggleButtonExt, WidgetExt},
 };
-use kawaiifi::Band;
 
 use crate::objects::BssObject;
 
-use super::KawaiiFiWindow;
+use super::{KawaiiFiWindow, filtering::BssFilterState};
 
 impl KawaiiFiWindow {
     pub fn setup_settings(&self) {
@@ -185,88 +184,12 @@ impl KawaiiFiWindow {
     }
 
     pub fn reapply_filter(&self) {
-        let imp = self.imp();
         let filter = self.bss_filter();
-
-        let show_hidden = self.settings().boolean("show-hidden-bsss");
-        let band_state = imp.bss_filter.band_state();
-        let (show_open, security_state) = imp.bss_filter.security_state();
-        let width_state = imp.bss_filter.width_state();
-        let protocol_state = imp.bss_filter.protocol_state();
-        let amendment_state = imp.bss_filter.amendment_state();
-        let ssid_query = imp.bss_filter.ssid_query();
-        let bssid_query = imp.bss_filter.bssid_query();
-        let vendor_query = imp.bss_filter.vendor_query();
-
-        let band_all = band_state.iter().all(|&b| b);
-        let security_all = show_open && security_state.is_all();
-        let width_all = width_state.len() == 6;
-        let protocol_all = protocol_state.is_all();
-        let amendment_all = amendment_state.is_all();
+        let state = BssFilterState::from_window(self);
 
         filter.set_filter_func(move |obj| {
             let bss = obj.downcast_ref::<BssObject>().unwrap();
-
-            if !show_hidden && bss.ssid().is_none() {
-                return false;
-            }
-
-            if !ssid_query.is_empty() {
-                let ssid_match = match bss.ssid() {
-                    Some(ssid) => ssid.to_lowercase().contains(&ssid_query),
-                    None => "hidden".contains(&ssid_query),
-                };
-                if !ssid_match {
-                    return false;
-                }
-            }
-
-            if !bssid_query.is_empty() && !bss.bssid().to_lowercase().contains(&bssid_query) {
-                return false;
-            }
-
-            if !vendor_query.is_empty() && !bss.vendor().to_lowercase().contains(&vendor_query) {
-                return false;
-            }
-
-            // Band filter: [2.4 GHz, 5 GHz, 6 GHz]
-            if !band_all {
-                let allowed = [Band::TwoPointFourGhz, Band::FiveGhz, Band::SixGhz];
-                let passes = allowed
-                    .iter()
-                    .enumerate()
-                    .any(|(i, b)| band_state[i] && *b == bss.band());
-                if !passes {
-                    return false;
-                }
-            }
-
-            // Security filter
-            if !security_all {
-                let sec = bss.security();
-                let passes = (show_open && sec.is_empty())
-                    || (!sec.is_empty() && !(*sec & *security_state).is_empty());
-                if !passes {
-                    return false;
-                }
-            }
-
-            // Channel width filter
-            if !width_all && !width_state.contains(&bss.channel_width()) {
-                return false;
-            }
-
-            // Protocol filter
-            if !protocol_all && (*bss.protocols() & *protocol_state).is_empty() {
-                return false;
-            }
-
-            // Amendment filter
-            if !amendment_all && (*bss.amendments() & *amendment_state).is_empty() {
-                return false;
-            }
-
-            true
+            state.matches(bss)
         });
     }
 }
