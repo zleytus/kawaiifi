@@ -174,27 +174,31 @@ impl BssObject {
 
     /// The uptime formatted as a human-readable string (e.g. `2d 3h 45m`).
     pub fn formatted_uptime(&self) -> String {
-        let secs = self.uptime().as_secs();
-        let days = secs / 86400;
-        let hours = (secs % 86400) / 3600;
-        let mins = (secs % 3600) / 60;
-
-        if days >= 365 {
-            let years = days / 365;
-            let remaining_days = days % 365;
-            format!("{years}y {remaining_days}d {hours}h {mins}m")
-        } else if days > 0 {
-            format!("{days}d {hours}h {mins}m")
-        } else if hours > 0 {
-            format!("{hours}h {mins}m")
-        } else {
-            format!("{mins}m")
-        }
+        formatted_uptime_text(self.uptime())
     }
 
     /// The 802.11 capability information flags.
     pub fn capability_info(&self) -> CapabilityInfo {
         self.bss().capability_info().clone()
+    }
+}
+
+fn formatted_uptime_text(uptime: Duration) -> String {
+    let secs = uptime.as_secs();
+    let days = secs / 86400;
+    let hours = (secs % 86400) / 3600;
+    let mins = (secs % 3600) / 60;
+
+    if days >= 365 {
+        let years = days / 365;
+        let remaining_days = days % 365;
+        format!("{years}y {remaining_days}d {hours}h {mins}m")
+    } else if days > 0 {
+        format!("{days}d {hours}h {mins}m")
+    } else if hours > 0 {
+        format!("{hours}h {mins}m")
+    } else {
+        format!("{mins}m")
     }
 }
 
@@ -205,6 +209,52 @@ fn color_from_bssid(bssid: &[u8; 6]) -> RGBA {
     let b = (bssid[5] as f64 / 255.0) * 0.5 + 0.4;
 
     RGBA::new(r as f32, g as f32, b as f32, 1.0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn uptime_text_formats_minutes() {
+        assert_eq!(formatted_uptime_text(Duration::from_secs(0)), "0m");
+        assert_eq!(formatted_uptime_text(Duration::from_secs(59 * 60)), "59m");
+    }
+
+    #[test]
+    fn uptime_text_formats_hours_and_minutes() {
+        assert_eq!(formatted_uptime_text(Duration::from_secs(60 * 60)), "1h 0m");
+        assert_eq!(
+            formatted_uptime_text(Duration::from_secs((2 * 60 + 30) * 60)),
+            "2h 30m"
+        );
+    }
+
+    #[test]
+    fn uptime_text_formats_days_hours_and_minutes() {
+        assert_eq!(
+            formatted_uptime_text(Duration::from_secs(24 * 60 * 60)),
+            "1d 0h 0m"
+        );
+        assert_eq!(
+            formatted_uptime_text(Duration::from_secs(((3 * 24 + 4) * 60 + 5) * 60)),
+            "3d 4h 5m"
+        );
+    }
+
+    #[test]
+    fn uptime_text_formats_years_days_hours_and_minutes() {
+        assert_eq!(
+            formatted_uptime_text(Duration::from_secs(365 * 24 * 60 * 60)),
+            "1y 0d 0h 0m"
+        );
+        assert_eq!(
+            formatted_uptime_text(Duration::from_secs(
+                (((2 * 365 + 10) * 24 + 3) * 60 + 4) * 60
+            )),
+            "2y 10d 3h 4m"
+        );
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
