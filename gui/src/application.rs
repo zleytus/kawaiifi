@@ -133,7 +133,7 @@ impl KawaiiFiApplication {
             move |_, _| {
                 let dialog = AboutDialog::builder()
                     .application_name("KawaiiFi")
-                    .version("1.0.0")
+                    .version(env!("CARGO_PKG_VERSION"))
                     .website("https://kawaii.fi")
                     .license_type(gtk::License::Apache20)
                     .issue_url("https://github.com/zleytus/kawaiifi/issues")
