@@ -4,6 +4,7 @@ use adw::subclass::prelude::*;
 use gtk::prelude::*;
 use gtk::{gio, glib};
 
+use crate::config;
 use crate::widgets::{
     BssCapabilityInfo, BssChart, BssElements, BssFilter, BssTable, PreferencesDialog,
 };
@@ -133,6 +134,7 @@ impl KawaiiFiApplication {
             move |_, _| {
                 let dialog = AboutDialog::builder()
                     .application_name("KawaiiFi")
+                    .application_icon(config::app_id())
                     .version(env!("CARGO_PKG_VERSION"))
                     .website("https://kawaii.fi")
                     .license_type(gtk::License::Apache20)
