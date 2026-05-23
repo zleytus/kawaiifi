@@ -137,7 +137,8 @@ impl KawaiiFiApplication {
                     .application_icon(config::app_id())
                     .version(env!("CARGO_PKG_VERSION"))
                     .website("https://kawaii.fi")
-                    .license_type(gtk::License::Apache20)
+                    .license_type(gtk::License::Custom)
+                    .license("Licensed under either the Apache License, Version 2.0 or the MIT License, at your option.")
                     .issue_url("https://github.com/zleytus/kawaiifi/issues")
                     .build();
                 dialog.present(app.active_window().as_ref());
