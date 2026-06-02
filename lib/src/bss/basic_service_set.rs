@@ -431,7 +431,7 @@ impl PartialEq for Bss {
 
 impl Display for Bss {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let _r = writeln!(
+        writeln!(
             f,
             "BSSID: {:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}\nSSID: {}\nRSSI: {} dBm\nChannel Number: {}\nChannel Width: {}\nWi-Fi Protocols: {}",
             self.bssid[0],
@@ -445,10 +445,10 @@ impl Display for Bss {
             self.channel_number(),
             self.channel_width(),
             self.wifi_protocols()
-        );
+        )?;
 
         #[cfg(any(target_os = "linux", target_os = "windows"))]
-        let _b = writeln!(f, "{}", self.capability_info);
+        writeln!(f, "{}", self.capability_info)?;
 
         Ok(())
     }
