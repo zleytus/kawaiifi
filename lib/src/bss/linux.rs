@@ -177,7 +177,8 @@ impl TryFrom<&Genlmsghdr<Cmd, Attr>> for Bss {
                     .and_then(|attr| attr.get_payload_as().ok());
                 if let Some(boottime_ns) = last_seen_boottime {
                     let ago_ns = current_boottime_ns().saturating_sub(boottime_ns);
-                    Utc::now().checked_sub_signed(chrono::Duration::nanoseconds(ago_ns as i64))
+                    let ago_ns = i64::try_from(ago_ns).unwrap_or(i64::MAX);
+                    Utc::now().checked_sub_signed(chrono::Duration::nanoseconds(ago_ns))
                 } else {
                     seen_ms_ago.and_then(|ms| {
                         Utc::now().checked_sub_signed(chrono::Duration::milliseconds(ms as i64))
