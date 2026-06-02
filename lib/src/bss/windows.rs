@@ -29,7 +29,7 @@ impl Bss {
                 .to_le_bytes()
                 .as_slice()
                 .try_into()
-                .unwrap(),
+                .expect("WLAN capability information is always two bytes"),
             last_seen_utc: {
                 // 100-nanosecond intervals between 1601-01-01 (Windows FILETIME) and 1970-01-01 (Unix)
                 const WINDOWS_TO_UNIX_EPOCH_100NS: u64 = 116_444_736_000_000_000;
