@@ -410,22 +410,7 @@ impl Bss {
     }
 
     pub(crate) fn resolve_ie_dependencies(&mut self) {
-        // Handle EHT + HE dependency
-        let mut eht_capabilities = None;
-        let mut he_capabilities = None;
-        for ie in self.ies.iter_mut() {
-            match &mut ie.data {
-                IeData::EhtCapabilities(eht_caps) => eht_capabilities = Some(eht_caps),
-                IeData::HeCapabilities(he_caps) => he_capabilities = Some(he_caps),
-                _ => continue,
-            }
-        }
-
-        if let Some(eht_capabilities) = eht_capabilities
-            && let Some(he_capabilities) = he_capabilities
-        {
-            _ = eht_capabilities.parse_with_he_capabilities(he_capabilities);
-        }
+        crate::ies::resolve_ie_dependencies(&mut self.ies);
     }
 }
 

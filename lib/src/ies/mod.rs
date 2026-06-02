@@ -59,3 +59,24 @@ pub use ie_data::IeData;
 pub use ie_id::IeId;
 pub use parse::from_bytes;
 pub(crate) use write::write_bits_lsb0;
+
+/// Resolves inter-IE dependencies that cannot be determined during single-pass parsing.
+///
+/// Currently handles EHT Capabilities, which requires HE Capabilities context to parse
+/// its MCS/NSS set.
+pub(crate) fn resolve_ie_dependencies(ies: &mut [Ie]) {
+    let mut eht_capabilities = None;
+    let mut he_capabilities = None;
+    for ie in ies.iter_mut() {
+        match &mut ie.data {
+            IeData::EhtCapabilities(eht_caps) => eht_capabilities = Some(eht_caps),
+            IeData::HeCapabilities(he_caps) => he_capabilities = Some(he_caps),
+            _ => {}
+        }
+    }
+    if let Some(eht_capabilities) = eht_capabilities
+        && let Some(he_capabilities) = he_capabilities
+    {
+        _ = eht_capabilities.parse_with_he_capabilities(he_capabilities);
+    }
+}

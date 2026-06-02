@@ -28,7 +28,9 @@ pub mod ies_as_base64 {
         let bytes = STANDARD
             .decode(&encoded)
             .map_err(serde::de::Error::custom)?;
-        Ok(from_bytes(&bytes))
+        let mut ies = from_bytes(&bytes);
+        crate::ies::resolve_ie_dependencies(&mut ies);
+        Ok(ies)
     }
 }
 
@@ -58,7 +60,9 @@ pub mod option_ies_as_base64 {
         match encoded {
             Some(s) => {
                 let bytes = STANDARD.decode(&s).map_err(serde::de::Error::custom)?;
-                Ok(Some(from_bytes(&bytes)))
+                let mut ies = from_bytes(&bytes);
+                crate::ies::resolve_ie_dependencies(&mut ies);
+                Ok(Some(ies))
             }
             None => Ok(None),
         }
