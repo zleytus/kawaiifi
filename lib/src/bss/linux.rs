@@ -81,7 +81,10 @@ fn current_boottime_ns() -> u64 {
         tv_sec: 0,
         tv_nsec: 0,
     };
-    unsafe { libc::clock_gettime(libc::CLOCK_BOOTTIME, &mut ts) };
+    // SAFETY: ts is a valid stack-allocated timespec; CLOCK_BOOTTIME is always
+    // available on Linux 2.6.39+. Failure would only occur on very old kernels.
+    let ret = unsafe { libc::clock_gettime(libc::CLOCK_BOOTTIME, &mut ts) };
+    debug_assert_eq!(ret, 0, "clock_gettime(CLOCK_BOOTTIME) failed");
     (ts.tv_sec as u64) * 1_000_000_000 + (ts.tv_nsec as u64)
 }
 
