@@ -8,11 +8,42 @@ C-compatible FFI bindings for [kawaiifi](../lib), a cross-platform Wi-Fi scannin
 cargo build --release
 ```
 
-This produces a static library (`libkawaiifi.a` / `kawaiifi.lib`) and a shared library (`libkawaiifi.so` / `kawaiifi.dll`) under `target/release/`, and regenerates `include/kawaiifi.h`.
+This produces a static library (`libkawaiifi.a` / `kawaiifi.lib`) and a shared library (`libkawaiifi.so` / `libkawaiifi.dylib` / `kawaiifi.dll`) under `target/release/`, and regenerates `include/kawaiifi.h`.
 
 ## Usage
 
 Include `include/kawaiifi.h` and link against the built library.
+
+### Linux
+
+On Linux, scans accept an explicit backend because they can be triggered through
+either NetworkManager or Netlink.
+
+```c
+#include "kawaiifi.h"
+#include <inttypes.h>
+#include <stdio.h>
+
+int main() {
+    Interface *interface = kawaiifi_default_interface();
+    if (!interface) return -1;
+
+    Scan *scan = kawaiifi_interface_scan(interface, BACKEND_NETWORK_MANAGER);
+    uintptr_t count = kawaiifi_scan_bss_count(scan);
+    int64_t duration_ms = kawaiifi_scan_end_time_utc_ms(scan) -
+                          kawaiifi_scan_start_time_utc_ms(scan);
+    printf("Found %zu BSS(s) in %" PRId64 " ms\n", count, duration_ms);
+
+    kawaiifi_scan_free(scan);
+    kawaiifi_interface_free(interface);
+    return 0;
+}
+```
+
+### Windows/macOS
+
+On Windows and macOS, scans use the platform's Wi-Fi API directly:
+Native WiFi on Windows and CoreWLAN on macOS.
 
 ```c
 #include "kawaiifi.h"
