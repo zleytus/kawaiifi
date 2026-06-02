@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 
@@ -27,6 +29,16 @@ pub enum BssStatus {
     Associated,
     /// The local station has joined the IBSS.
     IbssJoined,
+}
+
+impl Display for BssStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BssStatus::Authenticated => write!(f, "Authenticated"),
+            BssStatus::Associated => write!(f, "Associated"),
+            BssStatus::IbssJoined => write!(f, "IBSS Joined"),
+        }
+    }
 }
 
 /// The type of interface.
