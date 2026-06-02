@@ -40,3 +40,10 @@ objc2-foundation = { version = "0.3.2", features = ["NSArray", "NSData", "NSErro
 
 [target.'cfg(target_os = "windows")'.dependencies]
 windows-sys = { version = "0.61", features = ["Win32_NetworkManagement_WiFi"] }
+
+[package.metadata.docs.rs]
+targets = [
+    "x86_64-unknown-linux-gnu",
+    "x86_64-pc-windows-msvc",
+    "aarch64-apple-darwin",
+]
