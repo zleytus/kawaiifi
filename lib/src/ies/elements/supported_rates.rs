@@ -42,7 +42,7 @@ impl SupportedRates {
     pub fn all_rates(&self) -> Vec<f64> {
         self.bytes
             .iter()
-            .map(|&byte| (byte >> 1) as f64 / 2.0)
+            .map(|&byte| (byte & 0x7F) as f64 / 2.0)
             .collect()
     }
 
