@@ -23,7 +23,7 @@ log = "0.4"
 num_enum = "0.7"
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread", "sync", "time"] }
 tracing = "0.1"
 typed-builder = "0.23.2"
 
