@@ -33,7 +33,7 @@ pub fn from_bytes(bytes: &[u8]) -> Vec<Ie> {
                 let bytes_read = input.len() - rest.len();
                 let expected_bytes = usize::from(ie.len) + 2;
                 if bytes_read != expected_bytes {
-                    log::warn!(
+                    tracing::warn!(
                         "Incorrect number of bytes read for IE at offset {}: read {}, expected {}. IE: {:?}",
                         offset,
                         bytes_read,
@@ -45,7 +45,7 @@ pub fn from_bytes(bytes: &[u8]) -> Vec<Ie> {
                 if let Ok(serialized) = ie.to_bytes()
                     && serialized.as_slice() != &input[..expected_bytes.min(input.len())]
                 {
-                    log::warn!(
+                    tracing::warn!(
                         "Mismatch between raw IE bytes and parsed Ie::to_bytes at offset {}. IE: {:?}",
                         offset,
                         &ie
@@ -53,7 +53,7 @@ pub fn from_bytes(bytes: &[u8]) -> Vec<Ie> {
                 }
                 ies.push(ie);
                 if expected_bytes > input.len() {
-                    log::warn!(
+                    tracing::warn!(
                         "IE at offset {} declares {} bytes but only {} bytes remain",
                         offset,
                         expected_bytes,
@@ -67,7 +67,7 @@ pub fn from_bytes(bytes: &[u8]) -> Vec<Ie> {
                 let failed_bytes = bytes
                     .get(offset..offset.saturating_add(20).min(bytes.len()))
                     .unwrap_or(&[]);
-                log::warn!(
+                tracing::warn!(
                     "Failed to parse IE at offset {} (parsed {} IEs successfully): {:?}. Failed bytes: {:02x?}",
                     offset,
                     ies.len(),
