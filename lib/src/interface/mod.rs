@@ -27,13 +27,7 @@ pub fn default_interface() -> Option<Interface> {
 /// Returns all available Wi-Fi interfaces on the system.
 #[cfg(target_os = "linux")]
 pub fn interfaces() -> Vec<Interface> {
-    match linux::interfaces() {
-        Ok(interfaces) => interfaces,
-        Err(e) => {
-            eprintln!("Failed to get interfaces: {:?}", e);
-            Vec::new()
-        }
-    }
+    linux::interfaces().unwrap_or_default()
 }
 
 /// Returns all available Wi-Fi interfaces on the system.
