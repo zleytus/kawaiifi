@@ -3,6 +3,7 @@ name = "kawaiifi"
 version = "0.1.0"
 authors = ["Zach Leytus <zach.leytus@gmail.com>"]
 edition = "2024"
+rust-version = "1.88"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 description = "Cross-platform Wi-Fi scanning library for Linux, macOS, and Windows."
