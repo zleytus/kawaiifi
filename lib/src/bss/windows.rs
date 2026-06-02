@@ -21,7 +21,7 @@ impl Bss {
 
         let mut bss = Bss {
             bssid: entry_ref.dot11Bssid,
-            frequency_mhz: entry_ref.ulChCenterFrequency / 1_000,
+            frequency_mhz: (entry_ref.ulChCenterFrequency + 500) / 1_000,
             signal_dbm: entry_ref.lRssi,
             beacon_interval_tu: entry_ref.usBeaconPeriod,
             capability_info: entry_ref
