@@ -267,7 +267,7 @@ pub enum CipherSuiteType {
 impl Display for CipherSuiteType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::UseGroupCipherSuite => write!(f, "Use group cipher guite"),
+            Self::UseGroupCipherSuite => write!(f, "Use group cipher suite"),
             Self::Wep40 => write!(f, "WEP-40"),
             Self::Tkip => write!(f, "TKIP"),
             Self::Reserved => write!(f, "Reserved"),
