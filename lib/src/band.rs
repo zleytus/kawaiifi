@@ -13,7 +13,7 @@ pub enum Band {
 }
 
 impl Band {
-    pub(crate) fn from_freq_mhz(freq_mhz: u32) -> Self {
+    pub fn from_freq_mhz(freq_mhz: u32) -> Self {
         if Self::TwoPointFourGhz.range_mhz().contains(&freq_mhz) {
             Self::TwoPointFourGhz
         } else if Self::FiveGhz.range_mhz().contains(&freq_mhz) {
