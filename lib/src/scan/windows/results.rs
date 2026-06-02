@@ -29,9 +29,6 @@ impl Scan {
     }
 
     /// Returns all BSSs (access points) discovered during the scan.
-    ///
-    /// If multiple sub-scans were performed, this list contains the combined results
-    /// from all sub-scans.
     pub fn bss_list(&self) -> &[Bss] {
         &self.bss_list
     }
