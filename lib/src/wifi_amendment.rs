@@ -53,6 +53,7 @@ impl Display for WifiAmendment {
 /// A set of [`WifiAmendment`] flags indicating which 802.11 amendments a BSS supports.
 #[derive(
     Debug,
+    Default,
     Copy,
     Clone,
     Eq,

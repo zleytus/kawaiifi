@@ -36,6 +36,7 @@ impl Display for SecurityProtocol {
 /// A set of [`SecurityProtocol`] flags indicating which security protocols a BSS supports.
 #[derive(
     Debug,
+    Default,
     Copy,
     Clone,
     PartialEq,

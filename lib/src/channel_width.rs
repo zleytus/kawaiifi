@@ -101,7 +101,7 @@ impl Display for ChannelWidth {
 }
 
 /// A set of Wi-Fi channel widths.
-#[derive(Debug, Clone, PartialEq, Eq, Deref, DerefMut, From)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Deref, DerefMut, From)]
 #[from(forward)]
 pub struct ChannelWidths(HashSet<ChannelWidth>);
 

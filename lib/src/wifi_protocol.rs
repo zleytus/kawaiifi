@@ -48,6 +48,7 @@ impl Display for WifiProtocol {
 /// A set of [`WifiProtocol`] flags indicating which 802.11 protocol generations a BSS supports.
 #[derive(
     Debug,
+    Default,
     Copy,
     Clone,
     Eq,
