@@ -340,6 +340,42 @@ impl Interface {
     }
 }
 
+impl Clone for Interface {
+    fn clone(&self) -> Self {
+        Self {
+            wlan_interface_info: self.wlan_interface_info,
+        }
+    }
+}
+
+impl std::fmt::Debug for Interface {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Interface")
+            .field("description", &self.description())
+            .finish()
+    }
+}
+
+impl PartialEq for Interface {
+    fn eq(&self, other: &Self) -> bool {
+        let a = self.wlan_interface_info.InterfaceGuid;
+        let b = other.wlan_interface_info.InterfaceGuid;
+        a.data1 == b.data1 && a.data2 == b.data2 && a.data3 == b.data3 && a.data4 == b.data4
+    }
+}
+
+impl Eq for Interface {}
+
+impl std::hash::Hash for Interface {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        let guid = self.wlan_interface_info.InterfaceGuid;
+        guid.data1.hash(state);
+        guid.data2.hash(state);
+        guid.data3.hash(state);
+        guid.data4.hash(state);
+    }
+}
+
 impl From<WLAN_INTERFACE_INFO> for Interface {
     fn from(wlan_interface_info: WLAN_INTERFACE_INFO) -> Self {
         Self {
