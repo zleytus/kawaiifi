@@ -30,7 +30,3 @@ zbus = { version = "5" }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 windows-sys = { version = "0.61", features = ["Win32_NetworkManagement_WiFi"] }
-
-[target.'cfg(target_os = "linux")'.dev-dependencies]
-env_logger = "*"
-tokio = { version = "1", features = ["full"] }
