@@ -4,7 +4,7 @@ fn main() {
 }
 
 fn generate_c_bindings() {
-    let crate_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+    let crate_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
 
     let mut config = cbindgen::Config {
         language: cbindgen::Language::C,
@@ -61,7 +61,7 @@ fn generate_csharp_bindings() {
         .input_extern_file("src/scan.rs")
         .csharp_dll_name("kawaiifi")
         .generate_csharp_file("include/NativeMethods.g.cs")
-        .unwrap();
+        .expect("Unable to generate NativeMethods.g.cs");
 
     // Generate NativeMethods.Linux.g.cs for Linux-specific functionality
     csbindgen::Builder::default()
@@ -71,7 +71,7 @@ fn generate_csharp_bindings() {
         .csharp_dll_name("kawaiifi")
         .csharp_class_name("NativeMethodsLinux")
         .generate_csharp_file("include/NativeMethods.Linux.g.cs")
-        .unwrap();
+        .expect("Unable to generate NativeMethods.Linux.g.cs");
 
     // Generate NativeMethods.Windows.g.cs for Windows-specific functionality
     csbindgen::Builder::default()
@@ -81,7 +81,7 @@ fn generate_csharp_bindings() {
         .csharp_dll_name("kawaiifi")
         .csharp_class_name("NativeMethodsWindows")
         .generate_csharp_file("include/NativeMethods.Windows.g.cs")
-        .unwrap();
+        .expect("Unable to generate NativeMethods.Windows.g.cs");
 
     // Generate NativeMethods.MacOS.g.cs for macOS-specific functionality
     csbindgen::Builder::default()
@@ -90,5 +90,5 @@ fn generate_csharp_bindings() {
         .csharp_dll_name("kawaiifi")
         .csharp_class_name("NativeMethodsMacOS")
         .generate_csharp_file("include/NativeMethods.MacOS.g.cs")
-        .unwrap();
+        .expect("Unable to generate NativeMethods.MacOS.g.cs");
 }
