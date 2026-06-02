@@ -135,6 +135,6 @@ impl Display for CapabilityInfo {
             capabilities.push("EPD");
         }
 
-        write!(f, "Capability Info:\n\t{}", capabilities.join("\r\n\t"))
+        write!(f, "Capability Info:\n\t{}", capabilities.join("\n\t"))
     }
 }
