@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 pub mod advertisement_protocol;
 pub mod antenna;
 pub mod ap_channel_report;
