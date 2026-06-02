@@ -205,16 +205,21 @@ impl Bss {
                 IeData::HtOperation(ht_operation) => Some(ht_operation.primary_channel),
                 _ => None,
             })
-            .unwrap_or_else(|| match self.band() {
-                Band::TwoPointFourGhz => {
-                    if self.frequency_mhz() == 2484 {
+            .unwrap_or_else(|| {
+                let freq = self.frequency_mhz();
+                if Band::TwoPointFourGhz.range_mhz().contains(&freq) {
+                    if freq == 2484 {
                         14
                     } else {
-                        ((self.frequency_mhz() - 2407) / 5) as u8
+                        ((freq - 2407) / 5) as u8
                     }
+                } else if Band::FiveGhz.range_mhz().contains(&freq) {
+                    ((freq - 5000) / 5) as u8
+                } else if Band::SixGhz.range_mhz().contains(&freq) {
+                    ((freq - 5950) / 5) as u8
+                } else {
+                    0
                 }
-                Band::FiveGhz => ((self.frequency_mhz() - 5000) / 5) as u8,
-                Band::SixGhz => ((self.frequency_mhz() - 5950) / 5) as u8,
             })
     }
 
