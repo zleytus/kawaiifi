@@ -12,7 +12,7 @@
     <Version>0.1.0</Version>
     <Authors>Zach Leytus</Authors>
     <Description>A cross-platform Wi-Fi scanning library for .NET.</Description>
-    <Copyright>Copyright (c) 2021 Zach Leytus</Copyright>
+    <Copyright>Copyright (c) 2026 Zach Leytus</Copyright>
     <PackageLicenseExpression>MIT OR Apache-2.0</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/zleytus/kawaiifi</RepositoryUrl>
     <PackageProjectUrl>https://github.com/zleytus/kawaiifi</PackageProjectUrl>
