@@ -433,6 +433,21 @@ pub enum KeyManagementType {
     Reserved,
 }
 
+impl Display for KeyManagementType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Rsna => write!(f, "RSNA"),
+            Self::Ft => write!(f, "FT"),
+            Self::TpkHandshake => write!(f, "TPK Handshake"),
+            Self::RsnaOrAuthenticatedMeshPeeringExchange => {
+                write!(f, "RSNA or Authenticated Mesh Peering Exchange")
+            }
+            Self::Fils => write!(f, "FILS"),
+            Self::Reserved => write!(f, "Reserved"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct RsnCapabilities {
