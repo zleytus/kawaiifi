@@ -162,9 +162,10 @@ impl TryFrom<&Genlmsghdr<Cmd, Attr>> for Bss {
             beacon_ies: bss_attrs
                 .get(&Nl80211Bss::BeaconIes)
                 .map(|attr| ies::from_bytes(attr.payload().as_ref())),
-            scan_width: bss_attrs.get(&Nl80211Bss::ChanWidth).and_then(|attr| {
-                BssScanWidth::try_from(attr.get_payload_as::<u32>().unwrap_or_default()).ok()
-            }),
+            scan_width: bss_attrs
+                .get(&Nl80211Bss::ChanWidth)
+                .and_then(|attr| attr.get_payload_as::<u32>().ok())
+                .and_then(|v| BssScanWidth::try_from(v).ok()),
             last_seen_boottime: bss_attrs
                 .get(&Nl80211Bss::LastSeenBoottime)
                 .and_then(|attr| attr.get_payload_as().ok()),
