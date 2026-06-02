@@ -56,9 +56,12 @@ pub struct CapabilityInfo {
 }
 
 impl CapabilityInfo {
+    /// The human-readable field name.
     pub const NAME: &'static str = "Capability Information";
+    /// The encoded length, in bytes.
     pub const LENGTH: usize = 2;
 
+    /// The capability flags as displayable fields.
     pub fn fields(&self) -> Vec<Field> {
         vec![
             Field::new("ESS", self.ess),

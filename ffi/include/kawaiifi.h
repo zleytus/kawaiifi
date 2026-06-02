@@ -359,6 +359,9 @@ typedef struct CapabilityInfo {
    */
   bool epd;
 } CapabilityInfo;
+/**
+ * The encoded length, in bytes.
+ */
 #define CapabilityInfo_LENGTH 2
 
 #if defined(__linux__)
