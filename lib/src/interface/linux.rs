@@ -419,9 +419,13 @@ impl TryFrom<&Genlmsghdr<Cmd, Attr>> for Interface {
 /// The bus type used to connect a Wi-Fi adapter to the system.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BusType {
+    /// A PCI or PCI Express adapter.
     Pci,
+    /// A USB adapter.
     Usb,
+    /// An SDIO adapter.
     Sdio,
+    /// The adapter bus could not be determined.
     Unknown,
 }
 
