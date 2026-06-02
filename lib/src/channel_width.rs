@@ -7,14 +7,21 @@ use num_enum::TryFromPrimitive;
 use crate::nl80211::ChanWidth;
 use crate::{Ie, IeData};
 
+/// A Wi-Fi channel width.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Ord, PartialOrd, TryFromPrimitive)]
 #[repr(u8)]
 pub enum ChannelWidth {
+    /// A 20 MHz channel.
     TwentyMhz,
+    /// A 40 MHz channel.
     FortyMhz,
+    /// An 80 MHz channel.
     EightyMhz,
+    /// An 80+80 MHz non-contiguous channel.
     EightyPlusEightyMhz,
+    /// A 160 MHz channel.
     OneSixtyMhz,
+    /// A 320 MHz channel.
     ThreeHundredTwentyMhz,
 }
 
@@ -93,6 +100,7 @@ impl Display for ChannelWidth {
     }
 }
 
+/// A set of Wi-Fi channel widths.
 #[derive(Debug, Clone, PartialEq, Eq, Deref, DerefMut, From)]
 #[from(forward)]
 pub struct ChannelWidths(HashSet<ChannelWidth>);
