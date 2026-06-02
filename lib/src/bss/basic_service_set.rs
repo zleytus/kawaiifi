@@ -7,7 +7,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 #[cfg(any(target_os = "linux", target_os = "windows"))]
-use crate::CapabilityInfo;
+use super::CapabilityInfo;
 #[cfg(target_os = "linux")]
 use crate::nl80211::{BssScanWidth, BssStatus};
 use crate::{

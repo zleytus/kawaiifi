@@ -359,10 +359,12 @@ typedef struct CapabilityInfo {
    */
   bool epd;
 } CapabilityInfo;
+#if (defined(__linux__) || defined(_WIN32))
 /**
  * The encoded length, in bytes.
  */
 #define CapabilityInfo_LENGTH 2
+#endif
 
 #if defined(__linux__)
 typedef struct Flags {

@@ -5,7 +5,9 @@ use derive_more::{
 };
 use enumflags2::{BitFlags, bitflags};
 
-use crate::{CapabilityInfo, Ie, IeData};
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+use crate::bss::CapabilityInfo;
+use crate::{Ie, IeData};
 
 /// An 802.11 amendment supported by a BSS.
 #[bitflags]
@@ -86,6 +88,7 @@ impl PartialOrd for WifiAmendments {
     }
 }
 
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 impl From<&CapabilityInfo> for WifiAmendments {
     fn from(capability_info: &CapabilityInfo) -> Self {
         let mut amendments = WifiAmendments(BitFlags::empty());

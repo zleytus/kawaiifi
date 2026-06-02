@@ -1,4 +1,5 @@
 mod basic_service_set;
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 mod capability_info;
 
 #[cfg(target_os = "linux")]
@@ -11,4 +12,5 @@ mod macos;
 mod windows;
 
 pub use basic_service_set::Bss;
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 pub use capability_info::CapabilityInfo;

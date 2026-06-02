@@ -9,7 +9,8 @@ use deku::prelude::*;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use super::{Ie, from_bytes};
-use crate::CapabilityInfo;
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+use crate::bss::CapabilityInfo;
 
 /// Serialize/deserialize `Vec<Ie>` as base64-encoded raw bytes.
 pub mod ies_as_base64 {
@@ -65,6 +66,7 @@ pub mod option_ies_as_base64 {
 }
 
 /// Serialize/deserialize `CapabilityInfo` as a u16.
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 pub mod capability_info_as_u16 {
     use super::*;
 

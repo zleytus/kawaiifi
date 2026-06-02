@@ -68,7 +68,9 @@ mod wifi_amendment;
 mod wifi_protocol;
 
 pub use band::Band;
-pub use bss::{Bss, CapabilityInfo};
+pub use bss::Bss;
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+pub use bss::CapabilityInfo;
 pub use channel_width::{ChannelWidth, ChannelWidths};
 pub use ies::{Ie, IeData};
 #[cfg(target_os = "linux")]
