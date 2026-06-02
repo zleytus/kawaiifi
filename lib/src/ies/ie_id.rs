@@ -7,13 +7,16 @@ use serde::{Deserialize, Serialize};
 /// Standard IEs use only `id`, while extended IEs (id=255) also have `id_ext`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, DekuWrite, Serialize, Deserialize)]
 pub struct IeId {
+    /// The Information Element ID.
     #[deku(skip)]
     pub id: u8,
+    /// The extension ID for extended Information Elements.
     #[deku(skip)]
     pub id_ext: Option<u8>,
 }
 
 impl IeId {
+    /// Creates a new Information Element identifier.
     pub const fn new(id: u8, id_ext: Option<u8>) -> Self {
         Self { id, id_ext }
     }
