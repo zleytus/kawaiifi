@@ -45,7 +45,8 @@ namespace CsBindgen
         internal static extern byte* kawaiifi_bss_bssid(Bss* bss);
 
         /// <summary>
-        ///  Returns the SSID as a C string, or null if not present.
+        ///  Returns the SSID as a null-terminated C string, or null if `bss` is null, the network is
+        ///  hidden, or the SSID contains interior null bytes (rare but valid per 802.11).
         ///  The caller must free the returned string with `kawaiifi_string_free`.
         /// </summary>
         [DllImport(__DllName, EntryPoint = "kawaiifi_bss_ssid", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]

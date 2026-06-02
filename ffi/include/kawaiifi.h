@@ -468,7 +468,8 @@ void kawaiifi_interface_bss_list_free(struct BssList *list);
 const uint8_t *kawaiifi_bss_bssid(const struct Bss *bss);
 
 /**
- * Returns the SSID as a C string, or null if not present.
+ * Returns the SSID as a null-terminated C string, or null if `bss` is null, the network is
+ * hidden, or the SSID contains interior null bytes (rare but valid per 802.11).
  * The caller must free the returned string with `kawaiifi_string_free`.
  */
 char *kawaiifi_bss_ssid(const struct Bss *bss);

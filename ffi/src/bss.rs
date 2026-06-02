@@ -53,7 +53,8 @@ pub unsafe extern "C" fn kawaiifi_bss_bssid(bss: Option<&Bss>) -> *const u8 {
     bss.map(|b| b.bssid().as_ptr()).unwrap_or(std::ptr::null())
 }
 
-/// Returns the SSID as a C string, or null if not present.
+/// Returns the SSID as a null-terminated C string, or null if `bss` is null, the network is
+/// hidden, or the SSID contains interior null bytes (rare but valid per 802.11).
 /// The caller must free the returned string with `kawaiifi_string_free`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_bss_ssid(bss: Option<&Bss>) -> *mut std::ffi::c_char {
