@@ -10,9 +10,9 @@ using System.Runtime.InteropServices;
 
 namespace CsBindgen
 {
-    internal static unsafe partial class NativeMethods
+    internal static unsafe partial class NativeMethodsLinux
     {
-
+        const string __DllName = "kawaiifi";
 
 
 
@@ -31,6 +31,26 @@ namespace CsBindgen
         [DllImport(__DllName, EntryPoint = "kawaiifi_bss_is_from_probe_response", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
         internal static extern bool kawaiifi_bss_is_from_probe_response(Bss* bss);
+
+        /// <summary>
+        ///  Returns the 802.11 capability information flags for the BSS.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_capability_info", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern CapabilityInfo kawaiifi_bss_capability_info(Bss* bss);
+
+        /// <summary>
+        ///  Returns the timing synchronization function (TSF) timer value of the BSS, or 0 if `bss` is null.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_tsf", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern ulong kawaiifi_bss_tsf(Bss* bss);
+
+        /// <summary>
+        ///  Writes the Unix timestamp (milliseconds) of when the BSS was last seen into `out`.
+        ///  Returns false if the timestamp is unavailable or `bss` is null.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_last_seen_utc_ms", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal static extern bool kawaiifi_bss_last_seen_utc_ms(Bss* bss, long* @out);
 
         /// <summary>
         ///  Returns a borrowed pointer to the 6-byte parent BSSID, or null if unavailable or `bss` is null.

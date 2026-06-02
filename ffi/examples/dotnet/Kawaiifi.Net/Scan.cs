@@ -89,7 +89,7 @@ public class Scan : IDisposable
         {
             unsafe
             {
-                return NativeMethods.kawaiifi_scan_wiphy(_ptr);
+                return NativeMethodsLinux.kawaiifi_scan_wiphy(_ptr);
             }
         }
     }
@@ -102,7 +102,7 @@ public class Scan : IDisposable
         {
             unsafe
             {
-                return NativeMethods.kawaiifi_scan_ifindex(_ptr);
+                return NativeMethodsLinux.kawaiifi_scan_ifindex(_ptr);
             }
         }
     }
@@ -116,7 +116,7 @@ public class Scan : IDisposable
             unsafe
             {
                 nuint count = 0;
-                var ptr = NativeMethods.kawaiifi_scan_freqs_mhz(_ptr, &count);
+                var ptr = NativeMethodsLinux.kawaiifi_scan_freqs_mhz(_ptr, &count);
                 return new Span<uint>(ptr, (int)count).ToArray();
             }
         }
@@ -130,11 +130,11 @@ public class Scan : IDisposable
         {
             unsafe
             {
-                var count = (int)NativeMethods.kawaiifi_scan_ie_count(_ptr);
+                var count = (int)NativeMethodsLinux.kawaiifi_scan_ie_count(_ptr);
                 var ies = new Ie[count];
                 for (var i = 0; i < count; i++)
                 {
-                    ies[i] = new Ie(NativeMethods.kawaiifi_scan_ie_get(_ptr, (nuint)i));
+                    ies[i] = new Ie(NativeMethodsLinux.kawaiifi_scan_ie_get(_ptr, (nuint)i));
                 }
 
                 return ies;
@@ -151,7 +151,7 @@ public class Scan : IDisposable
             unsafe
             {
                 var flags = new CsBindgen.Flags();
-                if (NativeMethods.kawaiifi_scan_flags(_ptr, &flags))
+                if (NativeMethodsLinux.kawaiifi_scan_flags(_ptr, &flags))
                 {
                     return new Flags(flags.low_priority, flags.flush, flags.ap, flags.random_addr,
                         flags.fils_max_channel_time,

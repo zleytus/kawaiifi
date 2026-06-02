@@ -93,21 +93,270 @@ typedef enum Backend {
 } Backend;
 #endif
 
+#if defined(__APPLE__)
 /**
- * FFI-safe equivalent of kawaiifi::CapabilityInfo.
+ * FFI-safe equivalent of CoreWLAN's CWSecurity.
+ */
+enum CwSecurity
+#ifdef __cplusplus
+  : int32_t
+#endif // __cplusplus
+ {
+#if defined(__APPLE__)
+  /**
+   * No security.
+   */
+  CW_SECURITY_NONE = 0,
+#endif
+#if defined(__APPLE__)
+  /**
+   * WEP security.
+   */
+  CW_SECURITY_WEP = 1,
+#endif
+#if defined(__APPLE__)
+  /**
+   * WPA Personal security.
+   */
+  CW_SECURITY_WPA_PERSONAL = 2,
+#endif
+#if defined(__APPLE__)
+  /**
+   * Mixed WPA Personal security.
+   */
+  CW_SECURITY_WPA_PERSONAL_MIXED = 3,
+#endif
+#if defined(__APPLE__)
+  /**
+   * WPA2 Personal security.
+   */
+  CW_SECURITY_WPA2_PERSONAL = 4,
+#endif
+#if defined(__APPLE__)
+  /**
+   * Personal security.
+   */
+  CW_SECURITY_PERSONAL = 5,
+#endif
+#if defined(__APPLE__)
+  /**
+   * Dynamic WEP security.
+   */
+  CW_SECURITY_DYNAMIC_WEP = 6,
+#endif
+#if defined(__APPLE__)
+  /**
+   * WPA Enterprise security.
+   */
+  CW_SECURITY_WPA_ENTERPRISE = 7,
+#endif
+#if defined(__APPLE__)
+  /**
+   * Mixed WPA Enterprise security.
+   */
+  CW_SECURITY_WPA_ENTERPRISE_MIXED = 8,
+#endif
+#if defined(__APPLE__)
+  /**
+   * WPA2 Enterprise security.
+   */
+  CW_SECURITY_WPA2_ENTERPRISE = 9,
+#endif
+#if defined(__APPLE__)
+  /**
+   * Enterprise security.
+   */
+  CW_SECURITY_ENTERPRISE = 10,
+#endif
+#if defined(__APPLE__)
+  /**
+   * WPA3 Personal security.
+   */
+  CW_SECURITY_WPA3_PERSONAL = 11,
+#endif
+#if defined(__APPLE__)
+  /**
+   * WPA3 Enterprise security.
+   */
+  CW_SECURITY_WPA3_ENTERPRISE = 12,
+#endif
+#if defined(__APPLE__)
+  /**
+   * WPA3 transition security.
+   */
+  CW_SECURITY_WPA3_TRANSITION = 13,
+#endif
+#if defined(__APPLE__)
+  /**
+   * Opportunistic Wireless Encryption security.
+   */
+  CW_SECURITY_OWE = 14,
+#endif
+#if defined(__APPLE__)
+  /**
+   * Opportunistic Wireless Encryption transition security.
+   */
+  CW_SECURITY_OWE_TRANSITION = 15,
+#endif
+#if defined(__APPLE__)
+  /**
+   * Unknown security type.
+   */
+  CW_SECURITY_UNKNOWN = -1,
+#endif
+};
+#ifndef __cplusplus
+typedef int32_t CwSecurity;
+#endif // __cplusplus
+#endif
+
+#if defined(__APPLE__)
+/**
+ * FFI-safe equivalent of CoreWLAN's CWPHYMode.
+ */
+enum CwPhyMode
+#ifdef __cplusplus
+  : int32_t
+#endif // __cplusplus
+ {
+#if defined(__APPLE__)
+  /**
+   * No active PHY mode.
+   */
+  CW_PHY_MODE_NONE = 0,
+#endif
+#if defined(__APPLE__)
+  /**
+   * 802.11a.
+   */
+  CW_PHY_MODE_A = 1,
+#endif
+#if defined(__APPLE__)
+  /**
+   * 802.11b.
+   */
+  CW_PHY_MODE_B = 2,
+#endif
+#if defined(__APPLE__)
+  /**
+   * 802.11g.
+   */
+  CW_PHY_MODE_G = 3,
+#endif
+#if defined(__APPLE__)
+  /**
+   * 802.11n.
+   */
+  CW_PHY_MODE_N = 4,
+#endif
+#if defined(__APPLE__)
+  /**
+   * 802.11ac.
+   */
+  CW_PHY_MODE_AC = 5,
+#endif
+#if defined(__APPLE__)
+  /**
+   * 802.11ax.
+   */
+  CW_PHY_MODE_AX = 6,
+#endif
+};
+#ifndef __cplusplus
+typedef int32_t CwPhyMode;
+#endif // __cplusplus
+#endif
+
+#if defined(__APPLE__)
+/**
+ * FFI-safe equivalent of CoreWLAN's CWInterfaceMode.
+ */
+enum CwInterfaceMode
+#ifdef __cplusplus
+  : int32_t
+#endif // __cplusplus
+ {
+#if defined(__APPLE__)
+  /**
+   * No interface mode.
+   */
+  CW_INTERFACE_MODE_NONE = 0,
+#endif
+#if defined(__APPLE__)
+  /**
+   * Station/client mode.
+   */
+  CW_INTERFACE_MODE_STATION = 1,
+#endif
+#if defined(__APPLE__)
+  /**
+   * IBSS/ad-hoc mode.
+   */
+  CW_INTERFACE_MODE_IBSS = 2,
+#endif
+#if defined(__APPLE__)
+  /**
+   * Host access point mode.
+   */
+  CW_INTERFACE_MODE_HOST_AP = 3,
+#endif
+};
+#ifndef __cplusplus
+typedef int32_t CwInterfaceMode;
+#endif // __cplusplus
+#endif
+
+/**
+ * The 802.11 capability information flags advertised in beacon and probe response frames.
  */
 typedef struct CapabilityInfo {
+  /**
+   * Set by an AP (1) or cleared by an IBSS or mesh STA (0).
+   */
   bool ess;
+  /**
+   * Set by an IBSS STA (1) or cleared by an AP or mesh STA (0).
+   */
   bool ibss;
+  /**
+   * Indicates data confidentiality is required for all Data frames exchanged within the BSS.
+   */
   bool privacy;
+  /**
+   * Indicates use of the short preamble is allowed within the BSS.
+   */
   bool short_preamble;
+  /**
+   * Set by an AP affiliated with an AP MLD to signal a critical update is pending. Reserved in other contexts.
+   */
   bool critical_update_flag;
+  /**
+   * Set by a transmitted-BSSID AP affiliated with an AP MLD if any nontransmitted BSS in its multiple BSSID set has a critical update pending. Reserved in other contexts.
+   */
   bool nontransmitted_bssids_critical_update_flag;
+  /**
+   * Indicates the STA implements spectrum management.
+   */
   bool spectrum_management;
+  /**
+   * Indicates the STA implements QoS.
+   */
   bool qos;
+  /**
+   * Indicates the BSS is currently using the short slot time. Always 0 for IBSS and mesh.
+   */
   bool short_slot_time;
+  /**
+   * Set by an AP to indicate Automatic Power Save Delivery (APSD) support. Always 0 for non-AP STAs.
+   */
   bool apsd;
+  /**
+   * Indicates the STA supports radio measurement.
+   */
   bool radio_measurement;
+  /**
+   * Indicates the STA implements EPD.
+   */
   bool epd;
 } CapabilityInfo;
 #define CapabilityInfo_LENGTH 2
@@ -258,22 +507,6 @@ uint16_t kawaiifi_bss_beacon_interval_tu(const struct Bss *bss);
  * Returns the beacon interval of the BSS in milliseconds, or 0.0 if `bss` is null.
  */
 double kawaiifi_bss_beacon_interval_ms(const struct Bss *bss);
-
-/**
- * Returns the 802.11 capability information flags for the BSS.
- */
-struct CapabilityInfo kawaiifi_bss_capability_info(const struct Bss *bss);
-
-/**
- * Returns the timing synchronization function (TSF) timer value of the BSS, or 0 if `bss` is null.
- */
-uint64_t kawaiifi_bss_tsf(const struct Bss *bss);
-
-/**
- * Writes the Unix timestamp (milliseconds) of when the BSS was last seen into `out`.
- * Returns false if the timestamp is unavailable or `bss` is null.
- */
-bool kawaiifi_bss_last_seen_utc_ms(const struct Bss *bss, int64_t *out);
 
 /**
  * Returns the security protocols as a bitmask (WEP=1, WPA=2, WPA2=4, WPA3=8).
@@ -504,6 +737,28 @@ enum BssStatus kawaiifi_bss_status(const struct Bss *bss);
  * Returns true if the BSS information came from a probe response, or false if from a beacon or if `bss` is null.
  */
 bool kawaiifi_bss_is_from_probe_response(const struct Bss *bss);
+#endif
+
+#if defined(__linux__)
+/**
+ * Returns the 802.11 capability information flags for the BSS.
+ */
+struct CapabilityInfo kawaiifi_bss_capability_info(const struct Bss *bss);
+#endif
+
+#if defined(__linux__)
+/**
+ * Returns the timing synchronization function (TSF) timer value of the BSS, or 0 if `bss` is null.
+ */
+uint64_t kawaiifi_bss_tsf(const struct Bss *bss);
+#endif
+
+#if defined(__linux__)
+/**
+ * Writes the Unix timestamp (milliseconds) of when the BSS was last seen into `out`.
+ * Returns false if the timestamp is unavailable or `bss` is null.
+ */
+bool kawaiifi_bss_last_seen_utc_ms(const struct Bss *bss, int64_t *out);
 #endif
 
 #if defined(__linux__)
@@ -788,6 +1043,154 @@ const struct Ie *kawaiifi_scan_ie_get(const struct Scan *scan,
  * Writes the scan flags into `out`. Returns false if unavailable or `scan` is null.
  */
 bool kawaiifi_scan_flags(const struct Scan *scan, struct Flags *out);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Returns the noise measurement in dBm.
+ * Returns 0 if bss is null.
+ */
+int32_t kawaiifi_bss_noise_dbm(const struct Bss *bss);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Returns the BSD name of the Wi-Fi interface as a C string, or null if unavailable or `interface` is null.
+ * The caller must free the returned string with `kawaiifi_string_free`.
+ */
+char *kawaiifi_interface_name(const struct Interface *interface);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Returns the current security type.
+ * Returns `Unknown` if `interface` is null.
+ */
+CwSecurity kawaiifi_interface_security(const struct Interface *interface);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Returns the currently active PHY mode.
+ * Returns `None` if `interface` is null.
+ */
+CwPhyMode kawaiifi_interface_active_phy_mode(const struct Interface *interface);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Returns the current operating mode.
+ * Returns `None` if `interface` is null.
+ */
+CwInterfaceMode kawaiifi_interface_mode(const struct Interface *interface);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Returns the hardware MAC address as a C string, or null if unavailable or `interface` is null.
+ * The caller must free the returned string with `kawaiifi_string_free`.
+ */
+char *kawaiifi_interface_hardware_address(const struct Interface *interface);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Returns the SSID as a C string, or null if unavailable, not associated, or `interface` is null.
+ * The caller must free the returned string with `kawaiifi_string_free`.
+ */
+char *kawaiifi_interface_ssid(const struct Interface *interface);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Writes the 6-byte current BSSID into `out`.
+ * Returns false if unavailable, not associated, `interface` is null, or `out` is null.
+ */
+bool kawaiifi_interface_bssid(const struct Interface *interface, uint8_t *out);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Returns true if the Wi-Fi interface is powered on.
+ */
+bool kawaiifi_interface_power_on(const struct Interface *interface);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Returns the current transmit rate in Mbps.
+ * Returns 0 if `interface` is null.
+ */
+double kawaiifi_interface_transmit_rate_mbps(const struct Interface *interface);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Returns the current transmit power in mW.
+ * Returns 0 if `interface` is null.
+ */
+int32_t kawaiifi_interface_transmit_power_mw(const struct Interface *interface);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Returns the current signal strength in dBm.
+ * Returns 0 if `interface` is null.
+ */
+int32_t kawaiifi_interface_signal_dbm(const struct Interface *interface);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Returns the current noise in dBm.
+ * Returns 0 if `interface` is null.
+ */
+int32_t kawaiifi_interface_noise_dbm(const struct Interface *interface);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Returns the currently adopted country code as a C string, or null if unavailable or `interface` is null.
+ * The caller must free the returned string with `kawaiifi_string_free`.
+ */
+char *kawaiifi_interface_country_code(const struct Interface *interface);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Returns true if the network service is active.
+ */
+bool kawaiifi_interface_service_active(const struct Interface *interface);
+#endif
+
+#if defined(__APPLE__)
+/**
+ * Performs a blocking scan and returns the result, or null on error.
+ * The caller must free the returned scan with `kawaiifi_scan_free`.
+ */
+struct Scan *kawaiifi_interface_scan(const struct Interface *interface);
+#endif
+
+#if defined(_WIN32)
+/**
+ * Returns the 802.11 capability information flags for the BSS.
+ */
+struct CapabilityInfo kawaiifi_bss_capability_info(const struct Bss *bss);
+#endif
+
+#if defined(_WIN32)
+/**
+ * Returns the timing synchronization function (TSF) timer value of the BSS, or 0 if `bss` is null.
+ */
+uint64_t kawaiifi_bss_tsf(const struct Bss *bss);
+#endif
+
+#if defined(_WIN32)
+/**
+ * Writes the Unix timestamp (milliseconds) of when the BSS was last seen into `out`.
+ * Returns false if the timestamp is unavailable or `bss` is null.
+ */
+bool kawaiifi_bss_last_seen_utc_ms(const struct Bss *bss, int64_t *out);
 #endif
 
 #if defined(_WIN32)

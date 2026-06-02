@@ -75,17 +75,31 @@ public class Interface : IDisposable
 
     /// <summary>The name of the interface (e.g. "wlan0").</summary>
     [SupportedOSPlatform("linux")]
+    [SupportedOSPlatform("macos")]
     public string Name
     {
         get
         {
             unsafe
             {
-                var name = NativeMethods.kawaiifi_interface_name(_ptr);
-                var result = Marshal.PtrToStringUTF8((IntPtr)name);
-                NativeMethods.kawaiifi_string_free(name);
-                return result ?? "";
+                if (OperatingSystem.IsLinux())
+                {
+                    var name = NativeMethodsLinux.kawaiifi_interface_name(_ptr);
+                    var result = Marshal.PtrToStringUTF8((IntPtr)name);
+                    NativeMethods.kawaiifi_string_free(name);
+                    return result ?? "";
+                }
+
+                if (OperatingSystem.IsMacOS())
+                {
+                    var name = NativeMethodsMacOS.kawaiifi_interface_name(_ptr);
+                    var result = Marshal.PtrToStringUTF8((IntPtr)name);
+                    NativeMethods.kawaiifi_string_free(name);
+                    return result ?? "";
+                }
             }
+
+            throw new PlatformNotSupportedException();
         }
     }
 
@@ -97,7 +111,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethods.kawaiifi_interface_index(_ptr);
+                return NativeMethodsLinux.kawaiifi_interface_index(_ptr);
             }
         }
     }
@@ -110,7 +124,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethods.kawaiifi_interface_wiphy(_ptr);
+                return NativeMethodsLinux.kawaiifi_interface_wiphy(_ptr);
             }
         }
     }
@@ -123,7 +137,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethods.kawaiifi_interface_wdev(_ptr);
+                return NativeMethodsLinux.kawaiifi_interface_wdev(_ptr);
             }
         }
     }
@@ -137,7 +151,7 @@ public class Interface : IDisposable
             unsafe
             {
                 var macAddress = stackalloc byte[6];
-                NativeMethods.kawaiifi_interface_mac_address(_ptr, macAddress);
+                NativeMethodsLinux.kawaiifi_interface_mac_address(_ptr, macAddress);
                 return new Span<byte>(macAddress, 6).ToArray();
             }
         }
@@ -151,7 +165,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethods.kawaiifi_interface_generation(_ptr);
+                return NativeMethodsLinux.kawaiifi_interface_generation(_ptr);
             }
         }
     }
@@ -164,25 +178,40 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethods.kawaiifi_interface_four_address(_ptr);
+                return NativeMethodsLinux.kawaiifi_interface_four_address(_ptr);
             }
         }
     }
 
     /// <summary>The SSID the interface is currently associated with, or null if not associated.</summary>
     [SupportedOSPlatform("linux")]
+    [SupportedOSPlatform("macos")]
     public string? Ssid
     {
         get
         {
             unsafe
             {
-                var ssid = NativeMethods.kawaiifi_interface_ssid(_ptr);
-                if (ssid == null) return null;
-                var result = Marshal.PtrToStringUTF8((IntPtr)ssid);
-                NativeMethods.kawaiifi_string_free(ssid);
-                return result;
+                if (OperatingSystem.IsLinux())
+                {
+                    var ssid = NativeMethodsLinux.kawaiifi_interface_ssid(_ptr);
+                    if (ssid == null) return null;
+                    var result = Marshal.PtrToStringUTF8((IntPtr)ssid);
+                    NativeMethods.kawaiifi_string_free(ssid);
+                    return result;
+                }
+
+                if (OperatingSystem.IsMacOS())
+                {
+                    var ssid = NativeMethodsMacOS.kawaiifi_interface_ssid(_ptr);
+                    if (ssid == null) return null;
+                    var result = Marshal.PtrToStringUTF8((IntPtr)ssid);
+                    NativeMethods.kawaiifi_string_free(ssid);
+                    return result;
+                }
             }
+
+            throw new PlatformNotSupportedException();
         }
     }
 
@@ -195,7 +224,7 @@ public class Interface : IDisposable
             unsafe
             {
                 uint val = 0;
-                return NativeMethods.kawaiifi_interface_wiphy_freq_mhz(_ptr, &val) ? val : null;
+                return NativeMethodsLinux.kawaiifi_interface_wiphy_freq_mhz(_ptr, &val) ? val : null;
             }
         }
     }
@@ -209,7 +238,7 @@ public class Interface : IDisposable
             unsafe
             {
                 uint val = 0;
-                return NativeMethods.kawaiifi_interface_wiphy_freq_offset_khz(_ptr, &val) ? val : null;
+                return NativeMethodsLinux.kawaiifi_interface_wiphy_freq_offset_khz(_ptr, &val) ? val : null;
             }
         }
     }
@@ -223,7 +252,7 @@ public class Interface : IDisposable
             unsafe
             {
                 uint wiphyTxPowerLevelMbm = 0;
-                return NativeMethods.kawaiifi_interface_wiphy_tx_power_level_mbm(_ptr, &wiphyTxPowerLevelMbm)
+                return NativeMethodsLinux.kawaiifi_interface_wiphy_tx_power_level_mbm(_ptr, &wiphyTxPowerLevelMbm)
                     ? wiphyTxPowerLevelMbm
                     : null;
             }
@@ -239,7 +268,7 @@ public class Interface : IDisposable
             unsafe
             {
                 uint val = 0;
-                return NativeMethods.kawaiifi_interface_center_freq_1_mhz(_ptr, &val) ? val : null;
+                return NativeMethodsLinux.kawaiifi_interface_center_freq_1_mhz(_ptr, &val) ? val : null;
             }
         }
     }
@@ -253,7 +282,7 @@ public class Interface : IDisposable
             unsafe
             {
                 uint val = 0;
-                return NativeMethods.kawaiifi_interface_center_freq_2_mhz(_ptr, &val) ? val : null;
+                return NativeMethodsLinux.kawaiifi_interface_center_freq_2_mhz(_ptr, &val) ? val : null;
             }
         }
     }
@@ -267,7 +296,7 @@ public class Interface : IDisposable
             unsafe
             {
                 CsBindgen.ChannelWidth channelWidth = default;
-                if (!NativeMethods.kawaiifi_interface_channel_width(_ptr, &channelWidth)) return null;
+                if (!NativeMethodsLinux.kawaiifi_interface_channel_width(_ptr, &channelWidth)) return null;
                 return channelWidth switch
                 {
                     CsBindgen.ChannelWidth.TwentyMhz => Net.ChannelWidth.TwentyMhz,
@@ -291,7 +320,7 @@ public class Interface : IDisposable
             unsafe
             {
                 uint vifRadioMask = 0;
-                return NativeMethods.kawaiifi_interface_vif_radio_mask(_ptr, &vifRadioMask) ? vifRadioMask : null;
+                return NativeMethodsLinux.kawaiifi_interface_vif_radio_mask(_ptr, &vifRadioMask) ? vifRadioMask : null;
             }
         }
     }
@@ -305,7 +334,7 @@ public class Interface : IDisposable
             unsafe
             {
                 ushort vendorId = 0;
-                return NativeMethods.kawaiifi_interface_vendor_id(_ptr, &vendorId) ? vendorId : null;
+                return NativeMethodsLinux.kawaiifi_interface_vendor_id(_ptr, &vendorId) ? vendorId : null;
             }
         }
     }
@@ -319,7 +348,7 @@ public class Interface : IDisposable
             unsafe
             {
                 ushort deviceId = 0;
-                return NativeMethods.kawaiifi_interface_device_id(_ptr, &deviceId) ? deviceId : null;
+                return NativeMethodsLinux.kawaiifi_interface_device_id(_ptr, &deviceId) ? deviceId : null;
             }
         }
     }
@@ -332,7 +361,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                var vendorName = NativeMethods.kawaiifi_interface_vendor_name(_ptr);
+                var vendorName = NativeMethodsLinux.kawaiifi_interface_vendor_name(_ptr);
                 if (vendorName == null) return null;
                 var result = Marshal.PtrToStringUTF8((IntPtr)vendorName);
                 NativeMethods.kawaiifi_string_free(vendorName);
@@ -349,7 +378,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                var deviceName = NativeMethods.kawaiifi_interface_device_name(_ptr);
+                var deviceName = NativeMethodsLinux.kawaiifi_interface_device_name(_ptr);
                 if (deviceName == null) return null;
                 var result = Marshal.PtrToStringUTF8((IntPtr)deviceName);
                 NativeMethods.kawaiifi_string_free(deviceName);
@@ -366,7 +395,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                var driver = NativeMethods.kawaiifi_interface_driver(_ptr);
+                var driver = NativeMethodsLinux.kawaiifi_interface_driver(_ptr);
                 if (driver == null) return null;
                 var result = Marshal.PtrToStringUTF8((IntPtr)driver);
                 NativeMethods.kawaiifi_string_free(driver);
@@ -383,13 +412,219 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethods.kawaiifi_interface_bus_type(_ptr) switch
+                return NativeMethodsLinux.kawaiifi_interface_bus_type(_ptr) switch
                 {
                     CsBindgen.BusType.Pci => Net.BusType.Pci,
                     CsBindgen.BusType.Usb => Net.BusType.Usb,
                     CsBindgen.BusType.Sdio => Net.BusType.Sdio,
                     _ => null,
                 };
+            }
+        }
+    }
+
+    /// <summary>Whether the Wi-Fi interface is powered on.</summary>
+    [SupportedOSPlatform("macos")]
+    public bool PowerOn
+    {
+        get
+        {
+            unsafe
+            {
+                return NativeMethodsMacOS.kawaiifi_interface_power_on(_ptr);
+            }
+        }
+    }
+
+    /// <summary>The currently active PHY mode.</summary>
+    [SupportedOSPlatform("macos")]
+    public CwPhyMode ActivePhyMode
+    {
+        get
+        {
+            unsafe
+            {
+                return NativeMethodsMacOS.kawaiifi_interface_active_phy_mode(_ptr) switch
+                {
+                    CsBindgen.CwPhyMode.A => CwPhyMode.A,
+                    CsBindgen.CwPhyMode.B => CwPhyMode.B,
+                    CsBindgen.CwPhyMode.G => CwPhyMode.G,
+                    CsBindgen.CwPhyMode.N => CwPhyMode.N,
+                    CsBindgen.CwPhyMode.AC => CwPhyMode.Ac,
+                    CsBindgen.CwPhyMode.AX => CwPhyMode.Ax,
+                    _ => CwPhyMode.None,
+                };
+            }
+        }
+    }
+
+    /// <summary>The current security type.</summary>
+    [SupportedOSPlatform("macos")]
+    public CwSecurity Security
+    {
+        get
+        {
+            unsafe
+            {
+                return NativeMethodsMacOS.kawaiifi_interface_security(_ptr) switch
+                {
+                    CsBindgen.CwSecurity.None => CwSecurity.None,
+                    CsBindgen.CwSecurity.Wep => CwSecurity.Wep,
+                    CsBindgen.CwSecurity.WpaPersonal => CwSecurity.WpaPersonal,
+                    CsBindgen.CwSecurity.WpaPersonalMixed => CwSecurity.WpaPersonalMixed,
+                    CsBindgen.CwSecurity.Wpa2Personal => CwSecurity.Wpa2Personal,
+                    CsBindgen.CwSecurity.Personal => CwSecurity.Personal,
+                    CsBindgen.CwSecurity.DynamicWep => CwSecurity.DynamicWep,
+                    CsBindgen.CwSecurity.WpaEnterprise => CwSecurity.WpaEnterprise,
+                    CsBindgen.CwSecurity.WpaEnterpriseMixed => CwSecurity.WpaEnterpriseMixed,
+                    CsBindgen.CwSecurity.Wpa2Enterprise => CwSecurity.Wpa2Enterprise,
+                    CsBindgen.CwSecurity.Enterprise => CwSecurity.Enterprise,
+                    CsBindgen.CwSecurity.Wpa3Personal => CwSecurity.Wpa3Personal,
+                    CsBindgen.CwSecurity.Wpa3Enterprise => CwSecurity.Wpa3Enterprise,
+                    CsBindgen.CwSecurity.Wpa3Transition => CwSecurity.Wpa3Transition,
+                    CsBindgen.CwSecurity.Owe => CwSecurity.Owe,
+                    CsBindgen.CwSecurity.OweTransition => CwSecurity.OweTransition,
+                    _ => CwSecurity.Unknown,
+                };
+            }
+        }
+    }
+
+    /// <summary>The current operating mode.</summary>
+    [SupportedOSPlatform("macos")]
+    public CwInterfaceMode Mode
+    {
+        get
+        {
+            unsafe
+            {
+                return NativeMethodsMacOS.kawaiifi_interface_mode(_ptr) switch
+                {
+                    CsBindgen.CwInterfaceMode.Station => CwInterfaceMode.Station,
+                    CsBindgen.CwInterfaceMode.Ibss => CwInterfaceMode.Ibss,
+                    CsBindgen.CwInterfaceMode.HostAp => CwInterfaceMode.HostAp,
+                    _ => CwInterfaceMode.None,
+                };
+            }
+        }
+    }
+
+    /// <summary>The current transmit rate in Mbps.</summary>
+    [SupportedOSPlatform("macos")]
+    public double TransmitRateMbps
+    {
+        get
+        {
+            unsafe
+            {
+                return NativeMethodsMacOS.kawaiifi_interface_transmit_rate_mbps(_ptr);
+            }
+        }
+    }
+
+    /// <summary>The current transmit power in mW.</summary>
+    [SupportedOSPlatform("macos")]
+    public int TransmitPowerMw
+    {
+        get
+        {
+            unsafe
+            {
+                return NativeMethodsMacOS.kawaiifi_interface_transmit_power_mw(_ptr);
+            }
+        }
+    }
+
+    /// <summary>The currently adopted country code.</summary>
+    [SupportedOSPlatform("macos")]
+    public string? CountryCode
+    {
+        get
+        {
+            unsafe
+            {
+                var countryCode = NativeMethodsMacOS.kawaiifi_interface_country_code(_ptr);
+                if (countryCode == null) return null;
+                var result = Marshal.PtrToStringUTF8((IntPtr)countryCode);
+                NativeMethods.kawaiifi_string_free(countryCode);
+                return result;
+            }
+        }
+    }
+
+    /// <summary>The current basic service set identifier (BSSID).</summary>
+    [SupportedOSPlatform("macos")]
+    public byte[]? Bssid
+    {
+        get
+        {
+            unsafe
+            {
+                var bssid = stackalloc byte[6];
+                if (NativeMethodsMacOS.kawaiifi_interface_bssid(_ptr, bssid))
+                {
+                    return new Span<byte>(bssid, 6).ToArray();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+    }
+
+    /// <summary>The hardware MAC address of the Wi-Fi interface.</summary>
+    [SupportedOSPlatform("macos")]
+    public string? HardwareAddress
+    {
+        get
+        {
+            unsafe
+            {
+                var hardwareAddress = NativeMethodsMacOS.kawaiifi_interface_hardware_address(_ptr);
+                if (hardwareAddress == null) return null;
+                var result = Marshal.PtrToStringUTF8((IntPtr)hardwareAddress);
+                NativeMethods.kawaiifi_string_free(hardwareAddress);
+                return result;
+            }
+        }
+    }
+
+    /// <summary>The current signal strength in dBm.</summary>
+    [SupportedOSPlatform("macos")]
+    public int SignalDbm
+    {
+        get
+        {
+            unsafe
+            {
+                return NativeMethodsMacOS.kawaiifi_interface_signal_dbm(_ptr);
+            }
+        }
+    }
+
+    /// <summary>The current aggregate noise measurement in dBm.</summary>
+    [SupportedOSPlatform("macos")]
+    public int NoiseDbm
+    {
+        get
+        {
+            unsafe
+            {
+                return NativeMethodsMacOS.kawaiifi_interface_noise_dbm(_ptr);
+            }
+        }
+    }
+
+    /// <summary>Whether the network service is active.</summary>
+    [SupportedOSPlatform("macos")]
+    public bool ServiceActive
+    {
+        get
+        {
+            unsafe
+            {
+                return NativeMethodsMacOS.kawaiifi_interface_service_active(_ptr);
             }
         }
     }
@@ -402,7 +637,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethods.kawaiifi_interface_guid(_ptr);
+                return NativeMethodsWindows.kawaiifi_interface_guid(_ptr);
             }
         }
     }
@@ -415,7 +650,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                var description = NativeMethods.kawaiifi_interface_description(_ptr);
+                var description = NativeMethodsWindows.kawaiifi_interface_description(_ptr);
                 if (description == null) return null;
                 var result = Marshal.PtrToStringUTF8((IntPtr)description);
                 NativeMethods.kawaiifi_string_free(description);
@@ -435,8 +670,8 @@ public class Interface : IDisposable
         {
             var scan = backend switch
             {
-                Backend.Nl80211 => NativeMethods.kawaiifi_interface_scan(_ptr, CsBindgen.Backend.Nl80211),
-                Backend.NetworkManager => NativeMethods.kawaiifi_interface_scan(_ptr, CsBindgen.Backend.NetworkManager),
+                Backend.Nl80211 => NativeMethodsLinux.kawaiifi_interface_scan(_ptr, CsBindgen.Backend.Nl80211),
+                Backend.NetworkManager => NativeMethodsLinux.kawaiifi_interface_scan(_ptr, CsBindgen.Backend.NetworkManager),
                 _ => throw new ArgumentOutOfRangeException(nameof(backend)),
             };
 
@@ -448,13 +683,25 @@ public class Interface : IDisposable
     /// Performs a blocking Wi-Fi scan and returns the results.
     /// Dispose the returned <see cref="Kawaiifi.Net.Scan"/> when done.
     /// </summary>
+    [SupportedOSPlatform("macos")]
     [SupportedOSPlatform("windows")]
     public Scan Scan()
     {
         unsafe
         {
-            var scan = NativeMethods.kawaiifi_interface_scan(_ptr);
-            return new Scan(scan);
+            if (OperatingSystem.IsMacOS())
+            {
+                var scan = NativeMethodsMacOS.kawaiifi_interface_scan(_ptr);
+                return new Scan(scan);
+            }
+
+            if (OperatingSystem.IsWindows())
+            {
+                var scan = NativeMethodsWindows.kawaiifi_interface_scan(_ptr);
+                return new Scan(scan);
+            }
+
+            throw new PlatformNotSupportedException();
         }
     }
 

@@ -11,13 +11,33 @@ using System.Runtime.InteropServices;
 
 namespace CsBindgen
 {
-    internal static unsafe partial class NativeMethods
+    internal static unsafe partial class NativeMethodsWindows
     {
+        const string __DllName = "kawaiifi";
 
 
 
 
 
+        /// <summary>
+        ///  Returns the 802.11 capability information flags for the BSS.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_capability_info", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern CapabilityInfo kawaiifi_bss_capability_info(Bss* bss);
+
+        /// <summary>
+        ///  Returns the timing synchronization function (TSF) timer value of the BSS, or 0 if `bss` is null.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_tsf", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern ulong kawaiifi_bss_tsf(Bss* bss);
+
+        /// <summary>
+        ///  Writes the Unix timestamp (milliseconds) of when the BSS was last seen into `out`.
+        ///  Returns false if the timestamp is unavailable or `bss` is null.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_last_seen_utc_ms", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal static extern bool kawaiifi_bss_last_seen_utc_ms(Bss* bss, long* @out);
 
         /// <summary>
         ///  Returns the link quality of the BSS as a value from 0 to 100, or 0 if `bss` is null.

@@ -29,6 +29,7 @@
   <ItemGroup>
     <Compile Include="../../../include/NativeMethods.g.cs" />
     <Compile Include="../../../include/NativeMethods.Linux.g.cs" />
+    <Compile Include="../../../include/NativeMethods.MacOS.g.cs" />
     <Compile Include="../../../include/NativeMethods.Windows.g.cs" />
     <Compile Include="../../../include/NativeTypes.cs" />
   </ItemGroup>
@@ -36,6 +37,13 @@
   <!-- Copy native library to output directory for local development -->
   <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Linux')) And Exists('../../../../target/release/libkawaiifi.so')">
     <Content Include="../../../../target/release/libkawaiifi.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>false</Pack>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX')) And Exists('../../../../target/release/libkawaiifi.dylib')">
+    <Content Include="../../../../target/release/libkawaiifi.dylib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Pack>false</Pack>
     </Content>
@@ -51,6 +59,10 @@
   <!-- Include native libraries in NuGet package when provided via CI -->
   <ItemGroup Condition="'$(NativeLinuxX64)' != ''">
     <None Include="$(NativeLinuxX64)" Pack="true" PackagePath="runtimes/linux-x64/native/" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(NativeMacOSArm64)' != ''">
+    <None Include="$(NativeMacOSArm64)" Pack="true" PackagePath="runtimes/osx-arm64/native/" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(NativeWindowsX64)' != ''">

@@ -42,6 +42,9 @@ fn generate_c_bindings() {
     config
         .defines
         .insert("target_os = windows".to_string(), "_WIN32".to_string());
+    config
+        .defines
+        .insert("target_os = macos".to_string(), "__APPLE__".to_string());
     cbindgen::generate_with_config(crate_dir, config)
         .expect("Unable to generate bindings")
         .write_to_file("include/kawaiifi.h");
@@ -66,7 +69,7 @@ fn generate_csharp_bindings() {
         .input_extern_file("src/linux/interface.rs")
         .input_extern_file("src/linux/scan.rs")
         .csharp_dll_name("kawaiifi")
-        .csharp_disable_emit_dll_name(true)
+        .csharp_class_name("NativeMethodsLinux")
         .generate_csharp_file("include/NativeMethods.Linux.g.cs")
         .unwrap();
 
@@ -76,7 +79,16 @@ fn generate_csharp_bindings() {
         .input_extern_file("src/windows/interface.rs")
         .csharp_file_header("using GUID = global::System.Guid;")
         .csharp_dll_name("kawaiifi")
-        .csharp_disable_emit_dll_name(true)
+        .csharp_class_name("NativeMethodsWindows")
         .generate_csharp_file("include/NativeMethods.Windows.g.cs")
+        .unwrap();
+
+    // Generate NativeMethods.MacOS.g.cs for macOS-specific functionality
+    csbindgen::Builder::default()
+        .input_extern_file("src/macos/bss.rs")
+        .input_extern_file("src/macos/interface.rs")
+        .csharp_dll_name("kawaiifi")
+        .csharp_class_name("NativeMethodsMacOS")
+        .generate_csharp_file("include/NativeMethods.MacOS.g.cs")
         .unwrap();
 }

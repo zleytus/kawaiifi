@@ -1,11 +1,20 @@
 #[cfg(target_os = "linux")]
 mod linux;
 
+#[cfg(target_os = "macos")]
+mod macos;
+
 #[cfg(target_os = "windows")]
 mod windows;
 
 #[cfg(target_os = "linux")]
 pub use linux::{BusType, Interface};
+
+#[cfg(target_os = "macos")]
+pub use macos::Interface;
+
+#[cfg(target_os = "macos")]
+pub(crate) use macos::parse_bssid;
 
 #[cfg(target_os = "windows")]
 pub use windows::Interface;
@@ -25,6 +34,12 @@ pub fn interfaces() -> Vec<Interface> {
             Vec::new()
         }
     }
+}
+
+/// Returns all available Wi-Fi interfaces on the system.
+#[cfg(target_os = "macos")]
+pub fn interfaces() -> Vec<Interface> {
+    macos::interfaces()
 }
 
 /// Returns all available Wi-Fi interfaces on the system.

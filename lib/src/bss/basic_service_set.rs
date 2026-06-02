@@ -1,12 +1,17 @@
-use std::{fmt::Display, hash::Hash, time::Duration};
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+use std::time::Duration;
+use std::{fmt::Display, hash::Hash};
 
+#[cfg(any(target_os = "linux", target_os = "windows"))]
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+use crate::CapabilityInfo;
 #[cfg(target_os = "linux")]
 use crate::nl80211::{BssScanWidth, BssStatus};
 use crate::{
-    Band, CapabilityInfo, ChannelWidth, SecurityProtocols, WifiAmendments, WifiProtocols,
+    Band, ChannelWidth, SecurityProtocols, WifiAmendments, WifiProtocols,
     ies::{Ie, IeData},
 };
 
@@ -17,13 +22,18 @@ pub struct Bss {
     pub(super) bssid: [u8; 6],
     pub(super) frequency_mhz: u32,
     pub(super) signal_dbm: i32,
-    pub(super) tsf: u64,
     pub(super) beacon_interval_tu: u16,
-    pub(super) last_seen_utc: Option<DateTime<Utc>>,
-    #[serde(with = "crate::ies::serde_raw::capability_info_as_u16")]
-    pub(super) capability_info: CapabilityInfo,
     #[serde(with = "crate::ies::serde_raw::ies_as_base64")]
     pub(super) ies: Vec<Ie>,
+
+    // Linux and Windows
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    pub(super) tsf: u64,
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    #[serde(with = "crate::ies::serde_raw::capability_info_as_u16")]
+    pub(super) capability_info: CapabilityInfo,
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
+    pub(super) last_seen_utc: Option<DateTime<Utc>>,
 
     // Linux-only
     #[cfg(target_os = "linux")]
@@ -57,6 +67,10 @@ pub struct Bss {
     // Windows-only
     #[cfg(target_os = "windows")]
     pub(super) link_quality: u8,
+
+    // macOS-only
+    #[cfg(target_os = "macos")]
+    pub(super) noise_dbm: i32,
 }
 
 impl Bss {
@@ -220,6 +234,7 @@ impl Bss {
     }
 
     /// The 802.11 capability information flags advertised by the BSS.
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     pub fn capability_info(&self) -> &CapabilityInfo {
         &self.capability_info
     }
@@ -230,16 +245,19 @@ impl Bss {
     }
 
     /// The timing synchronization function (TSF) timer value.
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     pub fn tsf(&self) -> u64 {
         self.tsf
     }
 
     /// The estimated time the BSS has been running, derived from its TSF timer.
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     pub fn uptime(&self) -> Duration {
         Duration::from_micros(self.tsf)
     }
 
     /// The UTC date and time when the BSS was last seen, or `None` if unavailable.
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     pub fn last_seen_utc(&self) -> Option<DateTime<Utc>> {
         self.last_seen_utc
     }
@@ -269,7 +287,11 @@ impl Bss {
 
     /// The Wi-Fi amendments supported by the BSS.
     pub fn wifi_amendments(&self) -> WifiAmendments {
-        WifiAmendments::from(self.ies.as_slice()) | WifiAmendments::from(&self.capability_info)
+        let amendments = WifiAmendments::from(self.ies.as_slice());
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
+        let amendments = amendments | WifiAmendments::from(&self.capability_info);
+
+        amendments
     }
 
     /// The maximum supported data rate in Mbps.
@@ -400,6 +422,7 @@ impl Display for Bss {
             self.wifi_protocols()
         );
 
+        #[cfg(any(target_os = "linux", target_os = "windows"))]
         let _b = writeln!(f, "{}", self.capability_info);
 
         Ok(())

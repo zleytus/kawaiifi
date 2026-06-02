@@ -153,38 +153,71 @@ public class Bss
     }
 
     /// <summary>The 802.11 capability information flags advertised by the BSS.</summary>
+    [SupportedOSPlatform("linux")]
+    [SupportedOSPlatform("windows")]
     public CapabilityInfo CapabilityInfo
     {
         get
         {
             unsafe
             {
-                var capabilityInfo = NativeMethods.kawaiifi_bss_capability_info(_ptr);
-                return new CapabilityInfo(capabilityInfo.ess, capabilityInfo.ibss, capabilityInfo.privacy,
-                    capabilityInfo.short_preamble, capabilityInfo.critical_update_flag,
-                    capabilityInfo.nontransmitted_bssids_critical_update_flag, capabilityInfo.spectrum_management,
-                    capabilityInfo.qos, capabilityInfo.short_slot_time, capabilityInfo.apsd,
-                    capabilityInfo.radio_measurement, capabilityInfo.epd);
+                if (OperatingSystem.IsLinux())
+                {
+                    var capabilityInfo = NativeMethodsLinux.kawaiifi_bss_capability_info(_ptr);
+                    return new CapabilityInfo(capabilityInfo.ess, capabilityInfo.ibss, capabilityInfo.privacy,
+                        capabilityInfo.short_preamble, capabilityInfo.critical_update_flag,
+                        capabilityInfo.nontransmitted_bssids_critical_update_flag, capabilityInfo.spectrum_management,
+                        capabilityInfo.qos, capabilityInfo.short_slot_time, capabilityInfo.apsd,
+                        capabilityInfo.radio_measurement, capabilityInfo.epd);
+                }
+
+                if (OperatingSystem.IsWindows())
+                {
+                    var capabilityInfo = NativeMethodsWindows.kawaiifi_bss_capability_info(_ptr);
+                    return new CapabilityInfo(capabilityInfo.ess, capabilityInfo.ibss, capabilityInfo.privacy,
+                        capabilityInfo.short_preamble, capabilityInfo.critical_update_flag,
+                        capabilityInfo.nontransmitted_bssids_critical_update_flag, capabilityInfo.spectrum_management,
+                        capabilityInfo.qos, capabilityInfo.short_slot_time, capabilityInfo.apsd,
+                        capabilityInfo.radio_measurement, capabilityInfo.epd);
+                }
             }
+
+            throw new PlatformNotSupportedException();
         }
     }
 
     /// <summary>The timing synchronization function (TSF) timer value.</summary>
+    [SupportedOSPlatform("linux")]
+    [SupportedOSPlatform("windows")]
     public ulong Tsf
     {
         get
         {
             unsafe
             {
-                return NativeMethods.kawaiifi_bss_tsf(_ptr);
+                if (OperatingSystem.IsLinux())
+                {
+                    return NativeMethodsLinux.kawaiifi_bss_tsf(_ptr);
+                }
+
+                if (OperatingSystem.IsWindows())
+                {
+                    return NativeMethodsWindows.kawaiifi_bss_tsf(_ptr);
+                }
             }
+
+            throw new PlatformNotSupportedException();
         }
     }
 
     /// <summary>The estimated time the BSS has been running, derived from its TSF timer.</summary>
+    [SupportedOSPlatform("linux")]
+    [SupportedOSPlatform("windows")]
     public TimeSpan Uptime => TimeSpan.FromMicroseconds(Tsf);
 
     /// <summary>The Unix timestamp in milliseconds when the BSS was last seen, or null if unavailable.</summary>
+    [SupportedOSPlatform("linux")]
+    [SupportedOSPlatform("windows")]
     public long? LastSeenUtcMs
     {
         get
@@ -192,12 +225,28 @@ public class Bss
             unsafe
             {
                 long lastSeenUtcMs = 0;
-                return NativeMethods.kawaiifi_bss_last_seen_utc_ms(_ptr, &lastSeenUtcMs) ? lastSeenUtcMs : null;
+                if (OperatingSystem.IsLinux())
+                {
+                    return NativeMethodsLinux.kawaiifi_bss_last_seen_utc_ms(_ptr, &lastSeenUtcMs)
+                        ? lastSeenUtcMs
+                        : null;
+                }
+
+                if (OperatingSystem.IsWindows())
+                {
+                    return NativeMethodsWindows.kawaiifi_bss_last_seen_utc_ms(_ptr, &lastSeenUtcMs)
+                        ? lastSeenUtcMs
+                        : null;
+                }
             }
+
+            throw new PlatformNotSupportedException();
         }
     }
 
     /// <summary>The UTC date and time when the BSS was last seen, or null if unavailable.</summary>
+    [SupportedOSPlatform("linux")]
+    [SupportedOSPlatform("windows")]
     public DateTime? LastSeenUtc => LastSeenUtcMs is { } ms
         ? DateTimeOffset.FromUnixTimeMilliseconds(ms).UtcDateTime
         : null;
@@ -311,7 +360,7 @@ public class Bss
         {
             unsafe
             {
-                return NativeMethods.kawaiifi_bss_link_quality(_ptr);
+                return NativeMethodsWindows.kawaiifi_bss_link_quality(_ptr);
             }
         }
     }
@@ -324,7 +373,7 @@ public class Bss
         {
             unsafe
             {
-                return NativeMethods.kawaiifi_bss_status(_ptr) switch
+                return NativeMethodsLinux.kawaiifi_bss_status(_ptr) switch
                 {
                     CsBindgen.BssStatus.Authenticated => BssStatus.Authenticated,
                     CsBindgen.BssStatus.Associated => BssStatus.Associated,
@@ -343,7 +392,7 @@ public class Bss
         {
             unsafe
             {
-                return NativeMethods.kawaiifi_bss_is_from_probe_response(_ptr);
+                return NativeMethodsLinux.kawaiifi_bss_is_from_probe_response(_ptr);
             }
         }
     }
@@ -356,7 +405,7 @@ public class Bss
         {
             unsafe
             {
-                var ptr = NativeMethods.kawaiifi_bss_parent_bssid(_ptr);
+                var ptr = NativeMethodsLinux.kawaiifi_bss_parent_bssid(_ptr);
                 return ptr == null ? null : new Span<byte>(ptr, 6).ToArray();
             }
         }
@@ -371,7 +420,7 @@ public class Bss
             unsafe
             {
                 ulong val = 0;
-                return NativeMethods.kawaiifi_bss_parent_tsf(_ptr, &val) ? val : null;
+                return NativeMethodsLinux.kawaiifi_bss_parent_tsf(_ptr, &val) ? val : null;
             }
         }
     }
@@ -385,7 +434,7 @@ public class Bss
             unsafe
             {
                 ulong val = 0;
-                return NativeMethods.kawaiifi_bss_beacon_tsf(_ptr, &val) ? val : null;
+                return NativeMethodsLinux.kawaiifi_bss_beacon_tsf(_ptr, &val) ? val : null;
             }
         }
     }
@@ -399,7 +448,7 @@ public class Bss
             unsafe
             {
                 uint val = 0;
-                return NativeMethods.kawaiifi_bss_frequency_offset_khz(_ptr, &val) ? val : null;
+                return NativeMethodsLinux.kawaiifi_bss_frequency_offset_khz(_ptr, &val) ? val : null;
             }
         }
     }
@@ -413,7 +462,7 @@ public class Bss
             unsafe
             {
                 byte val = 0;
-                return NativeMethods.kawaiifi_bss_signal_percent(_ptr, &val) ? val : null;
+                return NativeMethodsLinux.kawaiifi_bss_signal_percent(_ptr, &val) ? val : null;
             }
         }
     }
@@ -427,7 +476,7 @@ public class Bss
             unsafe
             {
                 ulong val = 0;
-                return NativeMethods.kawaiifi_bss_last_seen_boottime_ns(_ptr, &val) ? val : null;
+                return NativeMethodsLinux.kawaiifi_bss_last_seen_boottime_ns(_ptr, &val) ? val : null;
             }
         }
     }
@@ -441,7 +490,7 @@ public class Bss
             unsafe
             {
                 uint val = 0;
-                return NativeMethods.kawaiifi_bss_seen_ms_ago(_ptr, &val) ? val : null;
+                return NativeMethodsLinux.kawaiifi_bss_seen_ms_ago(_ptr, &val) ? val : null;
             }
         }
     }
@@ -455,7 +504,7 @@ public class Bss
             unsafe
             {
                 byte val = 0;
-                return NativeMethods.kawaiifi_bss_mlo_link_id(_ptr, &val) ? val : null;
+                return NativeMethodsLinux.kawaiifi_bss_mlo_link_id(_ptr, &val) ? val : null;
             }
         }
     }
@@ -468,8 +517,21 @@ public class Bss
         {
             unsafe
             {
-                var ptr = NativeMethods.kawaiifi_bss_mld_address(_ptr);
+                var ptr = NativeMethodsLinux.kawaiifi_bss_mld_address(_ptr);
                 return ptr == null ? null : new Span<byte>(ptr, 6).ToArray();
+            }
+        }
+    }
+
+    /// <summary>The noise measurement in dBm.</summary>
+    [SupportedOSPlatform("macos")]
+    public int NoiseDbm
+    {
+        get
+        {
+            unsafe
+            {
+                return NativeMethodsMacOS.kawaiifi_bss_noise_dbm(_ptr);
             }
         }
     }

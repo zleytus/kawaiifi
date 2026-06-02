@@ -19,6 +19,22 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+#[cfg(target_os = "macos")]
+fn main() -> Result<(), Box<dyn Error>> {
+    let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");
+
+    let scan = interface.scan_blocking()?;
+
+    println!(
+        "Found {} BSS(s) in {:#?} using {}",
+        scan.bss_list().len(),
+        scan.duration(),
+        interface.name().unwrap_or_else(|| "unknown".to_string())
+    );
+
+    Ok(())
+}
+
 #[cfg(target_os = "windows")]
 fn main() -> Result<(), Box<dyn Error>> {
     let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");

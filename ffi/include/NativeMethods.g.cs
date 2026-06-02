@@ -100,26 +100,6 @@ namespace CsBindgen
         internal static extern double kawaiifi_bss_beacon_interval_ms(Bss* bss);
 
         /// <summary>
-        ///  Returns the 802.11 capability information flags for the BSS.
-        /// </summary>
-        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_capability_info", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern CapabilityInfo kawaiifi_bss_capability_info(Bss* bss);
-
-        /// <summary>
-        ///  Returns the timing synchronization function (TSF) timer value of the BSS, or 0 if `bss` is null.
-        /// </summary>
-        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_tsf", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern ulong kawaiifi_bss_tsf(Bss* bss);
-
-        /// <summary>
-        ///  Writes the Unix timestamp (milliseconds) of when the BSS was last seen into `out`.
-        ///  Returns false if the timestamp is unavailable or `bss` is null.
-        /// </summary>
-        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_last_seen_utc_ms", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        [return: MarshalAs(UnmanagedType.U1)]
-        internal static extern bool kawaiifi_bss_last_seen_utc_ms(Bss* bss, long* @out);
-
-        /// <summary>
         ///  Returns the security protocols as a bitmask (WEP=1, WPA=2, WPA2=4, WPA3=8).
         /// </summary>
         [DllImport(__DllName, EntryPoint = "kawaiifi_bss_security_protocols", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
@@ -380,26 +360,6 @@ namespace CsBindgen
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe partial struct BssList
     {
-    }
-
-    /// <summary>
-    ///  FFI-safe equivalent of kawaiifi::CapabilityInfo.
-    /// </summary>
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct CapabilityInfo
-    {
-        [MarshalAs(UnmanagedType.U1)] public bool ess;
-        [MarshalAs(UnmanagedType.U1)] public bool ibss;
-        [MarshalAs(UnmanagedType.U1)] public bool privacy;
-        [MarshalAs(UnmanagedType.U1)] public bool short_preamble;
-        [MarshalAs(UnmanagedType.U1)] public bool critical_update_flag;
-        [MarshalAs(UnmanagedType.U1)] public bool nontransmitted_bssids_critical_update_flag;
-        [MarshalAs(UnmanagedType.U1)] public bool spectrum_management;
-        [MarshalAs(UnmanagedType.U1)] public bool qos;
-        [MarshalAs(UnmanagedType.U1)] public bool short_slot_time;
-        [MarshalAs(UnmanagedType.U1)] public bool apsd;
-        [MarshalAs(UnmanagedType.U1)] public bool radio_measurement;
-        [MarshalAs(UnmanagedType.U1)] public bool epd;
     }
 
     [StructLayout(LayoutKind.Sequential)]

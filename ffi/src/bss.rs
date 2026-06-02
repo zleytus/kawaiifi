@@ -46,23 +46,6 @@ pub enum ChannelWidth {
     Unknown,
 }
 
-/// FFI-safe equivalent of kawaiifi::CapabilityInfo.
-#[repr(C)]
-pub struct CapabilityInfo {
-    pub ess: bool,
-    pub ibss: bool,
-    pub privacy: bool,
-    pub short_preamble: bool,
-    pub critical_update_flag: bool,
-    pub nontransmitted_bssids_critical_update_flag: bool,
-    pub spectrum_management: bool,
-    pub qos: bool,
-    pub short_slot_time: bool,
-    pub apsd: bool,
-    pub radio_measurement: bool,
-    pub epd: bool,
-}
-
 /// Returns a borrowed pointer to the BSS's 6-byte BSSID (MAC address), or null if `bss` is null.
 /// The pointer is valid for the lifetime of the BSS. Do NOT free it.
 #[unsafe(no_mangle)]
@@ -138,67 +121,6 @@ pub unsafe extern "C" fn kawaiifi_bss_beacon_interval_tu(bss: Option<&Bss>) -> u
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_bss_beacon_interval_ms(bss: Option<&Bss>) -> f64 {
     bss.map(Bss::beacon_interval_ms).unwrap_or_default()
-}
-
-/// Returns the 802.11 capability information flags for the BSS.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn kawaiifi_bss_capability_info(bss: Option<&Bss>) -> CapabilityInfo {
-    bss.map(|b| {
-        let ci = b.capability_info();
-        CapabilityInfo {
-            ess: ci.ess,
-            ibss: ci.ibss,
-            privacy: ci.privacy,
-            short_preamble: ci.short_preamble,
-            critical_update_flag: ci.critical_update_flag,
-            nontransmitted_bssids_critical_update_flag: ci
-                .nontransmitted_bssids_critical_update_flag,
-            spectrum_management: ci.spectrum_management,
-            qos: ci.qos,
-            short_slot_time: ci.short_slot_time,
-            apsd: ci.apsd,
-            radio_measurement: ci.radio_measurement,
-            epd: ci.epd,
-        }
-    })
-    .unwrap_or(CapabilityInfo {
-        ess: false,
-        ibss: false,
-        privacy: false,
-        short_preamble: false,
-        critical_update_flag: false,
-        nontransmitted_bssids_critical_update_flag: false,
-        spectrum_management: false,
-        qos: false,
-        short_slot_time: false,
-        apsd: false,
-        radio_measurement: false,
-        epd: false,
-    })
-}
-
-/// Returns the timing synchronization function (TSF) timer value of the BSS, or 0 if `bss` is null.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn kawaiifi_bss_tsf(bss: Option<&Bss>) -> u64 {
-    bss.map(Bss::tsf).unwrap_or_default()
-}
-
-/// Writes the Unix timestamp (milliseconds) of when the BSS was last seen into `out`.
-/// Returns false if the timestamp is unavailable or `bss` is null.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn kawaiifi_bss_last_seen_utc_ms(
-    bss: Option<&Bss>,
-    out: Option<&mut i64>,
-) -> bool {
-    match bss.and_then(Bss::last_seen_utc) {
-        Some(dt) => {
-            if let Some(out) = out {
-                *out = dt.timestamp_millis();
-            }
-            true
-        }
-        None => false,
-    }
 }
 
 /// Returns the security protocols as a bitmask (WEP=1, WPA=2, WPA2=4, WPA3=8).

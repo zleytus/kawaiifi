@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v6
 
@@ -46,7 +46,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v6
 
@@ -66,6 +66,7 @@ jobs:
           name: native-${{ matrix.os }}
           path: |
             target/release/libkawaiifi.so
+            target/release/libkawaiifi.dylib
             target/release/kawaiifi.dll
           if-no-files-found: ignore
 
@@ -74,7 +75,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v6
 
@@ -94,14 +95,14 @@ jobs:
     needs: build-ffi
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v6
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '10.x'
+          dotnet-version: "10.x"
 
       - name: Download native library
         uses: actions/download-artifact@v8
@@ -122,13 +123,19 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '10.x'
+          dotnet-version: "10.x"
 
       - name: Download Linux native library
         uses: actions/download-artifact@v8
         with:
           name: native-ubuntu-latest
           path: artifacts/linux-x64/
+
+      - name: Download macOS native library
+        uses: actions/download-artifact@v8
+        with:
+          name: native-macos-latest
+          path: artifacts/macos-arm64/
 
       - name: Download Windows native library
         uses: actions/download-artifact@v8
@@ -140,6 +147,7 @@ jobs:
         run: >
           dotnet pack ffi/examples/dotnet/Kawaiifi.Net
           -p:NativeLinuxX64=${{ github.workspace }}/artifacts/linux-x64/libkawaiifi.so
+          -p:NativeMacOSArm64=${{ github.workspace }}/artifacts/macos-arm64/libkawaiifi.dylib
           -p:NativeWindowsX64=${{ github.workspace }}/artifacts/windows-x64/kawaiifi.dll
 
       - name: Upload NuGet package

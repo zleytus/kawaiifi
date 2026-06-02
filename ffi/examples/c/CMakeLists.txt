@@ -18,4 +18,13 @@ corrosion_import_crate(
 
 add_executable(scan scan.c)
 target_link_libraries(scan PRIVATE kawaiifi)
+if(APPLE)
+    target_link_libraries(scan PRIVATE
+        "-framework CoreFoundation"
+        "-framework CoreWLAN"
+        "-framework Foundation"
+        "-framework Security"
+        objc
+    )
+endif()
 target_include_directories(scan PRIVATE ../../include)
