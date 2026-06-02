@@ -1,20 +1,26 @@
 use crate::nl80211::{Attr, Cmd};
 use thiserror::Error;
 
+/// Errors that can occur while scanning for Wi-Fi networks on Linux.
 #[derive(Error, Debug)]
 pub enum Error {
+    /// The scan operation was denied by the operating system.
     #[error("Permission denied")]
     PermissionDenied,
 
+    /// An nl80211 operation failed.
     #[error("Nl80211 error: {0}")]
     Nl80211(String),
 
+    /// A NetworkManager D-Bus operation failed.
     #[error("Network Manager error: {0}")]
     NetworkManager(#[from] zbus::Error),
 
+    /// The scan completed without returning any scan records.
     #[error("scan did not produce any results")]
     EmptyScan,
 
+    /// An I/O operation failed.
     #[error(transparent)]
     IOError(#[from] std::io::Error),
 }
