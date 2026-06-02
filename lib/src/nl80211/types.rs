@@ -21,8 +21,11 @@ pub enum BssScanWidth {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive, Serialize, Deserialize)]
 #[repr(u32)]
 pub enum BssStatus {
+    /// The local station is authenticated with the BSS.
     Authenticated = 0,
+    /// The local station is associated with the BSS.
     Associated,
+    /// The local station has joined the IBSS.
     IbssJoined,
 }
 
