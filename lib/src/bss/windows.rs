@@ -10,6 +10,10 @@ impl Bss {
     }
 
     pub(crate) unsafe fn from_wlan_entry(entry: *const WLAN_BSS_ENTRY) -> Self {
+        // SAFETY: caller guarantees `entry` is a valid pointer into a live WLAN_BSS_LIST
+        // allocation obtained from WlanGetNetworkBssList. The IE bytes are at
+        // ulIeOffset bytes past the entry base, with length ulIeSize, both of which
+        // are within the same allocation.
         let entry_ref = unsafe { &*entry };
         let ie_bytes = unsafe {
             std::slice::from_raw_parts(

@@ -139,6 +139,9 @@ impl Interface {
             return Err(wlan_error("WlanScan", result).into());
         }
 
+        // SAFETY: scan_state_ptr is valid until we call WlanRegisterNotification(NONE)
+        // below, which unregisters the callback before we drop the Box. The callback
+        // cannot fire after unregistration, so there is no aliasing after the drop.
         let scan_state = unsafe { &*scan_state_ptr };
         let timed_out = timeout(SCAN_TIMEOUT, scan_state.1.notified())
             .await
