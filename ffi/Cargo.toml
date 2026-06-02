@@ -1,7 +1,7 @@
 [package]
 name = "kawaiifi-ffi"
 version = "0.1.0"
-authors = ["Zach Leytus <zach.leytus@pm.me>"]
+authors = ["Zach Leytus <zach.leytus@gmail.com>"]
 edition = "2024"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -11,7 +11,7 @@ cbindgen = "0.29"
 csbindgen = "1.9.7"
 
 [dependencies]
-kawaiifi = { path = "../lib" }
+kawaiifi = { version = "0.1.0", path = "../lib" }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2-core-wlan = "0.3.2"
@@ -22,3 +22,4 @@ windows-sys = { version = "0.61", features = ["Win32_System_Com"] }
 [lib]
 name = "kawaiifi"
 crate-type = ["cdylib", "staticlib"]
+doc = false

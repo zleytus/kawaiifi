@@ -1,10 +1,15 @@
 [package]
 name = "kawaiifi"
 version = "0.1.0"
-authors = ["Zach Leytus <zach.leytus@pm.me>"]
+authors = ["Zach Leytus <zach.leytus@gmail.com>"]
 edition = "2024"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
+description = "Cross-platform Wi-Fi scanning library for Linux, macOS, and Windows."
+repository = "https://github.com/zleytus/kawaiifi"
+documentation = "https://docs.rs/kawaiifi"
+keywords = ["wifi", "wireless", "scanner", "networking", "80211"]
+categories = ["network-programming", "hardware-support", "os::linux-apis", "os::macos-apis", "os::windows-apis"]
 
 [dependencies]
 base64 = "0.22"
