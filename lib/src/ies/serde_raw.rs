@@ -15,11 +15,13 @@ use crate::CapabilityInfo;
 pub mod ies_as_base64 {
     use super::*;
 
+    /// Serializes Information Elements as base64-encoded raw bytes.
     pub fn serialize<S: Serializer>(ies: &[Ie], serializer: S) -> Result<S::Ok, S::Error> {
         let bytes = ies_to_bytes(ies).map_err(serde::ser::Error::custom)?;
         STANDARD.encode(&bytes).serialize(serializer)
     }
 
+    /// Deserializes Information Elements from base64-encoded raw bytes.
     pub fn deserialize<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Vec<Ie>, D::Error> {
         let encoded = String::deserialize(deserializer)?;
         let bytes = STANDARD
@@ -33,6 +35,7 @@ pub mod ies_as_base64 {
 pub mod option_ies_as_base64 {
     use super::*;
 
+    /// Serializes optional Information Elements as base64-encoded raw bytes.
     pub fn serialize<S: Serializer>(
         ies: &Option<Vec<Ie>>,
         serializer: S,
@@ -46,6 +49,7 @@ pub mod option_ies_as_base64 {
         }
     }
 
+    /// Deserializes optional Information Elements from base64-encoded raw bytes.
     pub fn deserialize<'de, D: Deserializer<'de>>(
         deserializer: D,
     ) -> Result<Option<Vec<Ie>>, D::Error> {
@@ -64,6 +68,7 @@ pub mod option_ies_as_base64 {
 pub mod capability_info_as_u16 {
     use super::*;
 
+    /// Serializes capability information as a little-endian `u16`.
     pub fn serialize<S: Serializer>(
         cap: &CapabilityInfo,
         serializer: S,
@@ -72,6 +77,7 @@ pub mod capability_info_as_u16 {
         u16::from_le_bytes([bytes[0], bytes[1]]).serialize(serializer)
     }
 
+    /// Deserializes capability information from a little-endian `u16`.
     pub fn deserialize<'de, D: Deserializer<'de>>(
         deserializer: D,
     ) -> Result<CapabilityInfo, D::Error> {
