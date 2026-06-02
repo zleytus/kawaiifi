@@ -512,7 +512,7 @@ impl RsnCapabilities {
                     .build(),
                 Field::builder()
                     .title("PeerKey Enabled")
-                    .value(self.joint_multiband_rsna)
+                    .value(self.peerkey_enabled)
                     .bits(BitRange::new(&bytes, 9, 1))
                     .build(),
                 Field::builder()
