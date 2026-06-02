@@ -25,7 +25,7 @@ impl MeshConfiguration {
 
     pub fn summary(&self) -> String {
         format!(
-            "Path Selection Protocol: {}, Path Selection Metrix: {}",
+            "Path Selection Protocol: {}, Path Selection Metric: {}",
             self.active_path_selection_protocol_identifier,
             self.active_path_selection_metric_identifier
         )
