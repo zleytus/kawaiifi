@@ -1,10 +1,14 @@
 use std::{fmt::Display, ops::RangeInclusive};
 
+/// A Wi-Fi frequency band.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Ord, PartialOrd, Hash, Default)]
 pub enum Band {
+    /// The 2.4 GHz band.
     #[default]
     TwoPointFourGhz,
+    /// The 5 GHz band.
     FiveGhz,
+    /// The 6 GHz band.
     SixGhz,
 }
 
@@ -21,6 +25,7 @@ impl Band {
         }
     }
 
+    /// The lowest frequency, in MHz, included in this band.
     pub const fn min_freq_mhz(&self) -> u32 {
         match self {
             Band::TwoPointFourGhz => 2401,
@@ -29,6 +34,7 @@ impl Band {
         }
     }
 
+    /// The highest frequency, in MHz, included in this band.
     pub const fn max_freq_mhz(&self) -> u32 {
         match self {
             Band::TwoPointFourGhz => 2495,
@@ -37,6 +43,7 @@ impl Band {
         }
     }
 
+    /// The inclusive frequency range, in MHz, included in this band.
     pub const fn range_mhz(&self) -> RangeInclusive<u32> {
         match self {
             Self::TwoPointFourGhz => {
