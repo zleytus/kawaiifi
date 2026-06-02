@@ -51,9 +51,9 @@ fn channel_to_frequency_mhz(channel: u32, band: CWChannelBand) -> u32 {
     match band {
         CWChannelBand::Band2GHz => match channel {
             14 => 2484,
-            _ => 2407 + channel * 5,
+            _ => 2407u32.saturating_add(channel.saturating_mul(5)),
         },
-        CWChannelBand::Band6GHz => 5950 + channel * 5,
-        _ => 5000 + channel * 5,
+        CWChannelBand::Band6GHz => 5950u32.saturating_add(channel.saturating_mul(5)),
+        _ => 5000u32.saturating_add(channel.saturating_mul(5)),
     }
 }
