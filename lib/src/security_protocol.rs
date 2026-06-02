@@ -77,8 +77,8 @@ impl From<&[Ie]> for SecurityProtocols {
         {
             for akm_suite in akm_suites {
                 match akm_suite.suite_type.0 {
-                    1 | 2 => security_protocols.set(SecurityProtocol::WPA2, true),
-                    8 => security_protocols.set(SecurityProtocol::WPA3, true),
+                    1..=6 => security_protocols.set(SecurityProtocol::WPA2, true),
+                    8 | 9 | 11 | 12 | 13 => security_protocols.set(SecurityProtocol::WPA3, true),
                     _ => continue,
                 }
             }
