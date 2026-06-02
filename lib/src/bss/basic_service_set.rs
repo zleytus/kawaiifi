@@ -271,15 +271,27 @@ impl Bss {
 
     /// The SSID (network name), or `None` for hidden networks.
     pub fn ssid(&self) -> Option<&str> {
-        self.ies.iter().find_map(|ie| {
-            if let IeData::Ssid(ssid) = &ie.data
-                && !ssid.is_empty()
-            {
-                ssid.as_str().ok()
-            } else {
-                None
-            }
-        })
+        fn find_ssid(ies: &[Ie]) -> Option<&str> {
+            ies.iter().find_map(|ie| {
+                if let IeData::Ssid(ssid) = &ie.data
+                    && !ssid.is_empty()
+                {
+                    ssid.as_str().ok()
+                } else {
+                    None
+                }
+            })
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            find_ssid(&self.ies).or_else(|| self.beacon_ies.as_deref().and_then(find_ssid))
+        }
+
+        #[cfg(not(target_os = "linux"))]
+        {
+            find_ssid(&self.ies)
+        }
     }
 
     /// The security protocols supported by the BSS.
