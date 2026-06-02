@@ -7,7 +7,7 @@ include(FetchContent)
 FetchContent_Declare(
     Corrosion
     GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-    GIT_TAG master
+    GIT_TAG v0.6.1
 )
 FetchContent_MakeAvailable(Corrosion)
 
@@ -19,7 +19,7 @@ corrosion_import_crate(
 add_executable(scan scan.c)
 target_link_libraries(scan PRIVATE kawaiifi)
 if(APPLE)
-    target_link_libraries(scan PRIVATE
+  target_link_libraries(scan PRIVATE
         "-framework CoreFoundation"
         "-framework CoreWLAN"
         "-framework Foundation"
