@@ -22,8 +22,9 @@ impl BssLoad {
 
     pub fn summary(&self) -> String {
         format!(
-            "Station Count: {}, Channel Utilization: {}%",
-            self.station_count, self.channel_utilization
+            "Station Count: {}, Channel Utilization: {:.1}%",
+            self.station_count,
+            self.channel_utilization as f64 / 255.0 * 100.0
         )
     }
 
@@ -36,7 +37,10 @@ impl BssLoad {
                 .build(),
             Field::builder()
                 .title("Channel Utilization")
-                .value(format!("{}%", self.channel_utilization))
+                .value(format!(
+                    "{:.1}%",
+                    self.channel_utilization as f64 / 255.0 * 100.0
+                ))
                 .byte(self.channel_utilization)
                 .build(),
             Field::builder()
