@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::ies::Field;
 
 /// The 802.11 capability information flags advertised in beacon and probe response frames.
-#[derive(Debug, Clone, PartialEq, Eq, DekuRead, DekuWrite, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
 pub struct CapabilityInfo {
     /// Set by an AP (1) or cleared by an IBSS or mesh STA (0).
