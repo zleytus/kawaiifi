@@ -23,7 +23,7 @@ public class BssList : IReadOnlyList<Bss>, IDisposable
         _disposed = true;
         unsafe
         {
-            NativeMethods.kawaiifi_interface_bss_list_free(_ptr);
+            NativeMethods.kawaiifi_bss_list_free(_ptr);
         }
 
         GC.SuppressFinalize(this);

@@ -34,8 +34,8 @@ namespace CsBindgen
         /// <summary>
         ///  Frees a BSS list returned by `kawaiifi_interface_cached_bss_list`. Does nothing if `list` is null.
         /// </summary>
-        [DllImport(__DllName, EntryPoint = "kawaiifi_interface_bss_list_free", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern void kawaiifi_interface_bss_list_free(BssList* list);
+        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_list_free", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void kawaiifi_bss_list_free(BssList* list);
 
         /// <summary>
         ///  Returns a borrowed pointer to the BSS's 6-byte BSSID (MAC address), or null if `bss` is null.
@@ -319,7 +319,7 @@ namespace CsBindgen
 
         /// <summary>
         ///  Returns the cached BSS list for the given interface, or null if `interface` is null or an error occurs.
-        ///  The caller must free the returned list with `kawaiifi_interface_bss_list_free`.
+        ///  The caller must free the returned list with `kawaiifi_bss_list_free`.
         /// </summary>
         [DllImport(__DllName, EntryPoint = "kawaiifi_interface_cached_bss_list", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern BssList* kawaiifi_interface_cached_bss_list(Interface* @interface);

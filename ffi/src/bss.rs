@@ -21,7 +21,7 @@ pub unsafe extern "C" fn kawaiifi_bss_list_get(list: Option<&BssList>, index: us
 
 /// Frees a BSS list returned by `kawaiifi_interface_cached_bss_list`. Does nothing if `list` is null.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn kawaiifi_interface_bss_list_free(list: Option<Box<BssList>>) {
+pub unsafe extern "C" fn kawaiifi_bss_list_free(list: Option<Box<BssList>>) {
     drop(list);
 }
 

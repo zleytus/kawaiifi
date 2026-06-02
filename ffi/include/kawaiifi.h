@@ -459,7 +459,7 @@ const struct Bss *kawaiifi_bss_list_get(const struct BssList *list, uintptr_t in
 /**
  * Frees a BSS list returned by `kawaiifi_interface_cached_bss_list`. Does nothing if `list` is null.
  */
-void kawaiifi_interface_bss_list_free(struct BssList *list);
+void kawaiifi_bss_list_free(struct BssList *list);
 
 /**
  * Returns a borrowed pointer to the BSS's 6-byte BSSID (MAC address), or null if `bss` is null.
@@ -700,7 +700,7 @@ void kawaiifi_interface_free(struct Interface *interface);
 
 /**
  * Returns the cached BSS list for the given interface, or null if `interface` is null or an error occurs.
- * The caller must free the returned list with `kawaiifi_interface_bss_list_free`.
+ * The caller must free the returned list with `kawaiifi_bss_list_free`.
  */
 struct BssList *kawaiifi_interface_cached_bss_list(const struct Interface *interface);
 

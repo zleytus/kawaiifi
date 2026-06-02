@@ -51,7 +51,7 @@ pub unsafe extern "C" fn kawaiifi_interface_free(interface: Option<&mut Interfac
 }
 
 /// Returns the cached BSS list for the given interface, or null if `interface` is null or an error occurs.
-/// The caller must free the returned list with `kawaiifi_interface_bss_list_free`.
+/// The caller must free the returned list with `kawaiifi_bss_list_free`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_interface_cached_bss_list(
     interface: Option<&Interface>,
