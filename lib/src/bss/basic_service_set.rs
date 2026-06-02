@@ -71,6 +71,8 @@ pub struct Bss {
     // macOS-only
     #[cfg(target_os = "macos")]
     pub(super) noise_dbm: i32,
+    #[cfg(target_os = "macos")]
+    pub(super) is_wep: bool,
 }
 
 impl Bss {
@@ -282,21 +284,20 @@ impl Bss {
 
     /// The security protocols supported by the BSS.
     pub fn security_protocols(&self) -> SecurityProtocols {
+        let mut protocols = SecurityProtocols::from(self.ies.as_slice());
         #[cfg(any(target_os = "linux", target_os = "windows"))]
-        {
-            let mut protocols = SecurityProtocols::from(self.ies.as_slice());
-            if self.capability_info.privacy && protocols.is_empty() {
-                protocols |= SecurityProtocols::from(enumflags2::BitFlags::from(
-                    crate::SecurityProtocol::WEP,
-                ));
-            }
-            protocols
+        if self.capability_info.privacy && protocols.is_empty() {
+            protocols |=
+                SecurityProtocols::from(enumflags2::BitFlags::from(crate::SecurityProtocol::WEP));
         }
 
         #[cfg(target_os = "macos")]
-        {
-            SecurityProtocols::from(self.ies.as_slice())
+        if self.is_wep {
+            protocols |=
+                SecurityProtocols::from(enumflags2::BitFlags::from(crate::SecurityProtocol::WEP));
         }
+
+        protocols
     }
 
     /// The Wi-Fi protocols supported by the BSS.

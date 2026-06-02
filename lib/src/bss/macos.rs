@@ -1,4 +1,4 @@
-use objc2_core_wlan::{CWChannelBand, CWNetwork};
+use objc2_core_wlan::{CWChannelBand, CWNetwork, CWSecurity};
 
 use crate::{Bss, ies, interface::parse_bssid};
 
@@ -29,6 +29,7 @@ impl Bss {
             beacon_interval_tu: beacon_interval_ms_to_tu(unsafe { network.beaconInterval() }),
             ies,
             noise_dbm: unsafe { network.noiseMeasurement() } as i32,
+            is_wep: unsafe { network.supportsSecurity(CWSecurity::WEP) },
         };
         bss.resolve_ie_dependencies();
 
