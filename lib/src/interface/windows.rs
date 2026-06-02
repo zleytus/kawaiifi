@@ -292,6 +292,14 @@ impl Interface {
         Ok(Scan::new(bss_list, start_time, end_time))
     }
 
+    /// Returns the most recently cached scan results without triggering a new scan.
+    ///
+    /// The Windows WLAN API exposes cached scan results synchronously, so this async method
+    /// blocks the current task while reading them.
+    pub async fn cached_scan_results(&self) -> Result<Vec<Bss>, scan::Error> {
+        self.cached_scan_results_blocking()
+    }
+
     /// Returns the most recently cached scan results without triggering a new scan, blocking the current thread.
     pub fn cached_scan_results_blocking(&self) -> Result<Vec<Bss>, scan::Error> {
         let mut version = 0;
