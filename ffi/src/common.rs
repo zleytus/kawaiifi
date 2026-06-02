@@ -27,7 +27,7 @@ pub unsafe extern "C" fn kawaiifi_string_free(s: *mut c_char) {
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_bytes_free(ptr: *mut u8, count: usize) {
     if !ptr.is_null() {
-        drop(unsafe { Vec::from_raw_parts(ptr, count, count) });
+        drop(unsafe { Box::from_raw(std::ptr::slice_from_raw_parts_mut(ptr, count)) });
     }
 }
 

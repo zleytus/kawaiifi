@@ -43,11 +43,10 @@ pub unsafe extern "C" fn kawaiifi_ie_name(ie: Option<&Ie>) -> *mut c_char {
 pub unsafe extern "C" fn kawaiifi_ie_bytes(ie: Option<&Ie>, out_count: *mut usize) -> *mut u8 {
     match ie {
         Some(ie) => {
-            let mut bytes = ie.bytes();
-            let count = bytes.len();
-            bytes.shrink_to_fit();
-            let ptr = bytes.as_mut_ptr();
-            std::mem::forget(bytes);
+            let mut boxed: Box<[u8]> = ie.bytes().into_boxed_slice();
+            let count = boxed.len();
+            let ptr = boxed.as_mut_ptr();
+            std::mem::forget(boxed);
             if !out_count.is_null() {
                 unsafe { *out_count = count };
             }
