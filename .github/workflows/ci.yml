@@ -83,11 +83,11 @@ jobs:
 
       - name: Configure
         run: cmake -B build
-        working-directory: ffi/examples/c
+        working-directory: ffi/examples
 
       - name: Build
         run: cmake --build build
-        working-directory: ffi/examples/c
+        working-directory: ffi/examples
 
   build-dotnet:
     name: Build .NET (${{ matrix.os }})
@@ -111,7 +111,7 @@ jobs:
           path: target/release/
 
       - name: Build
-        run: dotnet build ffi/examples/dotnet
+        run: dotnet build ffi/dotnet
 
   pack-dotnet:
     name: Pack .NET NuGet package
@@ -145,7 +145,7 @@ jobs:
 
       - name: Pack
         run: >
-          dotnet pack ffi/examples/dotnet/Kawaiifi.Net
+          dotnet pack ffi/dotnet/Kawaiifi.Net
           -p:NativeLinuxX64=${{ github.workspace }}/artifacts/linux-x64/libkawaiifi.so
           -p:NativeMacOSArm64=${{ github.workspace }}/artifacts/macos-arm64/libkawaiifi.dylib
           -p:NativeWindowsX64=${{ github.workspace }}/artifacts/windows-x64/kawaiifi.dll
@@ -154,4 +154,4 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: nuget-package
-          path: ffi/examples/dotnet/Kawaiifi.Net/bin/Release/*.nupkg
+          path: ffi/dotnet/Kawaiifi.Net/bin/Release/*.nupkg

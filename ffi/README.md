@@ -46,7 +46,7 @@ int main() {
 }
 ```
 
-See [`scan.c`](examples/c/scan.c).
+See [`scan.c`](examples/scan.c).
 
 ### Accessing BSS Data
 
@@ -74,7 +74,7 @@ for (uintptr_t i = 0; i < bss_count; ++i) {
 }
 ```
 
-See [`bss_data.c`](examples/c/bss_data.c).
+See [`bss_data.c`](examples/bss_data.c).
 
 ### Accessing Information Elements
 
@@ -106,7 +106,7 @@ for (uintptr_t i = 0; i < bss_count; ++i) {
 }
 ```
 
-See [`ies.c`](examples/c/ies.c).
+See [`ies.c`](examples/ies.c).
 
 ## Memory management
 
@@ -122,7 +122,7 @@ Borrowed pointers (e.g. `const Bss *` from `kawaiifi_scan_bss_get`, `const Field
 
 ## .NET
 
-[`Kawaiifi.Net`](examples/dotnet/) is a .NET wrapper around `kawaiifi-ffi`.
+[`Kawaiifi.Net`](dotnet/) is a .NET wrapper around `kawaiifi-ffi`.
 It handles all P/Invoke interop, memory management, and platform
 differences internally. Callers never need to write unsafe code or manage
 native memory directly.
@@ -145,5 +145,5 @@ if (OperatingSystem.IsMacOS() || OperatingSystem.IsWindows())
 }
 ```
 
-See the `Kawaiifi.Net` [README](examples/dotnet/README.md) for build instructions
+See the `Kawaiifi.Net` [README](dotnet/README.md) for build instructions
 and platform-specific API details.

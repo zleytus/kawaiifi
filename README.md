@@ -11,7 +11,7 @@ This repository contains:
 
 - [`kawaiifi`](lib/) - the Rust library crate.
 - [`kawaiifi-ffi`](ffi/) - C-compatible FFI bindings for the Rust library.
-- [`Kawaiifi.Net`](ffi/examples/dotnet/) - .NET wrapper around the Rust library.
+- [`Kawaiifi.Net`](ffi/dotnet/) - .NET wrapper around the Rust library.
 
 ## Platform Support
 

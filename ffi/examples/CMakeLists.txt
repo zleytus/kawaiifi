@@ -12,7 +12,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Corrosion)
 
 corrosion_import_crate(
-    MANIFEST_PATH ../../Cargo.toml
+    MANIFEST_PATH ../Cargo.toml
     CRATE_TYPES staticlib
 )
 
@@ -30,5 +30,5 @@ foreach(EXAMPLE ${EXAMPLES})
             objc
         )
   endif()
-  target_include_directories(${EXAMPLE} PRIVATE ../../include)
+  target_include_directories(${EXAMPLE} PRIVATE ../include)
 endforeach()

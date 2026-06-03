@@ -61,7 +61,7 @@ for bss in scan.bss_list() {
 }
 ```
 
-### Accessing Information Element Data
+### Accessing Information Elements
 
 Each BSS contains a list of 802.11 Information Elements (IEs). `kawaiifi` parses these into typed structs accessible via `Bss::ies()`.
 
