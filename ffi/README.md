@@ -1,6 +1,6 @@
 # kawaiifi-ffi
 
-C-compatible FFI bindings for [kawaiifi](../lib), a cross-platform Wi-Fi scanning library. Exports a C header via [cbindgen](https://github.com/mozilla/cbindgen) for use from C, C++, or any language with a C FFI.
+C-compatible FFI for [kawaiifi](../lib), a Wi-Fi scanning library for Linux, macOS, and Windows.
 
 ## Building
 
@@ -12,12 +12,13 @@ This produces a static library (`libkawaiifi.a` / `kawaiifi.lib`) and a shared l
 
 ## Usage
 
-Include `include/kawaiifi.h` and link against the built library.
+Include [`kawaiifi.h`](include/kawaiifi.h) and link against either the static or shared library.
 
-### Linux
+### Triggering a Wi-Fi Scan
 
-On Linux, scans accept an explicit backend because they can be triggered through
-either NetworkManager or Netlink.
+On Linux, scans can be triggered through either [NetworkManager](https://networkmanager.dev/) or [nl80211](https://wireless.docs.kernel.org/en/latest/en/developers/documentation/nl80211.html) (Netlink), so a `Backend` must be specified.
+
+On macOS and Windows, scans are triggered through [CoreWLAN](https://developer.apple.com/documentation/CoreWLAN) and [Native Wifi](https://learn.microsoft.com/en-us/windows/win32/nativewifi/portal) respectively.
 
 ```c
 #include "kawaiifi.h"
@@ -26,13 +27,18 @@ either NetworkManager or Netlink.
 
 int main() {
     Interface *interface = kawaiifi_default_interface();
-    if (!interface) return -1;
+    if (!interface) {
+        return -1;
+    }
 
+    #if defined(__linux__)
     Scan *scan = kawaiifi_interface_scan(interface, BACKEND_NETWORK_MANAGER);
+    #else
+    Scan *scan = kawaiifi_interface_scan(interface);
+    #endif
+
     uintptr_t count = kawaiifi_scan_bss_count(scan);
-    int64_t duration_ms = kawaiifi_scan_end_time_utc_ms(scan) -
-                          kawaiifi_scan_start_time_utc_ms(scan);
-    printf("Found %zu BSS(s) in %" PRId64 " ms\n", count, duration_ms);
+    printf("Found %zu BSS(s)\n", count);
 
     kawaiifi_scan_free(scan);
     kawaiifi_interface_free(interface);
@@ -40,42 +46,104 @@ int main() {
 }
 ```
 
-### Windows/macOS
+See [`scan.c`](examples/c/scan.c).
 
-On Windows and macOS, scans use the platform's Wi-Fi API directly:
-Native WiFi on Windows and CoreWLAN on macOS.
+### Accessing BSS Data
+
+Each `Scan` contains a list of Basic Service Sets (BSSs) that is accessed
+through `kawaiifi_scan_bss_get`.
 
 ```c
-#include "kawaiifi.h"
-#include <inttypes.h>
-#include <stdio.h>
+uintptr_t bss_count = kawaiifi_scan_bss_count(scan);
+for (uintptr_t i = 0; i < bss_count; ++i) {
+    const Bss *bss = kawaiifi_scan_bss_get(scan, i);
+    char *ssid = kawaiifi_bss_ssid(bss);
 
-int main() {
-    Interface *interface = kawaiifi_default_interface();
-    if (!interface) return -1;
+    if (ssid) {
+        printf("SSID: %s\n", ssid);
+    }
+    printf("Frequency: %" PRIu32 " MHz\n", kawaiifi_bss_frequency_mhz(bss));
+    printf("Channel: %" PRIu8 "\n", kawaiifi_bss_channel_number(bss));
+    printf("Signal: %" PRIi32 " dBm\n", kawaiifi_bss_signal_dbm(bss));
+    printf("Max Rate: %lf Mbps\n", kawaiifi_bss_max_rate_mbps(bss));
+    printf("\n");
 
-    Scan *scan = kawaiifi_interface_scan(interface);
-    uintptr_t count = kawaiifi_scan_bss_count(scan);
-    int64_t duration_ms = kawaiifi_scan_end_time_utc_ms(scan) -
-                          kawaiifi_scan_start_time_utc_ms(scan);
-    printf("Found %zu BSS(s) in %" PRId64 " ms\n", count, duration_ms);
-
-    kawaiifi_scan_free(scan);
-    kawaiifi_interface_free(interface);
-    return 0;
+    if (ssid) {
+        kawaiifi_string_free(ssid);
+    }
 }
 ```
 
-See [`examples/c/`](examples/c/) for a complete CMake-based C example using [Corrosion](https://github.com/corrosion-rs/corrosion), or [`examples/dotnet/`](examples/dotnet/) for a C# example using the idiomatic `Kawaiifi.Net` wrapper library.
+See [`bss_data.c`](examples/c/bss_data.c).
+
+### Accessing Information Elements
+
+Each `Bss` contains a list of 802.11 Information Elements (IEs)
+that is accessed through `kawaiifi_bss_ie_get`.
+
+```c
+uintptr_t bss_count = kawaiifi_scan_bss_count(scan);
+for (uintptr_t i = 0; i < bss_count; ++i) {
+    const Bss *bss = kawaiifi_scan_bss_get(scan, i);
+    uintptr_t ie_count = kawaiifi_bss_ie_count(bss);
+    for (uintptr_t j = 0; j < ie_count; ++j) {
+        const Ie *ie = kawaiifi_bss_ie_get(bss, j);
+        if (!ie) {
+            continue;
+        }
+
+        char *ie_name = kawaiifi_ie_name(ie);
+        uint8_t ie_id = kawaiifi_ie_id(ie);
+        char *ie_summary = kawaiifi_ie_summary(ie);
+
+        printf("IE: %s (%" PRIu8 ")", ie_name, ie_id);
+        printf(" - %s\n", ie_summary);
+
+        kawaiifi_string_free(ie_name);
+        kawaiifi_string_free(ie_summary);
+    }
+    printf("\n");
+}
+```
+
+See [`ies.c`](examples/c/ies.c).
 
 ## Memory management
 
 Functions that return heap-allocated values document how to free them:
 
-- Strings (`char *`) — free with `kawaiifi_string_free`
-- Byte buffers (`uint8_t *` with a count) — free with `kawaiifi_bytes_free`
-- `Scan *` — free with `kawaiifi_scan_free`
-- `Interface *` — free with `kawaiifi_interface_free`
-- `FieldList *` — free with `kawaiifi_field_list_free`
+- Strings (`char *`) - free with `kawaiifi_string_free`
+- Byte buffers (`uint8_t *` with a count) - free with `kawaiifi_bytes_free`
+- `Scan *` - free with `kawaiifi_scan_free`
+- `Interface *` - free with `kawaiifi_interface_free`
+- `FieldList *` - free with `kawaiifi_field_list_free`
 
 Borrowed pointers (e.g. `const Bss *` from `kawaiifi_scan_bss_get`, `const Field *` from `kawaiifi_field_subfield_get`) are valid only for the lifetime of the parent object and must not be freed.
+
+## .NET
+
+[`Kawaiifi.Net`](examples/dotnet/) is a .NET wrapper around `kawaiifi-ffi`.
+It handles all P/Invoke interop, memory management, and platform
+differences internally. Callers never need to write unsafe code or manage
+native memory directly.
+
+```csharp
+using Kawaiifi.Net;
+
+using var defaultInterface = Interface.Default();
+
+if (OperatingSystem.IsLinux())
+{
+    using var scan = defaultInterface?.Scan(Backend.NetworkManager);
+    Console.WriteLine($"Found {scan?.BssList.Count} BSS(s)");
+}
+
+if (OperatingSystem.IsMacOS() || OperatingSystem.IsWindows())
+{
+    using var scan = defaultInterface?.Scan();
+    Console.WriteLine($"Found {scan?.BssList.Count} BSS(s)");
+}
+```
+
+See the `Kawaiifi.Net` [README](examples/dotnet/README.md) for build instructions
+and platform-specific API details.
