@@ -16,15 +16,19 @@ corrosion_import_crate(
     CRATE_TYPES staticlib
 )
 
-add_executable(scan scan.c)
-target_link_libraries(scan PRIVATE kawaiifi)
-if(APPLE)
-  target_link_libraries(scan PRIVATE
-        "-framework CoreFoundation"
-        "-framework CoreWLAN"
-        "-framework Foundation"
-        "-framework Security"
-        objc
-    )
-endif()
-target_include_directories(scan PRIVATE ../../include)
+set(EXAMPLES scan bss_data ies)
+
+foreach(EXAMPLE ${EXAMPLES})
+  add_executable(${EXAMPLE} ${EXAMPLE}.c)
+  target_link_libraries(${EXAMPLE} PRIVATE kawaiifi)
+  if(APPLE)
+    target_link_libraries(${EXAMPLE} PRIVATE
+            "-framework CoreFoundation"
+            "-framework CoreWLAN"
+            "-framework Foundation"
+            "-framework Security"
+            objc
+        )
+  endif()
+  target_include_directories(${EXAMPLE} PRIVATE ../../include)
+endforeach()
