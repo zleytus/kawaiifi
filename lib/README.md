@@ -88,8 +88,7 @@ for bss in scan.bss_list() {
 
 ## Troubleshooting
 
-See the repository [troubleshooting notes](../README.md#troubleshooting) for
-platform-specific permissions and location-services behavior.
+See the repository [troubleshooting notes](https://github.com/zleytus/kawaiifi#troubleshooting) for platform-specific permissions and location-services behavior.
 
 ## License
 
