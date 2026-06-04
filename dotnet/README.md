@@ -13,7 +13,7 @@ native memory directly.
 First, build the native `kawaiifi-ffi` library:
 
 ```sh
-cargo build --release
+cargo build -p kawaiifi-ffi --release
 ```
 
 Then build the .NET solution:
@@ -48,7 +48,7 @@ if (OperatingSystem.IsMacOS() || OperatingSystem.IsWindows())
 }
 ```
 
-See [`Scan/Program.cs`](https://github.com/zleytus/kawaiifi/blob/master/ffi/dotnet/examples/Scan/Program.cs)
+See [`Scan/Program.cs`](https://github.com/zleytus/kawaiifi/blob/master/dotnet/examples/Scan/Program.cs)
 
 ### Accessing BSS Data
 
@@ -73,7 +73,7 @@ foreach (var bss in scan.BssList)
 }
 ```
 
-See [`BssData/Program.cs`](https://github.com/zleytus/kawaiifi/blob/master/ffi/dotnet/examples/BssData/Program.cs)
+See [`BssData/Program.cs`](https://github.com/zleytus/kawaiifi/blob/master/dotnet/examples/BssData/Program.cs)
 
 ### Accessing Information Elements
 
@@ -91,7 +91,7 @@ foreach (var bss in scan.BssList)
 }
 ```
 
-See [`Ies/Program.cs`](https://github.com/zleytus/kawaiifi/blob/master/ffi/dotnet/examples/Ies/Program.cs)
+See [`Ies/Program.cs`](https://github.com/zleytus/kawaiifi/blob/master/dotnet/examples/Ies/Program.cs)
 
 ## Platform Notes
 

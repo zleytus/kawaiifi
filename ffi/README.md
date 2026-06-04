@@ -124,7 +124,8 @@ Borrowed pointers (e.g. `const Bss *` from `kawaiifi_scan_bss_get`, `const Field
 
 ## .NET
 
-[`Kawaiifi.Net`](dotnet/) is a .NET wrapper around `kawaiifi-ffi`.
+[`Kawaiifi.Net`](../dotnet/) is a .NET wrapper around `kawaiifi-ffi`.
+
 It handles all P/Invoke interop, memory management, and platform
 differences internally. Callers never need to write unsafe code or manage
 native memory directly.
@@ -147,7 +148,7 @@ if (OperatingSystem.IsMacOS() || OperatingSystem.IsWindows())
 }
 ```
 
-See the `Kawaiifi.Net` [README](dotnet/README.md) for build instructions
+See the `Kawaiifi.Net` [README](../dotnet/README.md) for build instructions
 and platform-specific API details.
 
 ## Troubleshooting

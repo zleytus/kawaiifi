@@ -111,7 +111,7 @@ jobs:
           path: target/release/
 
       - name: Build
-        run: dotnet build ffi/dotnet
+        run: dotnet build dotnet
 
   pack-dotnet:
     name: Pack .NET NuGet package
@@ -145,7 +145,7 @@ jobs:
 
       - name: Pack
         run: >
-          dotnet pack ffi/dotnet/Kawaiifi.Net
+          dotnet pack dotnet/Kawaiifi.Net
           -p:NativeLinuxX64=${{ github.workspace }}/artifacts/linux-x64/libkawaiifi.so
           -p:NativeMacOSArm64=${{ github.workspace }}/artifacts/macos-arm64/libkawaiifi.dylib
           -p:NativeWindowsX64=${{ github.workspace }}/artifacts/windows-x64/kawaiifi.dll
@@ -154,4 +154,4 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: nuget-package
-          path: ffi/dotnet/Kawaiifi.Net/bin/Release/*.nupkg
+          path: dotnet/Kawaiifi.Net/bin/Release/*.nupkg
