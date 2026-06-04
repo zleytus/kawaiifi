@@ -1,36 +1,17 @@
 # Kawaiifi.Net
 
-A cross-platform Wi-Fi scanning library for .NET.
+`Kawaiifi.Net` is a Wi-Fi scanning library for Linux, macOS, and Windows.
 
-Key types:
+It wraps the Rust `kawaiifi` library and handles all P/Invoke interop, memory management, and platform differences internally. Callers never need to write unsafe code or manage
+native memory directly.
 
-- `Interface` — a wireless network interface; use `Interface.Default()` or `Interface.All()` to access one or multiple interfaces
-- `Scan` — the results of a Wi-Fi scan, obtained by calling `Interface.Scan()`
-- `Bss` — a single BSS (network) discovered during a scan
-- `Ie` — an 802.11 information element within a BSS
-- `Field` / `FieldList` — decoded fields within an information element
+## Building
 
-## Implementation
-
-`Kawaiifi.Net` is a managed wrapper around [kawaiifi](https://github.com/zleytus/kawaiifi), a
-Wi-Fi scanning library written in Rust. It communicates with the native library via P/Invoke
-and handles all interop, memory management, and platform differences internally, so callers never
-need to write unsafe code or manage native memory directly.
-
-## Requirements
-
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
-- [Rust toolchain](https://rustup.rs) (to build the native library)
-
-## Build
-
-First, build the native kawaiifi library from the workspace root:
+First, build the native `kawaiifi` library from the workspace root:
 
 ```sh
 cargo build --release
 ```
-
-This produces `libkawaiifi.so` (Linux) or `kawaiifi.dll` (Windows) in `target/release/`.
 
 Then build the .NET solution:
 
@@ -38,12 +19,95 @@ Then build the .NET solution:
 dotnet build
 ```
 
+## Usage
+
+### Triggering a Wi-Fi Scan
+
+On Linux, scans can be triggered through either [NetworkManager](https://networkmanager.dev/) or [nl80211](https://wireless.docs.kernel.org/en/latest/en/developers/documentation/nl80211.html) (Netlink), so a `Backend` must be specified.
+
+On macOS and Windows, scans are triggered through [CoreWLAN](https://developer.apple.com/documentation/CoreWLAN) and [Native Wifi](https://learn.microsoft.com/en-us/windows/win32/nativewifi/portal) respectively.
+
+```csharp
+using Kawaiifi.Net;
+
+using var defaultInterface = Interface.Default();
+
+if (OperatingSystem.IsLinux())
+{
+    using var scan = defaultInterface?.Scan(Backend.NetworkManager);
+    Console.WriteLine($"Found {scan?.BssList.Count} BSS(s)");
+}
+
+if (OperatingSystem.IsMacOS() || OperatingSystem.IsWindows())
+{
+    using var scan = defaultInterface?.Scan();
+    Console.WriteLine($"Found {scan?.BssList.Count} BSS(s)");
+}
+```
+
+See [`Scan/Program.cs`](examples/Scan/Program.cs)
+
+### Accessing BSS Data
+
+Each `Scan` contains a list of Basic Service Sets (BSSs) that is accessed
+through `Scan.BssList`.
+
+```csharp
+foreach (var bss in scan.BssList)
+{
+    Console.WriteLine($"BSSID: {BitConverter.ToString(bss.Bssid).Replace('-', ':')}");
+    Console.WriteLine($"SSID: {bss.Ssid}");
+    Console.WriteLine($"Frequency: {bss.FrequencyMhz} MHz");
+    Console.WriteLine($"Band: {bss.Band.ToDisplayString()}");
+    Console.WriteLine($"Channel: {bss.ChannelNumber}");
+    Console.WriteLine($"Channel Width: {bss.ChannelWidth.ToDisplayString()}");
+    Console.WriteLine($"Signal: {bss.SignalDbm} dBm");
+    Console.WriteLine($"Security: {bss.SecurityProtocols.ToString()}");
+    Console.WriteLine($"Protocols: {bss.WifiProtocols.ToString()}");
+    Console.WriteLine($"Amendments: {bss.WifiAmendments.ToString()}");
+    Console.WriteLine($"Max Rate: {bss.MaxRateMbps:F2} Mbps");
+    Console.WriteLine();
+}
+```
+
+See [`BssData/Program.cs`](examples/BssData/Program.cs)
+
+### Accessing Information Elements
+
+Each `Bss` contains a list of 802.11 Information Elements (IEs) that is accessed
+through `Bss.Ies`.
+
+```csharp
+foreach (var bss in scan.BssList)
+{
+    foreach (var ie in bss.Ies)
+    {
+        Console.WriteLine($"{ie.Name} ({ie.Id}) - {ie.Summary}");    
+    }
+    Console.WriteLine();
+}
+```
+
+See [`Ies/Program.cs`](examples/Ies/Program.cs)
+
 ## Platform Notes
 
 `Kawaiifi.Net` exposes platform-specific APIs via [`[SupportedOSPlatform]`](https://learn.microsoft.com/en-us/dotnet/api/system.runtime.versioning.supportedosplatformattribute) attributes.
 The Roslyn analyzer will warn if platform-specific APIs are called without an OS check.
 
-- **Linux** — nl80211 and NetworkManager scan backends, additional interface properties
-  (wiphy, wdev, driver, bus type, etc.), and Linux-specific scan metadata
-- **Windows** — WLAN API scan backend and Windows-specific interface properties
-  (GUID, description)
+For example, on Linux and macOS, `Interface` has a `Name` property, while on Windows,
+`Interface` has a `Description` property.
+
+```csharp
+using var defaultInterface = Interface.Default();
+
+if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+{
+    Console.WriteLine($"Interface's name is {defaultInterface?.Name}");
+}
+
+if (OperatingSystem.IsWindows())
+{
+    Console.WriteLine($"Interface's description is {defaultInterface?.Description}");
+}
+```
