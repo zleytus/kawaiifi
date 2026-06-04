@@ -5,6 +5,7 @@ authors = ["Zach Leytus <zach.leytus@gmail.com>"]
 edition = "2024"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
+publish = false
 
 [build-dependencies]
 cbindgen = "0.29"
