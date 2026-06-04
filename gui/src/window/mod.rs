@@ -13,6 +13,9 @@ mod scan_processing;
 mod scanning;
 mod setup;
 
+/// Interval between automatic Wi-Fi scans, in seconds.
+const SCAN_INTERVAL_SECONDS: u32 = 10;
+
 mod imp {
     use std::{
         cell::{Cell, OnceCell, RefCell},
@@ -45,7 +48,6 @@ mod imp {
         pub vendor_cache: OnceCell<Arc<Mutex<VendorCache>>>,
 
         // Scanning state
-        pub scan_interval_seconds: Cell<u32>, // Configurable interval
         pub scanning_enabled: Cell<bool>,
         pub scan_source_id: RefCell<Option<glib::SourceId>>, // To cancel scan timer
 
@@ -146,7 +148,7 @@ mod imp {
             self.obj().setup_bottom_panel_toggles();
             self.obj().setup_settings();
             self.obj().show_cached_scan_results();
-            self.obj().start_scanning(10);
+            self.obj().start_scanning();
         }
 
         fn signals() -> &'static [glib::subclass::Signal] {

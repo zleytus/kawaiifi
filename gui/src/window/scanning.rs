@@ -94,7 +94,7 @@ impl KawaiiFiWindow {
         });
     }
 
-    pub fn start_scanning(&self, interval_seconds: u32) {
+    pub fn start_scanning(&self) {
         if self.imp().interface_box.selected_interface().is_none() {
             tracing::warn!("Cannot start scanning without a selected interface");
             self.stop_scanning();
@@ -105,7 +105,6 @@ impl KawaiiFiWindow {
         self.stop_scanning();
 
         let imp = self.imp();
-        imp.scan_interval_seconds.set(interval_seconds);
         imp.scanning_enabled.set(true);
 
         // Do first scan immediately
@@ -125,7 +124,7 @@ impl KawaiiFiWindow {
             return;
         }
 
-        let interval_seconds = imp.scan_interval_seconds.get();
+        let interval_seconds = super::SCAN_INTERVAL_SECONDS;
         tracing::debug!(interval_seconds, "Scheduling next scan");
 
         let source_id = glib::timeout_add_local_once(
@@ -156,16 +155,6 @@ impl KawaiiFiWindow {
         imp.active_scan_spinner.set_visible(false);
         imp.start_scanning_button.set_sensitive(true);
         imp.stop_scanning_button.set_sensitive(false);
-    }
-
-    pub fn set_scan_interval(&self, interval_seconds: u32) {
-        let imp = self.imp();
-        imp.scan_interval_seconds.set(interval_seconds);
-
-        // Restart with new interval if currently scanning
-        if imp.scanning_enabled.get() {
-            self.start_scanning(interval_seconds);
-        }
     }
 
     fn scan(&self) {

@@ -36,7 +36,7 @@ impl KawaiiFiWindow {
             #[weak(rename_to = window)]
             self,
             move |_| {
-                window.start_scanning(10);
+                window.start_scanning();
             }
         ));
 
