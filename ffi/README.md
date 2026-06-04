@@ -1,6 +1,8 @@
 # kawaiifi-ffi
 
-C-compatible FFI for [kawaiifi](../lib), a Wi-Fi scanning library for Linux, macOS, and Windows.
+`kawaiifi-ffi` is a Wi-Fi scanning library for Linux, macOS, and Windows.
+
+It exposes a C-compatible FFI for [`kawaiifi`](../lib).
 
 ## Building
 
@@ -120,11 +122,6 @@ Functions that return heap-allocated values document how to free them:
 
 Borrowed pointers (e.g. `const Bss *` from `kawaiifi_scan_bss_get`, `const Field *` from `kawaiifi_field_subfield_get`) are valid only for the lifetime of the parent object and must not be freed.
 
-## Troubleshooting
-
-See the repository [troubleshooting notes](../README.md#troubleshooting) for
-platform-specific permissions and location-services behavior.
-
 ## .NET
 
 [`Kawaiifi.Net`](dotnet/) is a .NET wrapper around `kawaiifi-ffi`.
@@ -152,3 +149,12 @@ if (OperatingSystem.IsMacOS() || OperatingSystem.IsWindows())
 
 See the `Kawaiifi.Net` [README](dotnet/README.md) for build instructions
 and platform-specific API details.
+
+## Troubleshooting
+
+See the repository [troubleshooting notes](../README.md#troubleshooting) for
+platform-specific permissions and location-services behavior.
+
+## License
+
+Dual-licensed under [MIT](LICENSE-MIT) or [Apache 2.0](LICENSE-APACHE).

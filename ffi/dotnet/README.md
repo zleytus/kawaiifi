@@ -5,7 +5,7 @@
 
 `Kawaiifi.Net` is a Wi-Fi scanning library for Linux, macOS, and Windows.
 
-It wraps the Rust `kawaiifi` library and handles all P/Invoke interop, memory management, and platform differences internally. Callers never need to write unsafe code or manage
+It wraps [`kawaiifi-ffi`](https://github.com/zleytus/kawaiifi/blob/master/ffi) and handles all P/Invoke interop, memory management, and platform differences internally. Callers never need to write unsafe code or manage
 native memory directly.
 
 ## Building

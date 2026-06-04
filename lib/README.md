@@ -5,6 +5,8 @@
 
 `kawaiifi` is a Wi-Fi scanning library for Linux, macOS, and Windows.
 
+It discovers local Basic Service Sets (BSSs) and reports their SSID, BSSID, signal strength, channel, channel width, security protocols, and parsed 802.11 Information Elements.
+
 ## Usage
 
 ```toml
@@ -88,3 +90,7 @@ for bss in scan.bss_list() {
 
 See the repository [troubleshooting notes](../README.md#troubleshooting) for
 platform-specific permissions and location-services behavior.
+
+## License
+
+Dual-licensed under [MIT](LICENSE-MIT) or [Apache 2.0](LICENSE-APACHE).
