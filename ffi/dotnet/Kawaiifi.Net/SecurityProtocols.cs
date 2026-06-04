@@ -14,4 +14,16 @@ public readonly struct SecurityProtocols(byte value)
 
     /// <summary>WPA3 (Wi-Fi Protected Access 3).</summary>
     public bool Wpa3 => (value & 8) != 0;
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        var protocols = new List<string>();
+        if (Wep) protocols.Add("WEP");
+        if (Wpa) protocols.Add("WPA");
+        if (Wpa2) protocols.Add("WPA2");
+        if (Wpa3) protocols.Add("WPA3");
+
+        return string.Join("/", protocols);
+    }
 }

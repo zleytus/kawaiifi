@@ -17,4 +17,19 @@ public readonly struct WifiProtocols(ushort value)
     public bool Ax => (value & 32) != 0;
     /// <summary>802.11be / Wi-Fi 7 (up to 46 Gbps).</summary>
     public bool Be => (value & 64) != 0;
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        var protocols = new List<string>();
+        if (A) protocols.Add("a");
+        if (B) protocols.Add("b");
+        if (G) protocols.Add("g");
+        if (N) protocols.Add("n");
+        if (Ac) protocols.Add("ac");
+        if (Ax) protocols.Add("ax");
+        if (Be) protocols.Add("be");
+
+        return string.Join("/", protocols);
+    }
 }
