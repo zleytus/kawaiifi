@@ -29,6 +29,7 @@ public class BssList : IReadOnlyList<Bss>, IDisposable
         GC.SuppressFinalize(this);
     }
 
+    /// <inheritdoc/>
     ~BssList()
     {
         Dispose();
