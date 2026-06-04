@@ -25,10 +25,6 @@
             compressed="true"
             preprocess="xml-stripblanks"
         >ui/bss_elements.ui</file>
-    <file
-            compressed="true"
-            preprocess="xml-stripblanks"
-        >ui/bss_capability_info.ui</file>
     <file>icons/scalable/actions/funnel-symbolic.svg</file>
     <file>icons/scalable/actions/pci-card-symbolic.svg</file>
     <file>icons/scalable/actions/access-point-symbolic.svg</file>

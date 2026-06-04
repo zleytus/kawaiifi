@@ -1,6 +1,6 @@
-blueprints = custom_target('blueprints',
+blueprints = custom_target(
+    'blueprints',
     input: files(
-        'ui/bss_capability_info.blp',
         'ui/bss_chart.blp',
         'ui/bss_elements.blp',
         'ui/bss_filter.blp',

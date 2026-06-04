@@ -5,9 +5,7 @@ use gtk::prelude::*;
 use gtk::{gio, glib};
 
 use crate::config;
-use crate::widgets::{
-    BssCapabilityInfo, BssChart, BssElements, BssFilter, BssTable, PreferencesDialog,
-};
+use crate::widgets::{BssChart, BssElements, BssFilter, BssTable, PreferencesDialog};
 use crate::window::KawaiiFiWindow;
 
 mod imp {
@@ -41,7 +39,6 @@ mod imp {
         BssChart::static_type();
         BssFilter::static_type();
         BssElements::static_type();
-        BssCapabilityInfo::static_type();
         PreferencesDialog::static_type();
     }
 

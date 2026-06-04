@@ -1,4 +1,3 @@
-mod bss_capability_info;
 mod bss_chart;
 mod bss_elements;
 mod bss_filter;
@@ -9,7 +8,6 @@ mod interface_popover;
 mod preferences_dialog;
 mod scan_info_popover;
 
-pub use bss_capability_info::BssCapabilityInfo;
 pub use bss_chart::BssChart;
 pub use bss_elements::BssElements;
 pub use bss_filter::BssFilter;
