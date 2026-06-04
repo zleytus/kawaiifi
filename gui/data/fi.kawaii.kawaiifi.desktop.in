@@ -6,4 +6,5 @@ Icon=@APP_ID@
 Terminal=false
 Type=Application
 Categories=Network;Monitor;
+Keywords=wifi;wireless;scan;network;
 StartupNotify=true
