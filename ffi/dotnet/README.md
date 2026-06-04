@@ -1,5 +1,8 @@
 # Kawaiifi.Net
 
+[![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)](https://dotnet.microsoft.com/)
+[![License: MIT or Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE-MIT)
+
 `Kawaiifi.Net` is a Wi-Fi scanning library for Linux, macOS, and Windows.
 
 It wraps the Rust `kawaiifi` library and handles all P/Invoke interop, memory management, and platform differences internally. Callers never need to write unsafe code or manage
@@ -45,7 +48,7 @@ if (OperatingSystem.IsMacOS() || OperatingSystem.IsWindows())
 }
 ```
 
-See [`Scan/Program.cs`](examples/Scan/Program.cs)
+See [`Scan/Program.cs`](https://github.com/zleytus/kawaiifi/blob/master/ffi/dotnet/examples/Scan/Program.cs)
 
 ### Accessing BSS Data
 
@@ -70,7 +73,7 @@ foreach (var bss in scan.BssList)
 }
 ```
 
-See [`BssData/Program.cs`](examples/BssData/Program.cs)
+See [`BssData/Program.cs`](https://github.com/zleytus/kawaiifi/blob/master/ffi/dotnet/examples/BssData/Program.cs)
 
 ### Accessing Information Elements
 
@@ -88,7 +91,7 @@ foreach (var bss in scan.BssList)
 }
 ```
 
-See [`Ies/Program.cs`](examples/Ies/Program.cs)
+See [`Ies/Program.cs`](https://github.com/zleytus/kawaiifi/blob/master/ffi/dotnet/examples/Ies/Program.cs)
 
 ## Platform Notes
 
@@ -111,3 +114,7 @@ if (OperatingSystem.IsWindows())
     Console.WriteLine($"Interface's description is {defaultInterface?.Description}");
 }
 ```
+
+## License
+
+Dual-licensed under MIT or Apache 2.0.
