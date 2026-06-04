@@ -10,7 +10,7 @@ native memory directly.
 
 ## Building
 
-First, build the native `kawaiifi` library from the workspace root:
+First, build the native `kawaiifi-ffi` library:
 
 ```sh
 cargo build --release
