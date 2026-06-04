@@ -86,31 +86,5 @@ for bss in scan.bss_list() {
 
 ## Troubleshooting
 
-Wi-Fi scanning is often restricted by operating systems because nearby BSS data
-can be used to determine physical location and other sensitive information.
-
-### Linux
-
-Scanning via the `Nl80211` backend requires either root privileges or the
-`CAP_NET_ADMIN` capability. The `NetworkManager` backend does not have this
-requirement as NetworkManager handles the scan on behalf of the application.
-
-### macOS
-
-Scanning via [CoreWLAN](https://developer.apple.com/documentation/CoreWLAN) uses
-`CWInterface.scanForNetworks`. If location services are not enabled for the
-application, SSIDs, BSSIDs, and information element data may be unavailable.
-Enable location services for your application in **System Settings → Privacy &
-Security → Location Services**.
-
-The command-line examples in this repository are not packaged as identified
-macOS applications and do not request location authorization. When run from a
-terminal, their scan results therefore have unavailable SSIDs, BSSIDs, and
-information element lists.
-
-### Windows
-
-Scanning via [Native Wifi](https://learn.microsoft.com/en-us/windows/win32/nativewifi/portal) uses `WlanScan` and `WlanGetNetworkBssList`. The first time an
-application calls these APIs, Windows displays a one-time prompt for precise
-location access. If the user does not grant consent, scans fail with
-`ERROR_ACCESS_DENIED`.
+See the repository [troubleshooting notes](../README.md#troubleshooting) for
+platform-specific permissions and location-services behavior.

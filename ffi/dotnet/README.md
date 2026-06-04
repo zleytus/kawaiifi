@@ -1,7 +1,7 @@
 # Kawaiifi.Net
 
 [![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)](https://dotnet.microsoft.com/)
-[![License: MIT or Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE-MIT)
+[![License: MIT or Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](https://github.com/zleytus/kawaiifi/blob/master/LICENSE-MIT)
 
 `Kawaiifi.Net` is a Wi-Fi scanning library for Linux, macOS, and Windows.
 
@@ -114,6 +114,11 @@ if (OperatingSystem.IsWindows())
     Console.WriteLine($"Interface's description is {defaultInterface?.Description}");
 }
 ```
+
+## Troubleshooting
+
+See the repository [troubleshooting notes](https://github.com/zleytus/kawaiifi#troubleshooting) for
+platform-specific permissions and location-services behavior.
 
 ## License
 
