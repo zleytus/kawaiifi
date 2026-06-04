@@ -86,14 +86,8 @@ impl InterfacePopover {
             .set_label(&interface.bus_type().to_string());
         imp.interface_driver_label
             .set_label(&interface.driver().unwrap_or_else(|| "Unknown".to_string()));
-        let mut mac_address = String::with_capacity(17); // "XX:XX:XX:XX:XX:XX"
-        for (i, byte) in interface.mac_address().iter().enumerate() {
-            if i > 0 {
-                mac_address.push(':');
-            }
-            mac_address.push_str(&format!("{:02X}", byte));
-        }
-        imp.interface_mac_label.set_label(&mac_address);
+        imp.interface_mac_label
+            .set_label(&crate::util::format_mac(&interface.mac_address()));
         imp.interface_index_label
             .set_label(&interface.index().to_string());
         imp.interface_wiphy_label

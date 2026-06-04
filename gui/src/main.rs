@@ -3,6 +3,7 @@ mod config;
 mod objects;
 mod oui;
 mod scan_file;
+mod util;
 mod vendor_cache;
 mod widgets;
 mod window;

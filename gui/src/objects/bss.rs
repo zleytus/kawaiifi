@@ -83,15 +83,7 @@ impl BssObject {
 
     /// The BSSID formatted as a colon-separated hex string (e.g. `AA:BB:CC:DD:EE:FF`).
     pub fn bssid(&self) -> String {
-        let bss = self.bss();
-        let mut s = String::with_capacity(17); // "XX:XX:XX:XX:XX:XX"
-        for (i, byte) in bss.bssid().iter().enumerate() {
-            if i > 0 {
-                s.push(':');
-            }
-            s.push_str(&format!("{:02X}", byte));
-        }
-        s
+        crate::util::format_mac(self.bss().bssid())
     }
 
     /// The OUI vendor name, or an empty string if unknown.
