@@ -1,8 +1,6 @@
 use gtk::SignalListItemFactory;
 use gtk::prelude::*;
 
-use crate::objects::IeTreeItem;
-
 pub fn create_value_factory() -> SignalListItemFactory {
     let factory = SignalListItemFactory::new();
 
@@ -17,14 +15,9 @@ pub fn create_value_factory() -> SignalListItemFactory {
     });
 
     factory.connect_bind(move |_, list_item| {
-        let list_item = list_item.downcast_ref::<gtk::ListItem>().unwrap();
-        let Some(row) = list_item.item().and_downcast::<gtk::TreeListRow>() else {
+        let Some((label, tree_item)) = super::label_and_tree_item(list_item) else {
             return;
         };
-        let Some(tree_item) = row.item().and_downcast::<IeTreeItem>() else {
-            return;
-        };
-        let label = list_item.child().and_downcast::<gtk::Label>().unwrap();
         label.set_markup(&tree_item.value_with_markup());
     });
 

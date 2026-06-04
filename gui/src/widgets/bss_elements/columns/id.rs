@@ -17,14 +17,9 @@ pub fn create_id_factory() -> SignalListItemFactory {
     });
 
     factory.connect_bind(move |_, list_item| {
-        let list_item = list_item.downcast_ref::<gtk::ListItem>().unwrap();
-        let Some(row) = list_item.item().and_downcast::<gtk::TreeListRow>() else {
+        let Some((label, tree_item)) = super::label_and_tree_item(list_item) else {
             return;
         };
-        let Some(tree_item) = row.item().and_downcast::<IeTreeItem>() else {
-            return;
-        };
-        let label = list_item.child().and_downcast::<gtk::Label>().unwrap();
 
         // Only show ID for IEs, leave empty for fields
         if let Some(ie) = tree_item.as_ie() {
