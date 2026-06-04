@@ -1,4 +1,6 @@
 <Solution>
   <Project Path="Kawaiifi.Net/Kawaiifi.Net.csproj" />
   <Project Path="examples/Scan/Scan.csproj" />
+  <Project Path="examples/BssData/BssData.csproj" />
+  <Project Path="examples/Ies/Ies.csproj" />
 </Solution>
