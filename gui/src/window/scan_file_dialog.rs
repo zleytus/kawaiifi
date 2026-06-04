@@ -1,5 +1,6 @@
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::gio::prelude::{FileExt, ListModelExtManual};
+use gtk::glib::object::Cast;
 use gtk::{gio, glib};
 
 use crate::objects::BssObject;
@@ -103,8 +104,9 @@ impl KawaiiFiWindow {
             "Visible",
             "Visible-BSSs",
             self.bss_filter_model()
-                .iter::<BssObject>()
-                .filter_map(|obj| obj.ok()),
+                .snapshot()
+                .into_iter()
+                .filter_map(|obj| obj.downcast::<BssObject>().ok()),
         );
     }
 
