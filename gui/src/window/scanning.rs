@@ -221,8 +221,9 @@ impl KawaiiFiWindow {
                 self.imp().scan_info_popover.set_scan_info(&scan);
                 tracing::info!(bss_count = scan.bss_list().len(), "Received scan results");
 
-                let retention =
-                    Duration::from_secs(self.settings().int("bss-retention-duration") as u64);
+                let retention_secs =
+                    u64::try_from(self.settings().int("bss-retention-duration")).unwrap_or(300);
+                let retention = Duration::from_secs(retention_secs);
                 let merged_bss_list: Vec<BssInternal> = merged_bss_list
                     .into_iter()
                     .filter(|bss| {
