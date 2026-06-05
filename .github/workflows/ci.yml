@@ -150,6 +150,17 @@ jobs:
           -p:NativeMacOSArm64=${{ github.workspace }}/artifacts/macos-arm64/libkawaiifi.dylib
           -p:NativeWindowsX64=${{ github.workspace }}/artifacts/windows-x64/kawaiifi.dll
 
+      - name: Verify NuGet package contents
+        run: |
+          package="$(find dotnet/Kawaiifi.Net/bin/Release -name '*.nupkg' | head -n 1)"
+          test -n "$package"
+          test -f "${package%.nupkg}.snupkg"
+
+          unzip -l "$package" > package-contents.txt
+          grep -F "runtimes/linux-x64/native/libkawaiifi.so" package-contents.txt
+          grep -F "runtimes/osx-arm64/native/libkawaiifi.dylib" package-contents.txt
+          grep -F "runtimes/win-x64/native/kawaiifi.dll" package-contents.txt
+
       - name: Upload NuGet package
         uses: actions/upload-artifact@v7
         with:
