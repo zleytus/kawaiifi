@@ -7,13 +7,13 @@ use neli::{
 };
 
 use crate::nl80211::{Attr, Cmd, NL80211_FAMILY_NAME};
-use crate::{Interface, scan::Error};
+use crate::{Interface, ScanError};
 
 #[tracing::instrument(skip(socket, interface), fields(interface = %interface.name(), ifindex = interface.index()))]
 pub(crate) async fn trigger_scan(
     socket: &asynchronous::NlRouter,
     interface: &Interface,
-) -> Result<(), Error> {
+) -> Result<(), ScanError> {
     tracing::debug!("Triggering nl80211 scan");
     // Resolve the nl80211 family ID
     let family_id = socket.resolve_genl_family(NL80211_FAMILY_NAME).await?;
@@ -66,7 +66,7 @@ pub(crate) async fn trigger_scan(
     // If we don't receive an ACK, assume the user was denied permission to scan
     if !ack_received {
         tracing::error!("Scan request not acknowledged, permission denied");
-        return Err(Error::PermissionDenied);
+        return Err(ScanError::PermissionDenied);
     }
 
     Ok(())

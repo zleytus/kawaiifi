@@ -48,12 +48,12 @@
 //! [`Interface::scan_blocking`] and [`Interface::scan`].
 //!
 //! On Linux, scans can be triggered through either NetworkManager or nl80211
-//! (Netlink), so a [`scan::Backend`] must be specified.
+//! (Netlink), so a [`Backend`] must be specified.
 //!
 //! ```no_run
 //! # #[cfg(target_os = "linux")]
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! use kawaiifi::{Scan, scan::Backend};
+//! use kawaiifi::{Backend, Scan};
 //!
 //! # let interface = kawaiifi::default_interface().ok_or("No Wi-Fi interface found")?;
 //! let scan: Scan = interface.scan_blocking(Backend::NetworkManager)?;
@@ -173,7 +173,7 @@ pub mod ies;
 mod interface;
 #[cfg(target_os = "linux")]
 mod nl80211;
-pub mod scan;
+mod scan;
 mod security_protocol;
 mod wifi_amendment;
 mod wifi_protocol;
@@ -189,6 +189,11 @@ pub use interface::BusType;
 pub use interface::{Interface, default_interface, interfaces};
 #[cfg(target_os = "linux")]
 pub use nl80211::BssStatus;
+#[cfg(target_os = "linux")]
+pub use scan::Backend;
+pub use scan::Error as ScanError;
+#[cfg(target_os = "linux")]
+pub use scan::Flags as ScanFlags;
 pub use scan::Scan;
 pub use security_protocol::{SecurityProtocol, SecurityProtocols};
 pub use wifi_amendment::{WifiAmendment, WifiAmendments};

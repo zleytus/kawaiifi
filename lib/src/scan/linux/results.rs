@@ -32,7 +32,7 @@ use crate::{
 /// # Example
 ///
 /// ```no_run
-/// use kawaiifi::scan::Backend;
+/// use kawaiifi::Backend;
 ///
 /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 /// let interface = kawaiifi::default_interface()
@@ -122,7 +122,7 @@ impl Scan {
     }
 
     /// The flags/settings used to control the scan.
-    pub fn flags(&self) -> Option<Flags> {
+    pub fn flags(&self) -> Option<crate::ScanFlags> {
         self.flags
     }
 

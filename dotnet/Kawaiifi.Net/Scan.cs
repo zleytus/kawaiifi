@@ -144,16 +144,16 @@ public class Scan : IDisposable
 
     /// <summary>The scan flags that were set when the scan was initiated, or null if unavailable.</summary>
     [SupportedOSPlatform("linux")]
-    public Flags? Flags
+    public ScanFlags? Flags
     {
         get
         {
             unsafe
             {
-                var flags = new CsBindgen.Flags();
+                var flags = new CsBindgen.ScanFlags();
                 if (NativeMethodsLinux.kawaiifi_scan_flags(_ptr, &flags))
                 {
-                    return new Flags(flags.low_priority, flags.flush, flags.ap, flags.random_addr,
+                    return new ScanFlags(flags.low_priority, flags.flush, flags.ap, flags.random_addr,
                         flags.fils_max_channel_time,
                         flags.accept_bcast_probe_resp, flags.oce_probe_req_high_tx_rate,
                         flags.oce_probe_req_deferral_suppression, flags.low_span, flags.low_power, flags.high_accuracy,
@@ -183,7 +183,7 @@ public class Scan : IDisposable
 /// <param name="FrequencyKhz">Frequencies are specified in kHz rather than MHz.</param>
 /// <param name="Colocated6Ghz">Colocated 6 GHz APs were discovered through RNR.</param>
 [SupportedOSPlatform("linux")]
-public readonly record struct Flags(
+public readonly record struct ScanFlags(
     bool LowPriority,
     bool Flush,
     bool Ap,

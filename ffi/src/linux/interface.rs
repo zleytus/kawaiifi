@@ -301,8 +301,8 @@ pub unsafe extern "C" fn kawaiifi_interface_scan(
 ) -> Option<Box<Scan>> {
     let interface = interface?;
     let backend = match backend {
-        Backend::Nl80211 => kawaiifi::scan::Backend::Nl80211,
-        Backend::NetworkManager => kawaiifi::scan::Backend::NetworkManager,
+        Backend::Nl80211 => kawaiifi::Backend::Nl80211,
+        Backend::NetworkManager => kawaiifi::Backend::NetworkManager,
     };
     interface.scan_blocking(backend).ok().map(Box::new)
 }

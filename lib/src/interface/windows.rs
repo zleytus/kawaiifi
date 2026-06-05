@@ -15,7 +15,7 @@ use windows_sys::{
     core::GUID,
 };
 
-use crate::{Bss, Scan, scan};
+use crate::{Bss, Scan, ScanError};
 
 const SCAN_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
 
@@ -70,7 +70,7 @@ impl Interface {
 
     /// Triggers a new scan and returns the results.
     #[tracing::instrument(skip(self), fields(interface = %self.description()))]
-    pub async fn scan(&self) -> Result<Scan, scan::Error> {
+    pub async fn scan(&self) -> Result<Scan, ScanError> {
         let mut version = 0;
         let mut handle = null_mut();
         if unsafe { WlanOpenHandle(2, null(), &mut version, &mut handle) } != 0 {
@@ -181,7 +181,7 @@ impl Interface {
 
     /// Triggers a new scan and returns the results, blocking the current thread.
     #[tracing::instrument(skip(self), fields(interface = %self.description()))]
-    pub fn scan_blocking(&self) -> Result<Scan, scan::Error> {
+    pub fn scan_blocking(&self) -> Result<Scan, ScanError> {
         let mut version = 0;
         let mut handle = null_mut();
         if unsafe { WlanOpenHandle(2, null(), &mut version, &mut handle) } != 0 {
@@ -299,12 +299,12 @@ impl Interface {
     ///
     /// The Windows WLAN API exposes cached scan results synchronously, so this async method
     /// blocks the current task while reading them.
-    pub async fn cached_scan_results(&self) -> Result<Vec<Bss>, scan::Error> {
+    pub async fn cached_scan_results(&self) -> Result<Vec<Bss>, ScanError> {
         self.cached_scan_results_blocking()
     }
 
     /// Returns the most recently cached scan results without triggering a new scan, blocking the current thread.
-    pub fn cached_scan_results_blocking(&self) -> Result<Vec<Bss>, scan::Error> {
+    pub fn cached_scan_results_blocking(&self) -> Result<Vec<Bss>, ScanError> {
         let mut version = 0;
         let mut handle = null_mut();
         if unsafe { WlanOpenHandle(2, null(), &mut version, &mut handle) } != 0 {

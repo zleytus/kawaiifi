@@ -53,7 +53,7 @@ through `Interface::scan()`.
 On Linux, scans can be triggered through either [NetworkManager](https://networkmanager.dev/) or [nl80211](https://wireless.docs.kernel.org/en/latest/en/developers/documentation/nl80211.html) (Netlink), so a `Backend` must be specified.
 
 ```rust
-use kawaiifi::{Scan, scan::Backend};
+use kawaiifi::{Backend, Scan};
 
 let scan: Scan = interface.scan_blocking(Backend::NetworkManager)?;
 ```

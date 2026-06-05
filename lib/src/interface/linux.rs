@@ -13,12 +13,12 @@ use pci_ids::FromId as FromPciId;
 use usb_ids::FromId as FromUsbId;
 
 use crate::{
-    Bss, ChannelWidth, Scan,
+    Backend, Bss, ChannelWidth, Scan, ScanError,
     nl80211::{Attr, ChanWidth, Cmd, IfType, NL80211_FAMILY_NAME, ParseError},
-    scan::{self, Error},
+    scan,
 };
 
-pub(super) fn interfaces() -> Result<Vec<Interface>, Error> {
+pub(super) fn interfaces() -> Result<Vec<Interface>, ScanError> {
     // Create a generic netlink socket and resolve nl80211 family
     let (socket, _) = NlRouter::connect(NlFamily::Generic, None, Groups::empty())?;
     let family_id = socket.resolve_genl_family(NL80211_FAMILY_NAME)?;
@@ -273,13 +273,13 @@ impl Interface {
 
     /// Triggers a new scan and returns the results.
     #[tracing::instrument(skip(self), fields(interface = %self.name()))]
-    pub async fn scan(&self, backend: scan::Backend) -> Result<Scan, scan::Error> {
+    pub async fn scan(&self, backend: Backend) -> Result<Scan, ScanError> {
         scan::scan(self, backend).await
     }
 
     /// Triggers a new scan and returns the results, blocking the current thread.
     #[tracing::instrument(skip(self), fields(interface = %self.name()))]
-    pub fn scan_blocking(&self, backend: scan::Backend) -> Result<Scan, scan::Error> {
+    pub fn scan_blocking(&self, backend: Backend) -> Result<Scan, ScanError> {
         tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()?
@@ -287,7 +287,7 @@ impl Interface {
     }
 
     /// Returns the most recently cached scan results without triggering a new scan.
-    pub async fn cached_scan_results(&self) -> Result<Vec<Bss>, scan::Error> {
+    pub async fn cached_scan_results(&self) -> Result<Vec<Bss>, ScanError> {
         let (socket, _) = neli::router::asynchronous::NlRouter::connect(
             neli::consts::socket::NlFamily::Generic,
             None,
@@ -298,7 +298,7 @@ impl Interface {
     }
 
     /// Returns the most recently cached scan results without triggering a new scan, blocking the current thread.
-    pub fn cached_scan_results_blocking(&self) -> Result<Vec<Bss>, scan::Error> {
+    pub fn cached_scan_results_blocking(&self) -> Result<Vec<Bss>, ScanError> {
         let (socket, _) = neli::router::synchronous::NlRouter::connect(
             neli::consts::socket::NlFamily::Generic,
             None,

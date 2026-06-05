@@ -307,13 +307,13 @@ namespace CsBindgen
         /// </summary>
         [DllImport(__DllName, EntryPoint = "kawaiifi_scan_flags", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
-        internal static extern bool kawaiifi_scan_flags(Scan* scan, Flags* @out);
+        internal static extern bool kawaiifi_scan_flags(Scan* scan, ScanFlags* @out);
 
 
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct Flags
+    internal unsafe partial struct ScanFlags
     {
         /// <summary>
         ///  The scan can be delayed or paused to allow normal data transmission
@@ -411,7 +411,7 @@ namespace CsBindgen
     }
 
     /// <summary>
-    ///  FFI-safe equivalent of kawaiifi::scan::Backend.
+    ///  FFI-safe equivalent of kawaiifi::Backend.
     /// </summary>
     internal enum Backend : uint
     {

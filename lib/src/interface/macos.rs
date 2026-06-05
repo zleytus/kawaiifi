@@ -6,7 +6,7 @@ use objc2_core_wlan::{
     CWWiFiClient,
 };
 
-use crate::{Band, Bss, ChannelWidth, Scan, scan};
+use crate::{Band, Bss, ChannelWidth, Scan, ScanError};
 
 pub(super) fn interfaces() -> Vec<Interface> {
     let client = unsafe { CWWiFiClient::sharedWiFiClient() };
@@ -141,13 +141,13 @@ impl Interface {
     /// CoreWLAN performs scans synchronously, so this async method blocks the
     /// current task while the scan is running.
     #[tracing::instrument(skip(self), fields(interface = ?self.name()))]
-    pub async fn scan(&self) -> Result<Scan, scan::Error> {
+    pub async fn scan(&self) -> Result<Scan, ScanError> {
         self.scan_blocking()
     }
 
     /// Triggers a new scan and returns the results, blocking the current thread.
     #[tracing::instrument(skip(self), fields(interface = ?self.name()))]
-    pub fn scan_blocking(&self) -> Result<Scan, scan::Error> {
+    pub fn scan_blocking(&self) -> Result<Scan, ScanError> {
         let start_time = Utc::now();
         let networks = unsafe { self.interface.scanForNetworksWithSSID_error(None) }?;
         let bss_list = networks
@@ -163,12 +163,12 @@ impl Interface {
     ///
     /// CoreWLAN exposes cached scan results synchronously, so this async method
     /// blocks the current task while reading them.
-    pub async fn cached_scan_results(&self) -> Result<Vec<Bss>, scan::Error> {
+    pub async fn cached_scan_results(&self) -> Result<Vec<Bss>, ScanError> {
         self.cached_scan_results_blocking()
     }
 
     /// Returns the most recently cached scan results without triggering a new scan, blocking the current thread.
-    pub fn cached_scan_results_blocking(&self) -> Result<Vec<Bss>, scan::Error> {
+    pub fn cached_scan_results_blocking(&self) -> Result<Vec<Bss>, ScanError> {
         let Some(networks) = (unsafe { self.interface.cachedScanResults() }) else {
             return Ok(Vec::new());
         };

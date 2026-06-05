@@ -1,6 +1,6 @@
 use kawaiifi::Scan;
 
-/// FFI-safe equivalent of kawaiifi::scan::Backend.
+/// FFI-safe equivalent of kawaiifi::Backend.
 #[repr(C)]
 #[allow(dead_code)]
 pub enum Backend {
@@ -9,7 +9,7 @@ pub enum Backend {
 }
 
 #[repr(C)]
-pub struct Flags {
+pub struct ScanFlags {
     /// The scan can be delayed or paused to allow normal data transmission
     /// or other higher priority operations to proceed.
     pub low_priority: bool,
@@ -122,11 +122,14 @@ pub unsafe extern "C" fn kawaiifi_scan_ie_get(
 
 /// Writes the scan flags into `out`. Returns false if unavailable or `scan` is null.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn kawaiifi_scan_flags(scan: Option<&Scan>, out: Option<&mut Flags>) -> bool {
+pub unsafe extern "C" fn kawaiifi_scan_flags(
+    scan: Option<&Scan>,
+    out: Option<&mut ScanFlags>,
+) -> bool {
     match scan.and_then(Scan::flags) {
         Some(val) => {
             if let Some(out) = out {
-                *out = Flags {
+                *out = ScanFlags {
                     low_priority: val.low_priority,
                     flush: val.flush,
                     ap: val.ap,

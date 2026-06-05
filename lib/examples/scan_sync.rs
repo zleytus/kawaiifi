@@ -2,7 +2,7 @@ use std::error::Error;
 
 #[cfg(target_os = "linux")]
 fn main() -> Result<(), Box<dyn Error>> {
-    use kawaiifi::scan::Backend;
+    use kawaiifi::Backend;
 
     let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");
 

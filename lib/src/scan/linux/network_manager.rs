@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use zbus::{proxy, zvariant};
 
-use crate::{Interface, scan::Error};
+use crate::{Interface, ScanError};
 
 #[proxy(
     interface = "org.freedesktop.NetworkManager",
@@ -24,7 +24,7 @@ pub(crate) trait WirelessDevice {
 pub(crate) async fn device_path(
     connection: &zbus::Connection,
     interface_name: &str,
-) -> Result<zbus::zvariant::OwnedObjectPath, Error> {
+) -> Result<zbus::zvariant::OwnedObjectPath, ScanError> {
     // Create proxy for NetworkManager main interface
     let nm_proxy = NetworkManagerProxy::new(connection).await?;
 
@@ -33,7 +33,7 @@ pub(crate) async fn device_path(
 }
 
 #[tracing::instrument(skip(interface), fields(interface = %interface.name()))]
-pub(crate) async fn trigger_scan(interface: &Interface) -> Result<(), Error> {
+pub(crate) async fn trigger_scan(interface: &Interface) -> Result<(), ScanError> {
     tracing::debug!("Triggering NetworkManager scan");
     let connection = zbus::Connection::system().await?;
 

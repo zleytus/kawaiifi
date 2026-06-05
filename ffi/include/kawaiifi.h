@@ -81,7 +81,7 @@ typedef enum BusType {
 
 #if defined(__linux__)
 /**
- * FFI-safe equivalent of kawaiifi::scan::Backend.
+ * FFI-safe equivalent of kawaiifi::Backend.
  */
 typedef enum Backend {
 #if defined(__linux__)
@@ -367,7 +367,7 @@ typedef struct CapabilityInfo {
 #endif
 
 #if defined(__linux__)
-typedef struct Flags {
+typedef struct ScanFlags {
   /**
    * The scan can be delayed or paused to allow normal data transmission
    * or other higher priority operations to proceed.
@@ -438,7 +438,7 @@ typedef struct Flags {
    * Discover colocated 6 GHz APs through RNR.
    */
   bool colocated_6ghz;
-} Flags;
+} ScanFlags;
 #endif
 
 #ifdef __cplusplus
@@ -1048,7 +1048,7 @@ const struct Ie *kawaiifi_scan_ie_get(const struct Scan *scan,
 /**
  * Writes the scan flags into `out`. Returns false if unavailable or `scan` is null.
  */
-bool kawaiifi_scan_flags(const struct Scan *scan, struct Flags *out);
+bool kawaiifi_scan_flags(const struct Scan *scan, struct ScanFlags *out);
 #endif
 
 #if defined(__APPLE__)
