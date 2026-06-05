@@ -154,4 +154,6 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: nuget-package
-          path: dotnet/Kawaiifi.Net/bin/Release/*.nupkg
+          path: |
+            dotnet/Kawaiifi.Net/bin/Release/*.nupkg
+            dotnet/Kawaiifi.Net/bin/Release/*.snupkg
