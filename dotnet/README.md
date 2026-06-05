@@ -1,6 +1,6 @@
 # Kawaiifi.Net
 
-[![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)](https://dotnet.microsoft.com/)
+[![.NET 8+](https://img.shields.io/badge/.NET-8%2B-512BD4)](https://dotnet.microsoft.com/)
 [![License: MIT or Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](https://github.com/zleytus/kawaiifi/blob/master/LICENSE-MIT)
 
 `Kawaiifi.Net` is a Wi-Fi scanning library for Linux, macOS, and Windows.
