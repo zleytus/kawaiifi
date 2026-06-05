@@ -9,6 +9,7 @@ use super::{IeId, elements::*};
 /// Unknown or unrecognized IEs are captured in the `Unknown` variant.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(ctx = "len: deku::ctx::ByteSize, ie_id: IeId", id = "ie_id")]
+#[non_exhaustive]
 pub enum IeData {
     /// Advertisement Protocol element.
     #[deku(id = "AdvertisementProtocol::IE_ID")]
