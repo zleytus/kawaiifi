@@ -34,4 +34,15 @@
   </developer>
 
   <content_rating type="oars-1.1" />
+
+  <releases>
+    <release version="0.1.0" date="2026-06-04">
+      <description>
+        <p>
+          Initial release with Wi-Fi scanning, filtering, BSS details,
+          information element inspection, charting, and scan file import/export.
+        </p>
+      </description>
+    </release>
+  </releases>
 </component>
