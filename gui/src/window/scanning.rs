@@ -22,7 +22,7 @@ enum ScanAndProcessingResult {
         merged_bss_list: Vec<BssInternal>,
     },
     Err {
-        scan_error: kawaiifi::scan::Error,
+        scan_error: kawaiifi::ScanError,
     },
 }
 
@@ -32,7 +32,7 @@ enum CachedScanResult {
         merged_bss_list: Vec<BssInternal>,
     },
     Err {
-        scan_error: kawaiifi::scan::Error,
+        scan_error: kawaiifi::ScanError,
     },
 }
 
@@ -173,7 +173,7 @@ impl KawaiiFiWindow {
         let existing_bss_data = self.current_bss_data();
         let vendor_cache = Arc::clone(self.imp().vendor_cache.get().unwrap());
         thread::spawn(move || {
-            let result = interface.scan_blocking(kawaiifi::scan::Backend::NetworkManager);
+            let result = interface.scan_blocking(kawaiifi::Backend::NetworkManager);
             let mut vendor_cache = vendor_cache.lock().unwrap();
             // TSF uptimes change between scans, so uptime-derived vendor matches are
             // only valid within a single fresh scan result set.
