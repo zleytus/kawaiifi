@@ -1,59 +1,170 @@
-//! Cross-platform Wi-Fi scanning and monitoring.
+//! `kawaiifi` is a Wi-Fi scanning library for Linux, macOS, and Windows.
 //!
-//! `kawaiifi` provides a common Rust API for discovering nearby Wi-Fi Basic
-//! Service Sets (BSSs) on Linux, macOS, and Windows. Scan results expose common
-//! properties such as SSID, BSSID, signal strength, channel, channel width,
-//! security protocols, and parsed Information Elements (IEs).
+//! It discovers local Basic Service Sets (BSSs) and reports their SSID, BSSID,
+//! signal strength, channel, channel width, security protocols, and information
+//! elements (IEs).
 //!
-//! The crate is split into a small high-level scan API and lower-level parsed
-//! 802.11 data types. Most applications can start with [`default_interface`],
-//! [`Interface`], [`Scan`], and [`Bss`]. The [`ies`] module exposes parsed
-//! Information Elements for callers that need to inspect management-frame
-//! details directly.
+//! ## Obtaining a Wi-Fi Interface
 //!
-//! Platform scan APIs differ slightly. Linux supports multiple scan backends
-//! through [`scan::Backend`], while macOS and Windows use the platform-native
-//! CoreWLAN and Native WiFi APIs directly.
+//! Use [`default_interface`] to get the first available interface.
 //!
-//! # Linux
+//! ```
+//! # fn example() -> Result<(), Box<dyn std::error::Error>> {
+//! use kawaiifi::Interface;
 //!
-//! On Linux, choose the backend that should trigger the scan. NetworkManager is
-//! usually the right choice for desktop applications.
-//!
-//! ```ignore
-//! use std::error::Error;
-//!
-//! use kawaiifi::scan::Backend;
-//!
-//! fn main() -> Result<(), Box<dyn Error>> {
-//!     let interface = kawaiifi::default_interface().ok_or("No Wi-Fi interface found")?;
-//!     let scan = interface.scan_blocking(Backend::NetworkManager)?;
-//!
-//!     println!("Found {} BSS(s)", scan.bss_list().len());
-//!     Ok(())
-//! }
+//! let interface: Interface = kawaiifi::default_interface().ok_or("No Wi-Fi interface found")?;
+//! # Ok(())
+//! # }
 //! ```
 //!
-//! # Windows/macOS
+//! Use [`interfaces`] to get all available interfaces.
 //!
-//! On Windows and macOS, scans use the platform's native Wi-Fi API directly.
+//! ```
+//! # fn example() {
+//! use kawaiifi::Interface;
 //!
-//! ```ignore
-//! use std::error::Error;
-//!
-//! fn main() -> Result<(), Box<dyn Error>> {
-//!     let interface = kawaiifi::default_interface().ok_or("No Wi-Fi interface found")?;
-//!     let scan = interface.scan_blocking()?;
-//!
-//!     println!("Found {} BSS(s)", scan.bss_list().len());
-//!     Ok(())
-//! }
+//! let interfaces: Vec<Interface> = kawaiifi::interfaces();
+//! # }
 //! ```
 //!
-//! # Async scans
+//! Some [`Interface`] properties are platform-specific.
 //!
-//! Each platform also exposes an async `scan` method. On Linux it accepts the
-//! same [`scan::Backend`] argument as [`Interface::scan_blocking`].
+//! ```
+//! # fn print_interface_properties(interface: &kawaiifi::Interface) {
+//! #[cfg(target_os = "linux")]
+//! println!("Index: {}", interface.index());
+//!
+//! #[cfg(target_os = "macos")]
+//! println!("Noise: {} dBm", interface.noise_dbm());
+//!
+//! #[cfg(target_os = "windows")]
+//! println!("Description: {}", interface.description());
+//! # }
+//! ```
+//!
+//! ## Triggering a Wi-Fi Scan
+//!
+//! Both blocking and asynchronous scans are available through
+//! [`Interface::scan_blocking`] and [`Interface::scan`].
+//!
+//! On Linux, scans can be triggered through either NetworkManager or nl80211
+//! (Netlink), so a [`scan::Backend`] must be specified.
+//!
+//! ```no_run
+//! # #[cfg(target_os = "linux")]
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! use kawaiifi::{Scan, scan::Backend};
+//!
+//! # let interface = kawaiifi::default_interface().ok_or("No Wi-Fi interface found")?;
+//! let scan: Scan = interface.scan_blocking(Backend::NetworkManager)?;
+//! # Ok(())
+//! # }
+//! # #[cfg(not(target_os = "linux"))]
+//! # fn main() {}
+//! ```
+//!
+//! On macOS and Windows, scans are triggered through CoreWLAN and Native WiFi
+//! respectively.
+//!
+//! ```no_run
+//! # #[cfg(any(target_os = "macos", target_os = "windows"))]
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! use kawaiifi::Scan;
+//!
+//! # let interface = kawaiifi::default_interface().ok_or("No Wi-Fi interface found")?;
+//! let scan: Scan = interface.scan_blocking()?;
+//! # Ok(())
+//! # }
+//! # #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+//! # fn main() {}
+//! ```
+//!
+//! ## Accessing BSS Data
+//!
+//! [`Scan`] contains a list of BSSs that are accessed through
+//! [`Scan::bss_list`].
+//!
+//! ```
+//! # fn print_bss_count(scan: &kawaiifi::Scan) {
+//! use kawaiifi::Bss;
+//!
+//! let bss_list: &[Bss] = scan.bss_list();
+//! println!("Found {} BSS(s)", bss_list.len());
+//! # }
+//! ```
+//!
+//! [`Bss`] exposes common properties that are available on all platforms.
+//!
+//! ```
+//! # fn print_bss_data(bss: &kawaiifi::Bss) {
+//! println!("BSSID: {:?}", bss.bssid());
+//! println!("SSID: {:?}", bss.ssid());
+//! println!("Frequency: {} MHz", bss.frequency_mhz());
+//! println!("Channel: {}", bss.channel_number());
+//! println!("Channel Width: {}", bss.channel_width());
+//! println!("Signal: {} dBm", bss.signal_dbm());
+//! println!("Security: {}", bss.security_protocols());
+//! println!("Wi-Fi Protocols: {}", bss.wifi_protocols());
+//! println!("Max Rate: {} Mbps", bss.max_rate_mbps());
+//! # }
+//! ```
+//!
+//! Some [`Bss`] properties are platform-specific.
+//!
+//! ```
+//! # fn print_platform_bss_data(bss: &kawaiifi::Bss) {
+//! #[cfg(target_os = "linux")]
+//! println!("Status: {:?}", bss.status());
+//!
+//! #[cfg(target_os = "macos")]
+//! println!("Noise: {} dBm", bss.noise_dbm());
+//!
+//! #[cfg(target_os = "windows")]
+//! println!("Link Quality: {}", bss.link_quality());
+//! # }
+//! ```
+//!
+//! ## Accessing Information Elements
+//!
+//! [`Bss`] contains a list of 802.11 Information Elements (IEs) that are
+//! accessed through [`Bss::ies`].
+//!
+//! ```
+//! # fn print_ie_count(bss: &kawaiifi::Bss) {
+//! use kawaiifi::Ie;
+//!
+//! let ies: &[Ie] = bss.ies();
+//! println!("Found {} IE(s)", ies.len());
+//! # }
+//! ```
+//!
+//! [`Ie`] exposes basic properties such as the information element's name and
+//! ID.
+//!
+//! ```
+//! # fn print_ie(ie: &kawaiifi::Ie) {
+//! println!("IE: {} ({})", ie.name(), ie.id);
+//! # }
+//! ```
+//!
+//! [`Ie`] also exposes the information element's underlying data through
+//! [`Ie::data`].
+//!
+//! ```
+//! use kawaiifi::IeData;
+//!
+//! # fn print_ie_data(ie: &kawaiifi::Ie) {
+//! match &ie.data {
+//!     IeData::Ssid(ssid) => println!("SSID: {}", ssid.to_string_lossy()),
+//!     IeData::DsParameterSet(ds) => println!("Channel: {}", ds.current_channel),
+//!     IeData::Tim(tim) => println!("DTIM Period: {}", tim.dtim_period),
+//!     IeData::VhtCapabilities(vht_caps) => {
+//!         println!("Max MPDU Length: {}", vht_caps.vht_capabilities_info.maximum_mpdu_length)
+//!     }
+//!     _ => {}
+//! }
+//! # }
+//! ```
 
 mod band;
 mod bss;

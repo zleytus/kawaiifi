@@ -5,7 +5,7 @@
 
 `kawaiifi` is a Wi-Fi scanning library for Linux, macOS, and Windows.
 
-It discovers local Basic Service Sets (BSSs) and reports their SSID, BSSID, signal strength, channel, channel width, security protocols, and parsed 802.11 Information Elements.
+It discovers local Basic Service Sets (BSSs) and reports their SSID, BSSID, signal strength, channel, channel width, security protocols, and information elements (IEs).
 
 ## Usage
 
@@ -14,75 +14,126 @@ It discovers local Basic Service Sets (BSSs) and reports their SSID, BSSID, sign
 kawaiifi = "0.1"
 ```
 
+### Obtaining a Wi-Fi Interface
+
+Use `kawaiifi::default_interface()` to get the first available interface.
+
+```rust
+use kawaiifi::Interface;
+
+let interface: Interface = kawaiifi::default_interface().ok_or("No Wi-Fi interface found")?;
+```
+
+Use `kawaiifi::interfaces()` to get all available interfaces.
+
+```rust
+use kawaiifi::Interface;
+
+let interfaces: Vec<Interface> = kawaiifi::interfaces();
+```
+
+Some `Interface` properties are platform-specific.
+
+```rust
+#[cfg(target_os = "linux")]
+println!("Index: {}", interface.index());
+
+#[cfg(target_os = "macos")]
+println!("Noise: {} dBm", interface.noise_dbm());
+
+#[cfg(target_os = "windows")]
+println!("Description: {}", interface.description());
+```
+
 ### Triggering a Wi-Fi Scan
 
-Both blocking and asynchronous scans are available through
-`Interface::scan_blocking` and `Interface::scan`. The examples below use the
-blocking API.
-
-#### Linux
+Blocking scans are available through `Interface::scan_blocking()` and asynchronous scans
+through `Interface::scan()`.
 
 On Linux, scans can be triggered through either [NetworkManager](https://networkmanager.dev/) or [nl80211](https://wireless.docs.kernel.org/en/latest/en/developers/documentation/nl80211.html) (Netlink), so a `Backend` must be specified.
 
 ```rust
-use kawaiifi::scan::Backend;
+use kawaiifi::{Scan, scan::Backend};
 
-let interface = kawaiifi::default_interface().ok_or("No Wi-Fi interface found")?;
-let scan = interface.scan_blocking(Backend::NetworkManager)?;
-
-println!("Found {} BSS(s)", scan.bss_list().len());
+let scan: Scan = interface.scan_blocking(Backend::NetworkManager)?;
 ```
-
-#### macOS and Windows
 
 On macOS and Windows, scans are triggered through [CoreWLAN](https://developer.apple.com/documentation/CoreWLAN) and [Native Wifi](https://learn.microsoft.com/en-us/windows/win32/nativewifi/portal) respectively.
 
 ```rust
-let interface = kawaiifi::default_interface().ok_or("No Wi-Fi interface found")?;
-let scan = interface.scan_blocking()?;
+use kawaiifi::Scan;
 
-println!("Found {} BSS(s)", scan.bss_list().len());
+let scan: Scan = interface.scan_blocking()?;
 ```
 
 ### Accessing BSS Data
 
-BSSs expose common properties available on all platforms, such as BSSID, SSID, channel, signal strength, and security protocols.
+`Scan` contains a list of BSSs that are accessed through `Scan::bss_list()`.
 
 ```rust
-for bss in scan.bss_list() {
-    println!("BSSID: {:?}", bss.bssid());
-    println!("SSID: {:?}", bss.ssid());
-    println!("Frequency: {} MHz", bss.frequency_mhz());
-    println!("Channel: {}", bss.channel_number());
-    println!("Channel Width: {}", bss.channel_width());
-    println!("Signal: {} dBm", bss.signal_dbm());
-    println!("Security: {}", bss.security_protocols());
-    println!("Wi-Fi Protocols: {}", bss.wifi_protocols());
-    println!("Max Rate: {} Mbps", bss.max_rate_mbps());
-    println!();
-}
+use kawaiifi::Bss;
+
+let bss_list: &[Bss] = scan.bss_list();
+println!("Found {} BSS(s)", bss_list.len());
+```
+
+`Bss` exposes common properties that are available on all platforms.
+
+```rust
+println!("BSSID: {:?}", bss.bssid());
+println!("SSID: {:?}", bss.ssid());
+println!("Frequency: {} MHz", bss.frequency_mhz());
+println!("Channel: {}", bss.channel_number());
+println!("Channel Width: {}", bss.channel_width());
+println!("Signal: {} dBm", bss.signal_dbm());
+println!("Security: {}", bss.security_protocols());
+println!("Wi-Fi Protocols: {}", bss.wifi_protocols());
+println!("Max Rate: {} Mbps", bss.max_rate_mbps());
+```
+
+Some `Bss` properties are platform-specific.
+
+```rust
+#[cfg(target_os = "linux")]
+println!("Status: {:?}", bss.status());
+
+#[cfg(target_os = "macos")]
+println!("Noise: {} dBm", bss.noise_dbm());
+
+#[cfg(target_os = "windows")]
+println!("Link Quality: {}", bss.link_quality());
 ```
 
 ### Accessing Information Elements
 
-Each BSS contains a list of 802.11 Information Elements (IEs). `kawaiifi` parses these into typed structs accessible via `Bss::ies()`.
+`Bss` contains a list of 802.11 Information Elements (IEs) that are accessed through `Bss::ies()`.
+
+```rust
+use kawaiifi::Ie;
+
+let ies: &[Ie] = bss.ies();
+println!("Found {} IE(s)", ies.len());
+```
+
+`Ie` exposes basic properties such as the information element's name and ID.
+
+```rust
+println!("IE: {} ({})", ie.name(), ie.id);
+```
+
+`Ie` also exposes the information element's underlying data through `Ie::data`.
 
 ```rust
 use kawaiifi::IeData;
 
-for bss in scan.bss_list() {
-    for ie in bss.ies() {
-        println!("IE: {} (id={}, id_ext={:?})", ie.name(), ie.id, ie.id_ext);
-        match &ie.data {
-            IeData::Ssid(ssid) => println!("SSID: {}", ssid.to_string_lossy()),
-            IeData::DsParameterSet(ds) => println!("Channel: {}", ds.current_channel),
-            IeData::VhtCapabilities(vht_caps) => {
-                println!("Max MPDU Length: {}", vht_caps.vht_capabilities_info.maximum_mpdu_length)
-            }
-            _ => {}
-        }
+match &ie.data {
+    IeData::Ssid(ssid) => println!("SSID: {}", ssid.to_string_lossy()),
+    IeData::DsParameterSet(ds) => println!("Channel: {}", ds.current_channel),
+    IeData::Tim(tim) => println!("DTIM Period: {}", tim.dtim_period),
+    IeData::VhtCapabilities(vht_caps) => {
+        println!("Max MPDU Length: {}", vht_caps.vht_capabilities_info.maximum_mpdu_length)
     }
-    println!();
+    _ => {}
 }
 ```
 
