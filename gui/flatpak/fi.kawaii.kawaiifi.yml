@@ -31,8 +31,8 @@ modules:
     sources:
       - type: git
         url: https://gitlab.gnome.org/GNOME/blueprint-compiler.git
-        tag: v0.20.0
-        commit: e6230f250949a059f9feb8095aef7d63481db62f
+        tag: v0.20.4
+        commit: cb333fb74a6cb0bd7506f05c222e8e057fa0a2e9
 
   - name: kawaiifi
     buildsystem: meson
