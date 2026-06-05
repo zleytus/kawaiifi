@@ -2,14 +2,14 @@ using System.Runtime.Versioning;
 
 namespace Kawaiifi.Net;
 
-/// <summary>The authentication or association status of this device with a BSS.</summary>
+/// <summary>The status of a BSS.</summary>
 [SupportedOSPlatform("linux")]
 public enum BssStatus
 {
-    /// <summary>Authenticated but not associated.</summary>
+    /// <summary>The local station is authenticated with the BSS.</summary>
     Authenticated,
-    /// <summary>Authenticated and associated.</summary>
+    /// <summary>The local station is associated with the BSS.</summary>
     Associated,
-    /// <summary>Joined an IBSS (ad-hoc) network.</summary>
+    /// <summary>The local station has joined the IBSS.</summary>
     IbssJoined,
 }

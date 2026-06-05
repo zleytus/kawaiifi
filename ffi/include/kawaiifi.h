@@ -41,22 +41,42 @@ typedef enum ChannelWidth {
 
 #if defined(__linux__)
 /**
- * FFI-safe equivalent of kawaiifi::BssStatus.
+ * The status of a BSS.
+ * Based on nl80211_bss_status from linux/include/uapi/linux/nl80211.h
  */
-typedef enum BssStatus {
+enum BssStatus
+#ifdef __cplusplus
+  : uint32_t
+#endif // __cplusplus
+ {
 #if defined(__linux__)
-  BSS_STATUS_AUTHENTICATED,
+  /**
+   * The local station is authenticated with the BSS.
+   */
+  BSS_STATUS_AUTHENTICATED = 0,
 #endif
 #if defined(__linux__)
+  /**
+   * The local station is associated with the BSS.
+   */
   BSS_STATUS_ASSOCIATED,
 #endif
 #if defined(__linux__)
+  /**
+   * The local station has joined the IBSS.
+   */
   BSS_STATUS_IBSS_JOINED,
 #endif
 #if defined(__linux__)
+  /**
+   * The BSS status is unavailable or unknown.
+   */
   BSS_STATUS_UNKNOWN,
 #endif
-} BssStatus;
+};
+#ifndef __cplusplus
+typedef uint32_t BssStatus;
+#endif // __cplusplus
 #endif
 
 #if defined(__linux__)
@@ -735,7 +755,7 @@ void kawaiifi_scan_free(struct Scan *scan);
  * Returns the authentication/association status of this device with the BSS.
  * Returns `Unknown` if not authenticated or associated, or if `bss` is null.
  */
-enum BssStatus kawaiifi_bss_status(const struct Bss *bss);
+BssStatus kawaiifi_bss_status(const struct Bss *bss);
 #endif
 
 #if defined(__linux__)

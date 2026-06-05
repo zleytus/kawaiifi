@@ -389,17 +389,6 @@ namespace CsBindgen
 
 
     /// <summary>
-    ///  FFI-safe equivalent of kawaiifi::BssStatus.
-    /// </summary>
-    internal enum BssStatus : uint
-    {
-        Authenticated,
-        Associated,
-        IbssJoined,
-        Unknown,
-    }
-
-    /// <summary>
     ///  FFI-safe equivalent of kawaiifi::BusType.
     /// </summary>
     internal enum BusType : uint

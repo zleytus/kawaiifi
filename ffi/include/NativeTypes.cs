@@ -27,6 +27,22 @@ namespace CsBindgen
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe partial struct Field { }
 
+    /// <summary>The status of a BSS.</summary>
+    internal enum BssStatus : uint
+    {
+        /// <summary>The local station is authenticated with the BSS.</summary>
+        Authenticated = 0,
+
+        /// <summary>The local station is associated with the BSS.</summary>
+        Associated,
+
+        /// <summary>The local station has joined the IBSS.</summary>
+        IbssJoined,
+
+        /// <summary>The BSS status is unavailable or unknown.</summary>
+        Unknown,
+    }
+
     /// <summary>
     /// The 802.11 capability information flags advertised in beacon and probe response frames.
     /// </summary>

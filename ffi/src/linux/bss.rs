@@ -1,26 +1,12 @@
-use kawaiifi::Bss;
+use kawaiifi::{Bss, BssStatus};
 
 use crate::common::{self, CapabilityInfo};
-
-/// FFI-safe equivalent of kawaiifi::BssStatus.
-#[repr(C)]
-pub enum BssStatus {
-    Authenticated,
-    Associated,
-    IbssJoined,
-    Unknown,
-}
 
 /// Returns the authentication/association status of this device with the BSS.
 /// Returns `Unknown` if not authenticated or associated, or if `bss` is null.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_bss_status(bss: Option<&Bss>) -> BssStatus {
-    match bss.and_then(Bss::status) {
-        Some(kawaiifi::BssStatus::Authenticated) => BssStatus::Authenticated,
-        Some(kawaiifi::BssStatus::Associated) => BssStatus::Associated,
-        Some(kawaiifi::BssStatus::IbssJoined) => BssStatus::IbssJoined,
-        _ => BssStatus::Unknown,
-    }
+    bss.and_then(Bss::status).unwrap_or(BssStatus::Unknown)
 }
 
 /// Returns true if the BSS information came from a probe response, or false if from a beacon or if `bss` is null.

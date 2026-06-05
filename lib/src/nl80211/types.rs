@@ -17,7 +17,6 @@ pub enum BssScanWidth {
     TwoMhz,
 }
 
-/// cbindgen:ignore
 /// The status of a BSS.
 /// Based on nl80211_bss_status from linux/include/uapi/linux/nl80211.h
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive, Serialize, Deserialize)]
@@ -29,6 +28,8 @@ pub enum BssStatus {
     Associated,
     /// The local station has joined the IBSS.
     IbssJoined,
+    /// The BSS status is unavailable or unknown.
+    Unknown,
 }
 
 impl Display for BssStatus {
@@ -37,6 +38,7 @@ impl Display for BssStatus {
             BssStatus::Authenticated => write!(f, "Authenticated"),
             BssStatus::Associated => write!(f, "Associated"),
             BssStatus::IbssJoined => write!(f, "IBSS Joined"),
+            BssStatus::Unknown => write!(f, "Unknown"),
         }
     }
 }
