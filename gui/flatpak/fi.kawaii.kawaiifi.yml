@@ -11,7 +11,10 @@ finish-args:
   - --socket=fallback-x11
   - --share=ipc
   - --device=dri
+  # Required so nl80211 netlink sockets can enumerate and query the host's
+  # wireless interfaces. This is for netlink access, not internet.
   - --share=network
+  # Triggering scans is delegated to NetworkManager over the system bus.
   - --system-talk-name=org.freedesktop.NetworkManager
 
 build-options:
