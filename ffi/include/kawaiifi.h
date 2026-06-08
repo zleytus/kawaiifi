@@ -45,9 +45,9 @@ typedef enum ChannelWidth {
  * Based on nl80211_bss_status from linux/include/uapi/linux/nl80211.h
  */
 enum BssStatus
-#ifdef __cplusplus
+#if defined(__cplusplus) || __STDC_VERSION__ >= 202311L
   : uint32_t
-#endif // __cplusplus
+#endif // defined(__cplusplus) || __STDC_VERSION__ >= 202311L
  {
 #if defined(__linux__)
   /**
@@ -75,7 +75,11 @@ enum BssStatus
 #endif
 };
 #ifndef __cplusplus
+#if __STDC_VERSION__ >= 202311L
+typedef enum BssStatus BssStatus;
+#else
 typedef uint32_t BssStatus;
+#endif // __STDC_VERSION__ >= 202311L
 #endif // __cplusplus
 #endif
 
@@ -118,9 +122,9 @@ typedef enum Backend {
  * FFI-safe equivalent of CoreWLAN's CWSecurity.
  */
 enum CwSecurity
-#ifdef __cplusplus
+#if defined(__cplusplus) || __STDC_VERSION__ >= 202311L
   : int32_t
-#endif // __cplusplus
+#endif // defined(__cplusplus) || __STDC_VERSION__ >= 202311L
  {
 #if defined(__APPLE__)
   /**
@@ -226,7 +230,11 @@ enum CwSecurity
 #endif
 };
 #ifndef __cplusplus
+#if __STDC_VERSION__ >= 202311L
+typedef enum CwSecurity CwSecurity;
+#else
 typedef int32_t CwSecurity;
+#endif // __STDC_VERSION__ >= 202311L
 #endif // __cplusplus
 #endif
 
@@ -235,9 +243,9 @@ typedef int32_t CwSecurity;
  * FFI-safe equivalent of CoreWLAN's CWPHYMode.
  */
 enum CwPhyMode
-#ifdef __cplusplus
+#if defined(__cplusplus) || __STDC_VERSION__ >= 202311L
   : int32_t
-#endif // __cplusplus
+#endif // defined(__cplusplus) || __STDC_VERSION__ >= 202311L
  {
 #if defined(__APPLE__)
   /**
@@ -283,7 +291,11 @@ enum CwPhyMode
 #endif
 };
 #ifndef __cplusplus
+#if __STDC_VERSION__ >= 202311L
+typedef enum CwPhyMode CwPhyMode;
+#else
 typedef int32_t CwPhyMode;
+#endif // __STDC_VERSION__ >= 202311L
 #endif // __cplusplus
 #endif
 
@@ -292,9 +304,9 @@ typedef int32_t CwPhyMode;
  * FFI-safe equivalent of CoreWLAN's CWInterfaceMode.
  */
 enum CwInterfaceMode
-#ifdef __cplusplus
+#if defined(__cplusplus) || __STDC_VERSION__ >= 202311L
   : int32_t
-#endif // __cplusplus
+#endif // defined(__cplusplus) || __STDC_VERSION__ >= 202311L
  {
 #if defined(__APPLE__)
   /**
@@ -322,7 +334,11 @@ enum CwInterfaceMode
 #endif
 };
 #ifndef __cplusplus
+#if __STDC_VERSION__ >= 202311L
+typedef enum CwInterfaceMode CwInterfaceMode;
+#else
 typedef int32_t CwInterfaceMode;
+#endif // __STDC_VERSION__ >= 202311L
 #endif // __cplusplus
 #endif
 
