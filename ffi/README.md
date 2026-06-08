@@ -118,6 +118,8 @@ Functions that return heap-allocated values document how to free them:
 - Byte buffers (`uint8_t *` with a count) - free with `kawaiifi_bytes_free`
 - `Scan *` - free with `kawaiifi_scan_free`
 - `Interface *` - free with `kawaiifi_interface_free`
+- `InterfaceList *` - free with `kawaiifi_interface_list_free`
+- `BssList *` - free with `kawaiifi_bss_list_free`
 - `FieldList *` - free with `kawaiifi_field_list_free`
 
 Borrowed pointers (e.g. `const Bss *` from `kawaiifi_scan_bss_get`, `const Field *` from `kawaiifi_field_subfield_get`) are valid only for the lifetime of the parent object and must not be freed.
