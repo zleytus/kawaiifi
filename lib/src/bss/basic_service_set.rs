@@ -269,7 +269,7 @@ impl Bss {
         self.last_seen_utc
     }
 
-    /// The SSID (network name), or `None` for hidden networks.
+    /// The SSID (network name), or `None` if hidden or unavailable.
     pub fn ssid(&self) -> Option<&str> {
         fn find_ssid(ies: &[Ie]) -> Option<&str> {
             ies.iter().find_map(|ie| {
