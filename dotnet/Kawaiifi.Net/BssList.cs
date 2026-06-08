@@ -11,6 +11,15 @@ public class BssList : IReadOnlyList<Bss>, IDisposable
     private readonly unsafe CsBindgen.BssList* _ptr;
     private bool _disposed;
 
+    private unsafe CsBindgen.BssList* Ptr
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return _ptr;
+        }
+    }
+
     internal unsafe BssList(CsBindgen.BssList* ptr)
     {
         _ptr = ptr;
@@ -42,7 +51,7 @@ public class BssList : IReadOnlyList<Bss>, IDisposable
         {
             unsafe
             {
-                return (int)NativeMethods.kawaiifi_bss_list_count(_ptr);
+                return (int)NativeMethods.kawaiifi_bss_list_count(Ptr);
             }
         }
     }
@@ -59,7 +68,7 @@ public class BssList : IReadOnlyList<Bss>, IDisposable
 
             unsafe
             {
-                return new Bss(NativeMethods.kawaiifi_bss_list_get(_ptr, (nuint)index));
+                return new Bss(NativeMethods.kawaiifi_bss_list_get(Ptr, (nuint)index));
             }
         }
     }

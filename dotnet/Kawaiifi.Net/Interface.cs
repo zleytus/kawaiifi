@@ -14,6 +14,15 @@ public class Interface : IDisposable
     private readonly bool _owned;
     private bool _disposed;
 
+    private unsafe CsBindgen.Interface* Ptr
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return _ptr;
+        }
+    }
+
     private unsafe Interface(CsBindgen.Interface* ptr, bool owned)
     {
         _ptr = ptr;
@@ -84,7 +93,7 @@ public class Interface : IDisposable
             {
                 if (OperatingSystem.IsLinux())
                 {
-                    var name = NativeMethodsLinux.kawaiifi_interface_name(_ptr);
+                    var name = NativeMethodsLinux.kawaiifi_interface_name(Ptr);
                     var result = Marshal.PtrToStringUTF8((IntPtr)name);
                     NativeMethods.kawaiifi_string_free(name);
                     return result ?? "";
@@ -92,7 +101,7 @@ public class Interface : IDisposable
 
                 if (OperatingSystem.IsMacOS())
                 {
-                    var name = NativeMethodsMacOS.kawaiifi_interface_name(_ptr);
+                    var name = NativeMethodsMacOS.kawaiifi_interface_name(Ptr);
                     var result = Marshal.PtrToStringUTF8((IntPtr)name);
                     NativeMethods.kawaiifi_string_free(name);
                     return result ?? "";
@@ -111,7 +120,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethodsLinux.kawaiifi_interface_index(_ptr);
+                return NativeMethodsLinux.kawaiifi_interface_index(Ptr);
             }
         }
     }
@@ -124,7 +133,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethodsLinux.kawaiifi_interface_wiphy(_ptr);
+                return NativeMethodsLinux.kawaiifi_interface_wiphy(Ptr);
             }
         }
     }
@@ -137,7 +146,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethodsLinux.kawaiifi_interface_wdev(_ptr);
+                return NativeMethodsLinux.kawaiifi_interface_wdev(Ptr);
             }
         }
     }
@@ -151,7 +160,7 @@ public class Interface : IDisposable
             unsafe
             {
                 var macAddress = stackalloc byte[6];
-                NativeMethodsLinux.kawaiifi_interface_mac_address(_ptr, macAddress);
+                NativeMethodsLinux.kawaiifi_interface_mac_address(Ptr, macAddress);
                 return new Span<byte>(macAddress, 6).ToArray();
             }
         }
@@ -165,7 +174,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethodsLinux.kawaiifi_interface_generation(_ptr);
+                return NativeMethodsLinux.kawaiifi_interface_generation(Ptr);
             }
         }
     }
@@ -178,7 +187,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethodsLinux.kawaiifi_interface_four_address(_ptr);
+                return NativeMethodsLinux.kawaiifi_interface_four_address(Ptr);
             }
         }
     }
@@ -194,7 +203,7 @@ public class Interface : IDisposable
             {
                 if (OperatingSystem.IsLinux())
                 {
-                    var ssid = NativeMethodsLinux.kawaiifi_interface_ssid(_ptr);
+                    var ssid = NativeMethodsLinux.kawaiifi_interface_ssid(Ptr);
                     if (ssid == null) return null;
                     var result = Marshal.PtrToStringUTF8((IntPtr)ssid);
                     NativeMethods.kawaiifi_string_free(ssid);
@@ -203,7 +212,7 @@ public class Interface : IDisposable
 
                 if (OperatingSystem.IsMacOS())
                 {
-                    var ssid = NativeMethodsMacOS.kawaiifi_interface_ssid(_ptr);
+                    var ssid = NativeMethodsMacOS.kawaiifi_interface_ssid(Ptr);
                     if (ssid == null) return null;
                     var result = Marshal.PtrToStringUTF8((IntPtr)ssid);
                     NativeMethods.kawaiifi_string_free(ssid);
@@ -224,7 +233,7 @@ public class Interface : IDisposable
             unsafe
             {
                 uint val = 0;
-                return NativeMethodsLinux.kawaiifi_interface_wiphy_freq_mhz(_ptr, &val) ? val : null;
+                return NativeMethodsLinux.kawaiifi_interface_wiphy_freq_mhz(Ptr, &val) ? val : null;
             }
         }
     }
@@ -238,7 +247,7 @@ public class Interface : IDisposable
             unsafe
             {
                 uint val = 0;
-                return NativeMethodsLinux.kawaiifi_interface_wiphy_freq_offset_khz(_ptr, &val) ? val : null;
+                return NativeMethodsLinux.kawaiifi_interface_wiphy_freq_offset_khz(Ptr, &val) ? val : null;
             }
         }
     }
@@ -252,7 +261,7 @@ public class Interface : IDisposable
             unsafe
             {
                 uint wiphyTxPowerLevelMbm = 0;
-                return NativeMethodsLinux.kawaiifi_interface_wiphy_tx_power_level_mbm(_ptr, &wiphyTxPowerLevelMbm)
+                return NativeMethodsLinux.kawaiifi_interface_wiphy_tx_power_level_mbm(Ptr, &wiphyTxPowerLevelMbm)
                     ? wiphyTxPowerLevelMbm
                     : null;
             }
@@ -268,7 +277,7 @@ public class Interface : IDisposable
             unsafe
             {
                 uint val = 0;
-                return NativeMethodsLinux.kawaiifi_interface_center_freq_1_mhz(_ptr, &val) ? val : null;
+                return NativeMethodsLinux.kawaiifi_interface_center_freq_1_mhz(Ptr, &val) ? val : null;
             }
         }
     }
@@ -282,7 +291,7 @@ public class Interface : IDisposable
             unsafe
             {
                 uint val = 0;
-                return NativeMethodsLinux.kawaiifi_interface_center_freq_2_mhz(_ptr, &val) ? val : null;
+                return NativeMethodsLinux.kawaiifi_interface_center_freq_2_mhz(Ptr, &val) ? val : null;
             }
         }
     }
@@ -296,7 +305,7 @@ public class Interface : IDisposable
             unsafe
             {
                 CsBindgen.ChannelWidth channelWidth = default;
-                if (!NativeMethodsLinux.kawaiifi_interface_channel_width(_ptr, &channelWidth)) return null;
+                if (!NativeMethodsLinux.kawaiifi_interface_channel_width(Ptr, &channelWidth)) return null;
                 return channelWidth switch
                 {
                     CsBindgen.ChannelWidth.TwentyMhz => Net.ChannelWidth.TwentyMhz,
@@ -320,7 +329,7 @@ public class Interface : IDisposable
             unsafe
             {
                 uint vifRadioMask = 0;
-                return NativeMethodsLinux.kawaiifi_interface_vif_radio_mask(_ptr, &vifRadioMask) ? vifRadioMask : null;
+                return NativeMethodsLinux.kawaiifi_interface_vif_radio_mask(Ptr, &vifRadioMask) ? vifRadioMask : null;
             }
         }
     }
@@ -334,7 +343,7 @@ public class Interface : IDisposable
             unsafe
             {
                 ushort vendorId = 0;
-                return NativeMethodsLinux.kawaiifi_interface_vendor_id(_ptr, &vendorId) ? vendorId : null;
+                return NativeMethodsLinux.kawaiifi_interface_vendor_id(Ptr, &vendorId) ? vendorId : null;
             }
         }
     }
@@ -348,7 +357,7 @@ public class Interface : IDisposable
             unsafe
             {
                 ushort deviceId = 0;
-                return NativeMethodsLinux.kawaiifi_interface_device_id(_ptr, &deviceId) ? deviceId : null;
+                return NativeMethodsLinux.kawaiifi_interface_device_id(Ptr, &deviceId) ? deviceId : null;
             }
         }
     }
@@ -361,7 +370,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                var vendorName = NativeMethodsLinux.kawaiifi_interface_vendor_name(_ptr);
+                var vendorName = NativeMethodsLinux.kawaiifi_interface_vendor_name(Ptr);
                 if (vendorName == null) return null;
                 var result = Marshal.PtrToStringUTF8((IntPtr)vendorName);
                 NativeMethods.kawaiifi_string_free(vendorName);
@@ -378,7 +387,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                var deviceName = NativeMethodsLinux.kawaiifi_interface_device_name(_ptr);
+                var deviceName = NativeMethodsLinux.kawaiifi_interface_device_name(Ptr);
                 if (deviceName == null) return null;
                 var result = Marshal.PtrToStringUTF8((IntPtr)deviceName);
                 NativeMethods.kawaiifi_string_free(deviceName);
@@ -395,7 +404,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                var driver = NativeMethodsLinux.kawaiifi_interface_driver(_ptr);
+                var driver = NativeMethodsLinux.kawaiifi_interface_driver(Ptr);
                 if (driver == null) return null;
                 var result = Marshal.PtrToStringUTF8((IntPtr)driver);
                 NativeMethods.kawaiifi_string_free(driver);
@@ -412,7 +421,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethodsLinux.kawaiifi_interface_bus_type(_ptr) switch
+                return NativeMethodsLinux.kawaiifi_interface_bus_type(Ptr) switch
                 {
                     CsBindgen.BusType.Pci => Net.BusType.Pci,
                     CsBindgen.BusType.Usb => Net.BusType.Usb,
@@ -431,7 +440,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethodsMacOS.kawaiifi_interface_power_on(_ptr);
+                return NativeMethodsMacOS.kawaiifi_interface_power_on(Ptr);
             }
         }
     }
@@ -444,7 +453,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethodsMacOS.kawaiifi_interface_active_phy_mode(_ptr) switch
+                return NativeMethodsMacOS.kawaiifi_interface_active_phy_mode(Ptr) switch
                 {
                     CsBindgen.CwPhyMode.A => CwPhyMode.A,
                     CsBindgen.CwPhyMode.B => CwPhyMode.B,
@@ -466,7 +475,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethodsMacOS.kawaiifi_interface_security(_ptr) switch
+                return NativeMethodsMacOS.kawaiifi_interface_security(Ptr) switch
                 {
                     CsBindgen.CwSecurity.None => CwSecurity.None,
                     CsBindgen.CwSecurity.Wep => CwSecurity.Wep,
@@ -498,7 +507,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethodsMacOS.kawaiifi_interface_mode(_ptr) switch
+                return NativeMethodsMacOS.kawaiifi_interface_mode(Ptr) switch
                 {
                     CsBindgen.CwInterfaceMode.Station => CwInterfaceMode.Station,
                     CsBindgen.CwInterfaceMode.Ibss => CwInterfaceMode.Ibss,
@@ -517,7 +526,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethodsMacOS.kawaiifi_interface_transmit_rate_mbps(_ptr);
+                return NativeMethodsMacOS.kawaiifi_interface_transmit_rate_mbps(Ptr);
             }
         }
     }
@@ -530,7 +539,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethodsMacOS.kawaiifi_interface_transmit_power_mw(_ptr);
+                return NativeMethodsMacOS.kawaiifi_interface_transmit_power_mw(Ptr);
             }
         }
     }
@@ -543,7 +552,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                var countryCode = NativeMethodsMacOS.kawaiifi_interface_country_code(_ptr);
+                var countryCode = NativeMethodsMacOS.kawaiifi_interface_country_code(Ptr);
                 if (countryCode == null) return null;
                 var result = Marshal.PtrToStringUTF8((IntPtr)countryCode);
                 NativeMethods.kawaiifi_string_free(countryCode);
@@ -561,7 +570,7 @@ public class Interface : IDisposable
             unsafe
             {
                 var bssid = stackalloc byte[6];
-                if (NativeMethodsMacOS.kawaiifi_interface_bssid(_ptr, bssid))
+                if (NativeMethodsMacOS.kawaiifi_interface_bssid(Ptr, bssid))
                 {
                     return new Span<byte>(bssid, 6).ToArray();
                 }
@@ -581,7 +590,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                var hardwareAddress = NativeMethodsMacOS.kawaiifi_interface_hardware_address(_ptr);
+                var hardwareAddress = NativeMethodsMacOS.kawaiifi_interface_hardware_address(Ptr);
                 if (hardwareAddress == null) return null;
                 var result = Marshal.PtrToStringUTF8((IntPtr)hardwareAddress);
                 NativeMethods.kawaiifi_string_free(hardwareAddress);
@@ -598,7 +607,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethodsMacOS.kawaiifi_interface_signal_dbm(_ptr);
+                return NativeMethodsMacOS.kawaiifi_interface_signal_dbm(Ptr);
             }
         }
     }
@@ -611,7 +620,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethodsMacOS.kawaiifi_interface_noise_dbm(_ptr);
+                return NativeMethodsMacOS.kawaiifi_interface_noise_dbm(Ptr);
             }
         }
     }
@@ -624,7 +633,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethodsMacOS.kawaiifi_interface_service_active(_ptr);
+                return NativeMethodsMacOS.kawaiifi_interface_service_active(Ptr);
             }
         }
     }
@@ -637,7 +646,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                return NativeMethodsWindows.kawaiifi_interface_guid(_ptr);
+                return NativeMethodsWindows.kawaiifi_interface_guid(Ptr);
             }
         }
     }
@@ -650,7 +659,7 @@ public class Interface : IDisposable
         {
             unsafe
             {
-                var description = NativeMethodsWindows.kawaiifi_interface_description(_ptr);
+                var description = NativeMethodsWindows.kawaiifi_interface_description(Ptr);
                 if (description == null) return null;
                 var result = Marshal.PtrToStringUTF8((IntPtr)description);
                 NativeMethods.kawaiifi_string_free(description);
@@ -670,8 +679,9 @@ public class Interface : IDisposable
         {
             var scan = backend switch
             {
-                Backend.Nl80211 => NativeMethodsLinux.kawaiifi_interface_scan(_ptr, CsBindgen.Backend.Nl80211),
-                Backend.NetworkManager => NativeMethodsLinux.kawaiifi_interface_scan(_ptr, CsBindgen.Backend.NetworkManager),
+                Backend.Nl80211 => NativeMethodsLinux.kawaiifi_interface_scan(Ptr, CsBindgen.Backend.Nl80211),
+                Backend.NetworkManager => NativeMethodsLinux.kawaiifi_interface_scan(Ptr,
+                    CsBindgen.Backend.NetworkManager),
                 _ => throw new ArgumentOutOfRangeException(nameof(backend)),
             };
 
@@ -691,13 +701,13 @@ public class Interface : IDisposable
         {
             if (OperatingSystem.IsMacOS())
             {
-                var scan = NativeMethodsMacOS.kawaiifi_interface_scan(_ptr);
+                var scan = NativeMethodsMacOS.kawaiifi_interface_scan(Ptr);
                 return new Scan(scan);
             }
 
             if (OperatingSystem.IsWindows())
             {
-                var scan = NativeMethodsWindows.kawaiifi_interface_scan(_ptr);
+                var scan = NativeMethodsWindows.kawaiifi_interface_scan(Ptr);
                 return new Scan(scan);
             }
 
@@ -713,7 +723,7 @@ public class Interface : IDisposable
     {
         unsafe
         {
-            return new BssList(NativeMethods.kawaiifi_interface_cached_bss_list(_ptr));
+            return new BssList(NativeMethods.kawaiifi_interface_cached_bss_list(Ptr));
         }
     }
 }

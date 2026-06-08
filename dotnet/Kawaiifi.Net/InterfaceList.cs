@@ -12,6 +12,15 @@ public class InterfaceList : IReadOnlyList<Interface>, IDisposable
     private readonly unsafe CsBindgen.InterfaceList* _ptr;
     private bool _disposed;
 
+    private unsafe CsBindgen.InterfaceList* Ptr
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return _ptr;
+        }
+    }
+
     internal unsafe InterfaceList(CsBindgen.InterfaceList* ptr)
     {
         _ptr = ptr;
@@ -43,7 +52,7 @@ public class InterfaceList : IReadOnlyList<Interface>, IDisposable
         {
             unsafe
             {
-                return (int)NativeMethods.kawaiifi_interface_list_count(_ptr);
+                return (int)NativeMethods.kawaiifi_interface_list_count(Ptr);
             }
         }
     }
@@ -60,7 +69,7 @@ public class InterfaceList : IReadOnlyList<Interface>, IDisposable
 
             unsafe
             {
-                return Interface.FromBorrowed(NativeMethods.kawaiifi_interface_list_get(_ptr, (nuint)index));
+                return Interface.FromBorrowed(NativeMethods.kawaiifi_interface_list_get(Ptr, (nuint)index));
             }
         }
     }

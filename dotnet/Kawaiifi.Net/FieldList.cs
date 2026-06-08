@@ -12,6 +12,15 @@ public class FieldList : IReadOnlyList<Field>, IDisposable
     private readonly unsafe CsBindgen.FieldList* _ptr;
     private bool _disposed;
 
+    private unsafe CsBindgen.FieldList* Ptr
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return _ptr;
+        }
+    }
+
     internal unsafe FieldList(CsBindgen.FieldList* ptr)
     {
         _ptr = ptr;
@@ -43,7 +52,7 @@ public class FieldList : IReadOnlyList<Field>, IDisposable
         {
             unsafe
             {
-                return (int)NativeMethods.kawaiifi_field_list_count(_ptr);
+                return (int)NativeMethods.kawaiifi_field_list_count(Ptr);
             }
         }
     }
@@ -60,7 +69,7 @@ public class FieldList : IReadOnlyList<Field>, IDisposable
 
             unsafe
             {
-                return new Field(NativeMethods.kawaiifi_field_list_get(_ptr, (nuint)index));
+                return new Field(NativeMethods.kawaiifi_field_list_get(Ptr, (nuint)index));
             }
         }
     }
