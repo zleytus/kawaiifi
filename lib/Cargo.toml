@@ -22,7 +22,7 @@ num_enum = "0.7"
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
 tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread", "sync", "time"] }
-tracing = { version = "0.1", features = ["log"] }
+tracing = { version = "0.1.40", features = ["log"] }
 typed-builder = "0.23.2"
 
 [target.'cfg(target_os = "linux")'.dependencies]
