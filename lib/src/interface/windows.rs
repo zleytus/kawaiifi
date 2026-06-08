@@ -50,13 +50,13 @@ pub(super) fn interfaces() -> Vec<Interface> {
     interfaces
 }
 
-/// A Wi-Fi interface obtained from the Windows WLAN API.
+/// A Wi-Fi interface obtained from Native Wifi.
 pub struct Interface {
     wlan_interface_info: WLAN_INTERFACE_INFO,
 }
 
 impl Interface {
-    /// The GUID identifying this interface to the Windows WLAN API.
+    /// The GUID identifying this interface to Native Wifi.
     pub fn guid(&self) -> GUID {
         self.wlan_interface_info.InterfaceGuid
     }
@@ -297,7 +297,7 @@ impl Interface {
 
     /// Returns the most recently cached scan results without triggering a new scan.
     ///
-    /// The Windows WLAN API exposes cached scan results synchronously, so this async method
+    /// Native Wifi exposes cached scan results synchronously, so this async method
     /// blocks the current task while reading them.
     pub async fn cached_scan_results(&self) -> Result<Vec<Bss>, ScanError> {
         self.cached_scan_results_blocking()

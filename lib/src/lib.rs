@@ -63,7 +63,7 @@
 //! # fn main() {}
 //! ```
 //!
-//! On macOS and Windows, scans are triggered through CoreWLAN and Native WiFi
+//! On macOS and Windows, scans are triggered through CoreWLAN and Native Wifi
 //! respectively.
 //!
 //! ```no_run
