@@ -48,7 +48,7 @@
 //! [`Interface::scan_blocking`] and [`Interface::scan`].
 //!
 //! On Linux, scans can be triggered through either NetworkManager or nl80211
-//! (Netlink), so a [`Backend`] must be specified.
+//! (Netlink), so a `Backend` must be specified.
 //!
 //! ```no_run
 //! # #[cfg(target_os = "linux")]
