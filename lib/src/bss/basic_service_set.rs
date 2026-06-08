@@ -99,9 +99,9 @@ impl Bss {
     /// The center frequency of the full channel in MHz.
     ///
     /// For 20 MHz channels this equals `frequency_mhz`. For wider channels,
-    /// the primary channel frequency reported by nl80211 is offset from the
-    /// true center, so this reads the center channel frequency segments from
-    /// the operation IEs (EHT > HE > VHT > HT priority).
+    /// the primary channel frequency can be offset from the center of the full
+    /// channel, so this reads the center channel frequency segments from the
+    /// operation IEs (EHT > HE > VHT > HT priority).
     pub fn center_frequency_mhz(&self) -> u32 {
         use crate::ies::ht_operation::SecondaryChannelOffset;
 
