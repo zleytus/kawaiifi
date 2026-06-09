@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::Bss;
 
-/// Results of a WiFi scan operation.
+/// Results of a Wi-Fi scan operation.
 ///
 /// A `Scan` contains all Basic Service Sets (BSSs) discovered during a scan, along with
 /// the start and end time of the scan.

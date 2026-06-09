@@ -23,7 +23,7 @@ pub(super) fn interfaces() -> Result<Vec<Interface>, ScanError> {
     let (socket, _) = NlRouter::connect(NlFamily::Generic, None, Groups::empty())?;
     let family_id = socket.resolve_genl_family(NL80211_FAMILY_NAME)?;
 
-    // Query system for WiFi interfaces using the 'GetInterface' command
+    // Query system for Wi-Fi interfaces using the 'GetInterface' command
     // No attributes needed because DUMP flag will return all interfaces
     let recv = socket.send::<_, _, u16, Genlmsghdr<Cmd, Attr>>(
         family_id,

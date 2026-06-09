@@ -3,7 +3,7 @@ use std::fmt::Display;
 use deku::bitvec::{BitVec, Lsb0};
 use typed_builder::TypedBuilder;
 
-/// A parsed field from a WiFi information element.
+/// A parsed field from a Wi-Fi information element.
 ///
 /// Fields represent individual pieces of data extracted from IEs, such as
 /// "Channel Width: 80 MHz" or "MCS Index: 9". They can optionally include:

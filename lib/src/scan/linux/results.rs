@@ -12,7 +12,7 @@ use crate::{
     nl80211::{Attr, Cmd, ParseError},
 };
 
-/// Results of a WiFi scan operation.
+/// Results of a Wi-Fi scan operation.
 ///
 /// A `Scan` contains all Basic Service Sets (BSSs) discovered during a scan, along with
 /// metadata about how the scan was performed. The scan may have covered multiple frequency

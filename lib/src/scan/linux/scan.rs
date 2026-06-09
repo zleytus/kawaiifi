@@ -32,7 +32,7 @@ enum ScanState {
     WaitingForNextScan, // NewScanResults received, waiting for next TriggerScan
 }
 
-/// Performs a WiFi scan and waits for results using nl80211 multicast events.
+/// Performs a Wi-Fi scan and waits for results using nl80211 multicast events.
 ///
 /// This function:
 /// 1. Subscribes to nl80211 multicast events before triggering the scan

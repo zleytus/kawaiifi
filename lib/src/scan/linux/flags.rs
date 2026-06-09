@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 /// Flags that control scan behavior and indicate scan characteristics.
 ///
 /// These flags are provided by the nl80211 interface and indicate various
-/// scan parameters and optimizations used during WiFi scanning operations.
+/// scan parameters and optimizations used during Wi-Fi scanning operations.
 /// They correspond to the `NL80211_ATTR_SCAN_FLAGS` attribute.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, DekuRead, DekuWrite, Serialize, Deserialize)]
 #[deku(bit_order = "lsb")]
