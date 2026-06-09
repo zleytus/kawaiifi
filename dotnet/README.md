@@ -24,6 +24,40 @@ dotnet build
 
 ## Usage
 
+### Obtaining a Wi-Fi Interface
+
+Use `Interface.Default()` to get the first available interface.
+
+```csharp
+using var defaultInterface = Interface.Default();
+```
+
+Use `Interface.All()` to get all available interfaces.
+
+```csharp
+using var interfaces = Interface.All();
+Console.WriteLine($"Found {interfaces.Count} interface(s)");
+```
+
+Some `Interface` properties are platform-specific.
+
+```csharp
+if (OperatingSystem.IsLinux())
+{
+    Console.WriteLine($"Index: {defaultInterface?.Index}");
+}
+
+if (OperatingSystem.IsMacOS())
+{
+    Console.WriteLine($"Noise: {defaultInterface?.NoiseDbm} dBm");
+}
+
+if (OperatingSystem.IsWindows())
+{
+    Console.WriteLine($"Description: {defaultInterface?.Description}");
+}
+```
+
 ### Triggering a Wi-Fi Scan
 
 On Linux, scans can be triggered through either [NetworkManager](https://networkmanager.dev/) or [nl80211](https://wireless.docs.kernel.org/en/latest/en/developers/documentation/nl80211.html) (Netlink), so a `Backend` must be specified.
@@ -31,8 +65,6 @@ On Linux, scans can be triggered through either [NetworkManager](https://network
 On macOS and Windows, scans are triggered through [CoreWLAN](https://developer.apple.com/documentation/CoreWLAN) and [Native Wifi](https://learn.microsoft.com/en-us/windows/win32/nativewifi/portal) respectively.
 
 ```csharp
-using Kawaiifi.Net;
-
 using var defaultInterface = Interface.Default();
 
 if (OperatingSystem.IsLinux())
@@ -48,52 +80,84 @@ if (OperatingSystem.IsMacOS() || OperatingSystem.IsWindows())
 }
 ```
 
-See [`Scan/Program.cs`](https://github.com/zleytus/kawaiifi/blob/master/dotnet/examples/Scan/Program.cs)
+See [`Scan/Program.cs`](https://github.com/zleytus/kawaiifi/blob/master/dotnet/examples/Scan/Program.cs).
 
 ### Accessing BSS Data
 
-Each `Scan` contains a list of Basic Service Sets (BSSs) that is accessed
-through `Scan.BssList`.
+`Scan` contains a list of BSSs that are accessed through `Scan.BssList`.
 
 ```csharp
-foreach (var bss in scan.BssList)
+BssList bssList = scan.BssList;
+Console.WriteLine($"Found {bssList.Count} BSS(s)");
+```
+
+`Bss` exposes common properties that are available on all platforms.
+
+```csharp
+Console.WriteLine($"BSSID: {BitConverter.ToString(bss.Bssid).Replace('-', ':')}");
+Console.WriteLine($"SSID: {bss.Ssid}");
+Console.WriteLine($"Frequency: {bss.FrequencyMhz} MHz");
+Console.WriteLine($"Band: {bss.Band.ToDisplayString()}");
+Console.WriteLine($"Channel: {bss.ChannelNumber}");
+Console.WriteLine($"Channel Width: {bss.ChannelWidth.ToDisplayString()}");
+Console.WriteLine($"Signal: {bss.SignalDbm} dBm");
+Console.WriteLine($"Security: {bss.SecurityProtocols.ToString()}");
+Console.WriteLine($"Wi-Fi Protocols: {bss.WifiProtocols.ToString()}");
+Console.WriteLine($"Wi-Fi Amendments: {bss.WifiAmendments.ToString()}");
+Console.WriteLine($"Max Rate: {bss.MaxRateMbps:F2} Mbps");
+```
+
+Some `Bss` properties are platform-specific.
+
+```csharp
+if (OperatingSystem.IsLinux())
 {
-    Console.WriteLine($"BSSID: {BitConverter.ToString(bss.Bssid).Replace('-', ':')}");
-    Console.WriteLine($"SSID: {bss.Ssid}");
-    Console.WriteLine($"Frequency: {bss.FrequencyMhz} MHz");
-    Console.WriteLine($"Band: {bss.Band.ToDisplayString()}");
-    Console.WriteLine($"Channel: {bss.ChannelNumber}");
-    Console.WriteLine($"Channel Width: {bss.ChannelWidth.ToDisplayString()}");
-    Console.WriteLine($"Signal: {bss.SignalDbm} dBm");
-    Console.WriteLine($"Security: {bss.SecurityProtocols.ToString()}");
-    Console.WriteLine($"Protocols: {bss.WifiProtocols.ToString()}");
-    Console.WriteLine($"Amendments: {bss.WifiAmendments.ToString()}");
-    Console.WriteLine($"Max Rate: {bss.MaxRateMbps:F2} Mbps");
-    Console.WriteLine();
+    Console.WriteLine($"Status: {bss.Status}");
+}
+
+if (OperatingSystem.IsMacOS())
+{
+    Console.WriteLine($"Noise: {bss.NoiseDbm} dBm");
+}
+
+if (OperatingSystem.IsWindows())
+{
+    Console.WriteLine($"Link Quality: {bss.LinkQuality}");
 }
 ```
 
-See [`BssData/Program.cs`](https://github.com/zleytus/kawaiifi/blob/master/dotnet/examples/BssData/Program.cs)
+See [`BssData/Program.cs`](https://github.com/zleytus/kawaiifi/blob/master/dotnet/examples/BssData/Program.cs).
 
 ### Accessing Information Elements
 
-Each `Bss` contains a list of 802.11 Information Elements (IEs) that is accessed
-through `Bss.Ies`.
+`Bss` contains a list of 802.11 Information Elements (IEs) that are accessed through `Bss.Ies`.
 
 ```csharp
-foreach (var bss in scan.BssList)
+IReadOnlyList<Ie> ies = bss.Ies;
+Console.WriteLine($"Found {ies.Count} IE(s)");
+```
+
+`Ie` exposes basic properties such as the information element's name, ID,
+and a summary.
+
+```csharp
+Console.WriteLine($"{ie.Name} ({ie.Id}) - {ie.Summary}");
+```
+
+`Ie` also exposes its decoded fields through `Ie.Fields`. Each `Field` has a `Title`,
+`Value`, optional `Units`, and nested `Subfields`.
+
+```csharp
+using FieldList fields = ie.Fields;
+foreach (Field field in fields)
 {
-    foreach (var ie in bss.Ies)
-    {
-        Console.WriteLine($"{ie.Name} ({ie.Id}) - {ie.Summary}");    
-    }
-    Console.WriteLine();
+    Console.WriteLine($"{field.Title}: {field.Value}");
 }
 ```
 
-See [`Ies/Program.cs`](https://github.com/zleytus/kawaiifi/blob/master/dotnet/examples/Ies/Program.cs)
+See [`Ies/Program.cs`](https://github.com/zleytus/kawaiifi/blob/master/dotnet/examples/Ies/Program.cs).
 
-## Platform Notes
+## Platform-Specific APIs
 
 `Kawaiifi.Net` exposes platform-specific APIs via [`[SupportedOSPlatform]`](https://learn.microsoft.com/en-us/dotnet/api/system.runtime.versioning.supportedosplatformattribute) attributes.
 The Roslyn analyzer will warn if platform-specific APIs are called without an OS check.
@@ -106,12 +170,11 @@ using var defaultInterface = Interface.Default();
 
 if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
 {
-    Console.WriteLine($"Interface's name is {defaultInterface?.Name}");
+    Console.WriteLine($"Interface name: {defaultInterface?.Name}");
 }
-
-if (OperatingSystem.IsWindows())
+else if (OperatingSystem.IsWindows())
 {
-    Console.WriteLine($"Interface's description is {defaultInterface?.Description}");
+    Console.WriteLine($"Interface description: {defaultInterface?.Description}");
 }
 ```
 
@@ -122,4 +185,4 @@ platform-specific permissions and location-services behavior.
 
 ## License
 
-Dual-licensed under MIT or Apache 2.0.
+Dual-licensed under [MIT](https://github.com/zleytus/kawaiifi/blob/master/LICENSE-MIT) or [Apache 2.0](https://github.com/zleytus/kawaiifi/blob/master/LICENSE-APACHE).
