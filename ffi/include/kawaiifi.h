@@ -12,6 +12,7 @@ typedef struct Interface Interface;
 typedef struct Bss Bss;
 typedef struct Scan Scan;
 typedef struct Ie Ie;
+typedef struct Field Field;
 typedef struct FieldList FieldList;
 typedef struct InterfaceList InterfaceList;
 typedef struct BssList BssList;

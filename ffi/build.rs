@@ -30,7 +30,7 @@ fn generate_c_bindings() {
             ..Default::default()
         },
         after_includes: Some(
-            "#ifdef _WIN32\n#include <guiddef.h>\n#endif\ntypedef struct Interface Interface;\ntypedef struct Bss Bss;\ntypedef struct Scan Scan;\ntypedef struct Ie Ie;\ntypedef struct FieldList FieldList;\ntypedef struct InterfaceList InterfaceList;\ntypedef struct BssList BssList;"
+            "#ifdef _WIN32\n#include <guiddef.h>\n#endif\ntypedef struct Interface Interface;\ntypedef struct Bss Bss;\ntypedef struct Scan Scan;\ntypedef struct Ie Ie;\ntypedef struct Field Field;\ntypedef struct FieldList FieldList;\ntypedef struct InterfaceList InterfaceList;\ntypedef struct BssList BssList;"
                 .to_string(),
         ),
         cpp_compat: true,
