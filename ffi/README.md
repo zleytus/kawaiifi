@@ -7,7 +7,7 @@ It exposes a C-compatible FFI for [`kawaiifi`](../lib).
 ## Building
 
 ```sh
-cargo build --release
+cargo build -p kawaiifi-ffi --release
 ```
 
 This produces a static library (`libkawaiifi.a` / `kawaiifi.lib`) and a shared library (`libkawaiifi.so` / `libkawaiifi.dylib` / `kawaiifi.dll`) under `target/release/`, and regenerates `include/kawaiifi.h`.
@@ -15,6 +15,40 @@ This produces a static library (`libkawaiifi.a` / `kawaiifi.lib`) and a shared l
 ## Usage
 
 Include [`kawaiifi.h`](include/kawaiifi.h) and link against either the static or shared library.
+
+### Obtaining a Wi-Fi Interface
+
+Use `kawaiifi_default_interface` to get the first available interface.
+
+```c
+Interface *interface = kawaiifi_default_interface();
+if (!interface) {
+    return -1;
+}
+```
+
+Use `kawaiifi_interfaces` to get all available interfaces.
+
+```c
+InterfaceList *interfaces = kawaiifi_interfaces();
+printf("Found %zu interface(s)\n", kawaiifi_interface_list_count(interfaces));
+
+kawaiifi_interface_list_free(interfaces);
+```
+
+Some `Interface` properties are platform-specific.
+
+```c
+#if defined(__linux__)
+printf("Index: %" PRIu32 "\n", kawaiifi_interface_index(interface));
+#elif defined(__APPLE__)
+printf("Noise: %" PRIi32 " dBm\n", kawaiifi_interface_noise_dbm(interface));
+#elif defined(_WIN32)
+char *description = kawaiifi_interface_description(interface);
+printf("Description: %s\n", description);
+kawaiifi_string_free(description);
+#endif
+```
 
 ### Triggering a Wi-Fi Scan
 
@@ -52,60 +86,86 @@ See [`scan.c`](examples/scan.c).
 
 ### Accessing BSS Data
 
-Each `Scan` contains a list of Basic Service Sets (BSSs) that is accessed
-through `kawaiifi_scan_bss_get`.
+`Scan` contains a list of BSSs that are accessed through `kawaiifi_scan_bss_get`.
 
 ```c
 uintptr_t bss_count = kawaiifi_scan_bss_count(scan);
 for (uintptr_t i = 0; i < bss_count; ++i) {
     const Bss *bss = kawaiifi_scan_bss_get(scan, i);
-    char *ssid = kawaiifi_bss_ssid(bss);
-
-    if (ssid) {
-        printf("SSID: %s\n", ssid);
-    }
-    printf("Frequency: %" PRIu32 " MHz\n", kawaiifi_bss_frequency_mhz(bss));
-    printf("Channel: %" PRIu8 "\n", kawaiifi_bss_channel_number(bss));
-    printf("Signal: %" PRIi32 " dBm\n", kawaiifi_bss_signal_dbm(bss));
-    printf("Max Rate: %lf Mbps\n", kawaiifi_bss_max_rate_mbps(bss));
-    printf("\n");
-
-    if (ssid) {
-        kawaiifi_string_free(ssid);
-    }
 }
+```
+
+`Bss` exposes common properties that are available on all platforms.
+
+```c
+char *ssid = kawaiifi_bss_ssid(bss);
+if (ssid) {
+    printf("SSID: %s\n", ssid);
+    kawaiifi_string_free(ssid);
+}
+printf("Frequency: %" PRIu32 " MHz\n", kawaiifi_bss_frequency_mhz(bss));
+printf("Channel: %" PRIu8 "\n", kawaiifi_bss_channel_number(bss));
+printf("Signal: %" PRIi32 " dBm\n", kawaiifi_bss_signal_dbm(bss));
+printf("Max Rate: %lf Mbps\n", kawaiifi_bss_max_rate_mbps(bss));
+printf("\n");
+```
+
+Some `Bss` properties are platform-specific.
+
+```c
+#if defined(__linux__)
+printf("Status: %d\n", kawaiifi_bss_status(bss));
+#elif defined(__APPLE__)
+printf("Noise: %" PRIi32 " dBm\n", kawaiifi_bss_noise_dbm(bss));
+#elif defined(_WIN32)
+printf("Link Quality: %" PRIu8 "\n", kawaiifi_bss_link_quality(bss));
+#endif
 ```
 
 See [`bss_data.c`](examples/bss_data.c).
 
 ### Accessing Information Elements
 
-Each `Bss` contains a list of 802.11 Information Elements (IEs)
-that is accessed through `kawaiifi_bss_ie_get`.
+`Bss` contains a list of 802.11 Information Elements (IEs)
+that are accessed through `kawaiifi_bss_ie_get`.
 
 ```c
-uintptr_t bss_count = kawaiifi_scan_bss_count(scan);
-for (uintptr_t i = 0; i < bss_count; ++i) {
-    const Bss *bss = kawaiifi_scan_bss_get(scan, i);
-    uintptr_t ie_count = kawaiifi_bss_ie_count(bss);
-    for (uintptr_t j = 0; j < ie_count; ++j) {
-        const Ie *ie = kawaiifi_bss_ie_get(bss, j);
-        if (!ie) {
-            continue;
-        }
+uintptr_t ie_count = kawaiifi_bss_ie_count(bss);
+printf("Found %zu IE(s)\n", ie_count);
+```
 
-        char *ie_name = kawaiifi_ie_name(ie);
-        uint8_t ie_id = kawaiifi_ie_id(ie);
-        char *ie_summary = kawaiifi_ie_summary(ie);
+`Ie` exposes basic properties such as the information element's name, ID,
+and a summary.
 
-        printf("IE: %s (%" PRIu8 ")", ie_name, ie_id);
-        printf(" - %s\n", ie_summary);
+```c
+const Ie *ie = kawaiifi_bss_ie_get(bss, j);
+char *ie_name = kawaiifi_ie_name(ie);
+uint8_t ie_id = kawaiifi_ie_id(ie);
+char *ie_summary = kawaiifi_ie_summary(ie);
 
-        kawaiifi_string_free(ie_name);
-        kawaiifi_string_free(ie_summary);
-    }
-    printf("\n");
+printf("%s (%" PRIu8 ") - %s\n", ie_name, ie_id, ie_summary);
+
+kawaiifi_string_free(ie_name);
+kawaiifi_string_free(ie_summary);
+```
+
+`Ie` also exposes its decoded fields through `kawaiifi_ie_fields`. Each `Field`
+has a title, value, optional units, and nested subfields.
+
+```c
+FieldList *fields = kawaiifi_ie_fields(ie);
+uintptr_t field_count = kawaiifi_field_list_count(fields);
+for (uintptr_t k = 0; k < field_count; ++k) {
+    const Field *field = kawaiifi_field_list_get(fields, k);
+    char *title = kawaiifi_field_title(field);
+    char *value = kawaiifi_field_value(field);
+
+    printf("%s: %s\n", title, value);
+
+    kawaiifi_string_free(title);
+    kawaiifi_string_free(value);
 }
+kawaiifi_field_list_free(fields);
 ```
 
 See [`ies.c`](examples/ies.c).
@@ -124,34 +184,26 @@ Functions that return heap-allocated values document how to free them:
 
 Borrowed pointers (e.g. `const Bss *` from `kawaiifi_scan_bss_get`, `const Field *` from `kawaiifi_field_subfield_get`) are valid only for the lifetime of the parent object and must not be freed.
 
-## .NET
+## Platform-Specific APIs
 
-[`Kawaiifi.Net`](../dotnet/) is a .NET wrapper around `kawaiifi-ffi`.
+`kawaiifi-ffi` exposes platform-specific APIs through preprocessor guards in
+[`kawaiifi.h`](include/kawaiifi.h). Call platform-specific functions from the
+matching `#if` block.
 
-It handles all P/Invoke interop, memory management, and platform
-differences internally. Callers never need to write unsafe code or manage
-native memory directly.
+For example, on Linux and macOS, `Interface` has a name, while on Windows,
+`Interface` has a description.
 
-```csharp
-using Kawaiifi.Net;
-
-using var defaultInterface = Interface.Default();
-
-if (OperatingSystem.IsLinux())
-{
-    using var scan = defaultInterface?.Scan(Backend.NetworkManager);
-    Console.WriteLine($"Found {scan?.BssList.Count} BSS(s)");
-}
-
-if (OperatingSystem.IsMacOS() || OperatingSystem.IsWindows())
-{
-    using var scan = defaultInterface?.Scan();
-    Console.WriteLine($"Found {scan?.BssList.Count} BSS(s)");
-}
+```c
+#if defined(__linux__) || defined(__APPLE__)
+char *name = kawaiifi_interface_name(interface);
+printf("Interface name: %s\n", name);
+kawaiifi_string_free(name);
+#elif defined(_WIN32)
+char *description = kawaiifi_interface_description(interface);
+printf("Interface description: %s\n", description);
+kawaiifi_string_free(description);
+#endif
 ```
-
-See the `Kawaiifi.Net` [README](../dotnet/README.md) for build instructions
-and platform-specific API details.
 
 ## Troubleshooting
 
