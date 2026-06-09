@@ -742,7 +742,7 @@ void kawaiifi_interface_free(struct Interface *interface);
 struct BssList *kawaiifi_interface_cached_bss_list(const struct Interface *interface);
 
 /**
- * Returns the number of BSSes in the scan, or 0 if `scan` is null.
+ * Returns the number of BSSs in the scan, or 0 if `scan` is null.
  */
 uintptr_t kawaiifi_scan_bss_count(const struct Scan *scan);
 

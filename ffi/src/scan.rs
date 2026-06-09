@@ -1,6 +1,6 @@
 use kawaiifi::Scan;
 
-/// Returns the number of BSSes in the scan, or 0 if `scan` is null.
+/// Returns the number of BSSs in the scan, or 0 if `scan` is null.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_scan_bss_count(scan: Option<&Scan>) -> usize {
     scan.map(|s| s.bss_list().len()).unwrap_or(0)

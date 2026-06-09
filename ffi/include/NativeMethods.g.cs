@@ -325,7 +325,7 @@ namespace CsBindgen
         internal static extern BssList* kawaiifi_interface_cached_bss_list(Interface* @interface);
 
         /// <summary>
-        ///  Returns the number of BSSes in the scan, or 0 if `scan` is null.
+        ///  Returns the number of BSSs in the scan, or 0 if `scan` is null.
         /// </summary>
         [DllImport(__DllName, EntryPoint = "kawaiifi_scan_bss_count", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern nuint kawaiifi_scan_bss_count(Scan* scan);
