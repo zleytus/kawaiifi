@@ -100,11 +100,13 @@
 //! println!("BSSID: {:?}", bss.bssid());
 //! println!("SSID: {:?}", bss.ssid());
 //! println!("Frequency: {} MHz", bss.frequency_mhz());
+//! println!("Band: {}", bss.band());
 //! println!("Channel: {}", bss.channel_number());
 //! println!("Channel Width: {}", bss.channel_width());
 //! println!("Signal: {} dBm", bss.signal_dbm());
 //! println!("Security: {}", bss.security_protocols());
 //! println!("Wi-Fi Protocols: {}", bss.wifi_protocols());
+//! println!("Wi-Fi Amendments: {}", bss.wifi_amendments());
 //! println!("Max Rate: {} Mbps", bss.max_rate_mbps());
 //! # }
 //! ```
@@ -138,12 +140,12 @@
 //! # }
 //! ```
 //!
-//! [`Ie`] exposes basic properties such as the information element's name and
-//! ID.
+//! [`Ie`] exposes basic properties such as the information element's name, ID,
+//! and a summary.
 //!
 //! ```
 //! # fn print_ie(ie: &kawaiifi::Ie) {
-//! println!("IE: {} ({})", ie.name(), ie.id);
+//! println!("IE: {} ({}) - {}", ie.name(), ie.id, ie.summary());
 //! # }
 //! ```
 //!
