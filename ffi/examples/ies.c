@@ -44,7 +44,7 @@ int main() {
             uint8_t ie_id = kawaiifi_ie_id(ie);
             char *ie_summary = kawaiifi_ie_summary(ie);
 
-            printf("IE: %s (%" PRIu8 ")", ie_name, ie_id);
+            printf("%s (%" PRIu8 ")", ie_name, ie_id);
             printf(" - %s\n", ie_summary);
 
             kawaiifi_string_free(ie_name);
