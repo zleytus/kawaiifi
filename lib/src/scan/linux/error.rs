@@ -13,7 +13,7 @@ pub enum Error {
     Nl80211(String),
 
     /// A NetworkManager D-Bus operation failed.
-    #[error("Network Manager error: {0}")]
+    #[error("NetworkManager error: {0}")]
     NetworkManager(#[from] zbus::Error),
 
     /// The scan completed without returning any scan records.
