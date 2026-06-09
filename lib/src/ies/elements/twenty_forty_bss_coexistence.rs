@@ -49,7 +49,7 @@ impl TwentyFortyBssCoexistence {
                 .bits(BitRange::from_byte(byte, 1, 1))
                 .build(),
             Field::builder()
-                .title("20 MHz BSS Width Requesst")
+                .title("20 MHz BSS Width Request")
                 .value(self.twenty_mhz_bss_width_request)
                 .bits(BitRange::from_byte(byte, 2, 1))
                 .build(),

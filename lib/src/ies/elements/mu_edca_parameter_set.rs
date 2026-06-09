@@ -9,7 +9,7 @@ pub struct MuEdcaParameterSet {
     pub mu_ac_be_parameter_record: ParameterRecord,
     pub mu_ac_bk_parameter_record: ParameterRecord,
     pub mu_ac_vi_parameter_record: ParameterRecord,
-    pub mu_ac_vo_paremter_record: ParameterRecord,
+    pub mu_ac_vo_parameter_record: ParameterRecord,
 }
 
 impl MuEdcaParameterSet {
@@ -31,7 +31,7 @@ impl MuEdcaParameterSet {
             self.mu_ac_be_parameter_record.to_field("MU AC_BE"),
             self.mu_ac_bk_parameter_record.to_field("MU AC_BK"),
             self.mu_ac_vi_parameter_record.to_field("MU AC_VI"),
-            self.mu_ac_vo_paremter_record.to_field("MU AC_VO"),
+            self.mu_ac_vo_parameter_record.to_field("MU AC_VO"),
         ]
     }
 }
