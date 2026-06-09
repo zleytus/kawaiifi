@@ -3,6 +3,21 @@
 #include <stdint.h>
 #include <stdio.h>
 
+static void print_field(const Field *field, int indent) {
+    char *title = kawaiifi_field_title(field);
+    char *value = kawaiifi_field_value(field);
+
+    printf("%*s%s: %s\n", indent, "", title, value);
+
+    kawaiifi_string_free(title);
+    kawaiifi_string_free(value);
+
+    uintptr_t subfield_count = kawaiifi_field_subfield_count(field);
+    for (uintptr_t i = 0; i < subfield_count; ++i) {
+        print_field(kawaiifi_field_subfield_get(field, i), indent + 2);
+    }
+}
+
 int main() {
     Interface *interface = kawaiifi_default_interface();
     if (!interface) {
@@ -34,6 +49,13 @@ int main() {
 
             kawaiifi_string_free(ie_name);
             kawaiifi_string_free(ie_summary);
+
+            FieldList *fields = kawaiifi_ie_fields(ie);
+            uintptr_t field_count = kawaiifi_field_list_count(fields);
+            for (uintptr_t k = 0; k < field_count; ++k) {
+                print_field(kawaiifi_field_list_get(fields, k), 2);
+            }
+            kawaiifi_field_list_free(fields);
         }
         printf("\n");
     }
