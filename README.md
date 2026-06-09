@@ -34,7 +34,7 @@ can be used to determine physical location and other sensitive information.
 
 Scanning via the `Nl80211` backend requires either root privileges or the
 `CAP_NET_ADMIN` capability. The `NetworkManager` backend does not have this
-requirement as NetworkManager handles the scan on behalf of the application.
+requirement because NetworkManager handles the scan on behalf of the application.
 
 ### macOS
 
