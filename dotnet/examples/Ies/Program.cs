@@ -22,13 +22,28 @@ static void PrintScanIes(Scan? scan)
     {
         return;
     }
-    
+
     foreach (var bss in scan.BssList)
     {
         foreach (var ie in bss.Ies)
         {
-            Console.WriteLine($"{ie.Name} ({ie.Id}) - {ie.Summary}");    
+            Console.WriteLine($"{ie.Name} ({ie.Id}) - {ie.Summary}");
+
+            using FieldList fields = ie.Fields;
+            foreach (Field field in fields)
+            {
+                PrintField(field, "  ");
+            }
         }
         Console.WriteLine();
+    }
+}
+
+static void PrintField(Field field, string indent)
+{
+    Console.WriteLine($"{indent}{field.Title}: {field.Value}");
+    foreach (Field subfield in field.Subfields)
+    {
+        PrintField(subfield, indent + "  ");
     }
 }
