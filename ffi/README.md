@@ -210,6 +210,10 @@ kawaiifi_string_free(description);
 See the repository [troubleshooting notes](../README.md#troubleshooting) for
 platform-specific permissions and location-services behavior.
 
+## Changelog
+
+See the repository [changelog](../CHANGELOG.md) for release notes.
+
 ## License
 
 Dual-licensed under [MIT](LICENSE-MIT) or [Apache 2.0](LICENSE-APACHE).

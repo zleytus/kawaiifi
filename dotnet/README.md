@@ -183,6 +183,10 @@ else if (OperatingSystem.IsWindows())
 See the repository [troubleshooting notes](https://github.com/zleytus/kawaiifi#troubleshooting) for
 platform-specific permissions and location-services behavior.
 
+## Changelog
+
+See the repository [changelog](https://github.com/zleytus/kawaiifi/blob/master/CHANGELOG.md) for release notes.
+
 ## License
 
 Dual-licensed under [MIT](https://github.com/zleytus/kawaiifi/blob/master/LICENSE-MIT) or [Apache 2.0](https://github.com/zleytus/kawaiifi/blob/master/LICENSE-APACHE).

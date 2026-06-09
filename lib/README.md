@@ -144,6 +144,10 @@ match &ie.data {
 
 See the repository [troubleshooting notes](https://github.com/zleytus/kawaiifi#troubleshooting) for platform-specific permissions and location-services behavior.
 
+## Changelog
+
+See the repository [changelog](https://github.com/zleytus/kawaiifi/blob/master/CHANGELOG.md) for release notes.
+
 ## License
 
 Dual-licensed under [MIT](LICENSE-MIT) or [Apache 2.0](LICENSE-APACHE).

@@ -1,0 +1,23 @@
+# Changelog
+
+## Unreleased
+
+### `kawaiifi`
+
+- Added Wi-Fi interface enumeration and metadata.
+- Added blocking and asynchronous Wi-Fi scanning.
+- Added Linux scanning through NetworkManager and nl80211.
+- Added macOS scanning through CoreWLAN.
+- Added Windows scanning through Native Wifi.
+- Added BSS metadata including SSID, BSSID, signal strength, channel, channel
+  width, security protocols, Wi-Fi protocols, and Wi-Fi amendments.
+- Added parsing for 802.11 information elements.
+- Added serde serialization of scan results.
+
+### `kawaiifi-ffi`
+
+- Added C-compatible bindings for `kawaiifi`.
+
+### `Kawaiifi.Net`
+
+- Added .NET bindings for `kawaiifi`.

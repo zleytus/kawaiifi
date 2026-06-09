@@ -56,6 +56,10 @@ application calls these APIs, Windows displays a one-time prompt for precise
 location access. If the user does not grant consent, scans fail with
 `ERROR_ACCESS_DENIED`.
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release notes.
+
 ## License
 
 Dual-licensed under [MIT](LICENSE-MIT) or [Apache 2.0](LICENSE-APACHE).
