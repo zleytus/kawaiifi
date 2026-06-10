@@ -82,7 +82,9 @@ impl KawaiiFiWindow {
                     merged_bss_list,
                 }) => {
                     tracing::info!(bss_count, "Received cached scan results");
-                    window.apply_merged_results(merged_bss_list);
+                    if window.bss_list_store().n_items() == 0 {
+                        window.apply_merged_results(merged_bss_list);
+                    }
                 }
                 Ok(CachedScanResult::Err { scan_error }) => {
                     tracing::warn!(error = %scan_error, "Failed to read cached scan results");
