@@ -74,7 +74,7 @@ mod imp {
 
         fn activate(&self) {
             let application = self.obj();
-            // Get the first window if exists, or create a new one
+            // Get the first window if it exists, or create a new one
             let window = if let Some(window) = application.active_window() {
                 window
             } else {
