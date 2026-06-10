@@ -22,6 +22,11 @@ public class Scan : IDisposable
 
     internal unsafe Scan(CsBindgen.Scan* ptr)
     {
+        if (ptr == null)
+        {
+            throw new InvalidOperationException("Wi-Fi scan failed.");
+        }
+
         _ptr = ptr;
     }
 
