@@ -312,7 +312,7 @@ impl Interface {
         }
 
         let mut bss_list_ptr: *mut WLAN_BSS_LIST = null_mut();
-        if unsafe {
+        let result = unsafe {
             WlanGetNetworkBssList(
                 handle,
                 &self.guid(),
@@ -322,9 +322,12 @@ impl Interface {
                 null(),
                 &mut bss_list_ptr,
             )
-        } != 0
-            || bss_list_ptr.is_null()
-        {
+        };
+        if result != 0 {
+            unsafe { WlanCloseHandle(handle, null_mut()) };
+            return Err(wlan_error("WlanGetNetworkBssList", result).into());
+        }
+        if bss_list_ptr.is_null() {
             unsafe { WlanCloseHandle(handle, null_mut()) };
             return Ok(Vec::new());
         }
