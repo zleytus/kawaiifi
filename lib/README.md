@@ -1,5 +1,7 @@
 # kawaiifi
 
+[![crates.io](https://img.shields.io/crates/v/kawaiifi.svg)](https://crates.io/crates/kawaiifi)
+[![docs.rs](https://docs.rs/kawaiifi/badge.svg)](https://docs.rs/kawaiifi)
 [![CI](https://github.com/zleytus/kawaiifi/actions/workflows/ci.yml/badge.svg)](https://github.com/zleytus/kawaiifi/actions/workflows/ci.yml)
 [![MSRV: 1.88](https://img.shields.io/badge/MSRV-1.88-blue)](https://blog.rust-lang.org/2025/05/15/Rust-1.88.0/)
 
