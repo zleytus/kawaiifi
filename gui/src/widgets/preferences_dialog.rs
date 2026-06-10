@@ -117,7 +117,9 @@ mod imp {
                             5 => 3600,
                             _ => 300,
                         };
-                        settings.set_int("bss-retention-duration", seconds).unwrap();
+                        if let Err(e) = settings.set_int("bss-retention-duration", seconds) {
+                            tracing::warn!("Unable to set BSS retention duration: {:?}", e);
+                        }
                     }
                 ));
         }
