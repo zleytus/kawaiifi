@@ -5,3 +5,4 @@ members = ["ffi", "lib"]
 [profile.release]
 strip = true
 lto = true
+panic = "abort"
