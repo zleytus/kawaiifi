@@ -11,22 +11,22 @@ template $BssElements: Gtk.Box {
       show-row-separators: true;
 
       ColumnViewColumn id_column {
-        title: "ID";
+        title: _("ID");
       }
 
       ColumnViewColumn ie_column {
-        title: "Information Element";
+        title: _("Information Element");
         resizable: true;
       }
 
       ColumnViewColumn value_column {
-        title: "Value";
+        title: _("Value");
         resizable: true;
         expand: true;
       }
 
       ColumnViewColumn data_column {
-        title: "Data";
+        title: _("Data");
         resizable: true;
       }
     }

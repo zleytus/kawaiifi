@@ -11,72 +11,74 @@ template $BssTable: Gtk.Box {
       show-row-separators: true;
       show-column-separators: false;
 
-      ColumnViewColumn color_column {}
+      ColumnViewColumn color_column {
+        title: _("");
+      }
 
       ColumnViewColumn ssid_column {
-        title: "SSID";
+        title: _("SSID");
         resizable: true;
         expand: true;
       }
 
       ColumnViewColumn bssid_column {
-        title: "BSSID";
+        title: _("BSSID");
       }
 
       ColumnViewColumn vendor_column {
-        title: "Vendor";
+        title: _("Vendor");
       }
 
       ColumnViewColumn signal_column {
-        title: "Signal";
+        title: _("Signal");
       }
 
       ColumnViewColumn channel_column {
-        title: "Channel";
+        title: _("Channel");
       }
 
       ColumnViewColumn channel_width_column {
-        title: "Channel Width";
+        title: _("Channel Width");
       }
 
       ColumnViewColumn frequency_column {
-        title: "Frequency";
+        title: _("Frequency");
       }
 
       ColumnViewColumn band_column {
-        title: "Band";
+        title: _("Band");
       }
 
       ColumnViewColumn protocols_column {
-        title: "Protocols";
+        title: _("Protocols");
       }
 
       ColumnViewColumn amendments_column {
-        title: "Amendments";
+        title: _("Amendments");
       }
 
       ColumnViewColumn security_column {
-        title: "Security";
+        title: _("Security");
       }
 
       ColumnViewColumn max_rate_column {
-        title: "Max Rate";
+        title: _("Max Rate");
       }
 
       ColumnViewColumn channel_utilization_column {
-        title: "Channel Utilization";
+        title: _("Channel Utilization");
       }
 
       ColumnViewColumn station_count_column {
-        title: "Stations";
+        title: _("Stations");
       }
 
       ColumnViewColumn uptime_column {
-        title: "Uptime";
+        title: _("Uptime");
       }
 
       ColumnViewColumn last_seen_column {
-        title: "Last Seen";
+        title: _("Last Seen");
       }
     }
   }
