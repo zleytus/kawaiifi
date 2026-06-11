@@ -38,3 +38,7 @@ To do a full install:
 ```sh
 meson install -C builddir
 ```
+
+## License
+
+KawaiiFi is licensed under GPL-3.0-or-later.
