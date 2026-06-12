@@ -1,5 +1,5 @@
 # Set up the project
-project('kawaiifi', 'rust', version: '0.1.0', meson_version: '>= 1.4')
+project('kawaiifi', 'rust', version: '0.1.0', meson_version: '>= 1.3')
 
 # Import GNOME module
 gnome = import('gnome')

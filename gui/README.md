@@ -21,7 +21,7 @@
 
 ## Dependencies
 
-- [Meson](https://mesonbuild.com/) >= 1.4
+- [Meson](https://mesonbuild.com/) >= 1.3
 - [Rust](https://www.rust-lang.org/) (stable)
 - GTK4
 - libadwaita
