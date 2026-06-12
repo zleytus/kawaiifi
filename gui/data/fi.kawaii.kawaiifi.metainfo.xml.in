@@ -19,6 +19,25 @@
     </p>
   </description>
 
+  <screenshots>
+    <screenshot type="default">
+      <caption>Main window showing nearby Wi-Fi BSSs</caption>
+      <image>https://raw.githubusercontent.com/zleytus/kawaiifi/kawaiifi-gui-v0.1.0/gui/data/screenshots/01-main-window-bss-table.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Filters for narrowing scan results</caption>
+      <image>https://raw.githubusercontent.com/zleytus/kawaiifi/kawaiifi-gui-v0.1.0/gui/data/screenshots/02-filters.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Information elements for a selected BSS</caption>
+      <image>https://raw.githubusercontent.com/zleytus/kawaiifi/kawaiifi-gui-v0.1.0/gui/data/screenshots/03-information-elements.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Channel chart showing overlapping BSSs</caption>
+      <image>https://raw.githubusercontent.com/zleytus/kawaiifi/kawaiifi-gui-v0.1.0/gui/data/screenshots/04-channel-chart.png</image>
+    </screenshot>
+  </screenshots>
+
   <launchable type="desktop-id">@APP_ID@.desktop</launchable>
   <categories>
     <category>Network</category>
