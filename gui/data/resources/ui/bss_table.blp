@@ -23,10 +23,14 @@ template $BssTable: Gtk.Box {
 
       ColumnViewColumn bssid_column {
         title: _("BSSID");
+        resizable: true;
+        expand: true;
       }
 
       ColumnViewColumn vendor_column {
         title: _("Vendor");
+        resizable: true;
+        expand: true;
       }
 
       ColumnViewColumn signal_column {

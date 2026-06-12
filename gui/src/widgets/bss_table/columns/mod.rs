@@ -42,6 +42,7 @@ where
     factory.connect_setup(move |_, list_item| {
         let label = gtk::Label::new(None);
         label.set_halign(halign);
+        label.set_ellipsize(gtk::pango::EllipsizeMode::End);
         list_item
             .downcast_ref::<gtk::ListItem>()
             .unwrap()
