@@ -1,6 +1,23 @@
-# kawaiifi
+<p align="center">
+  <img src="data/icons/fi.kawaii.kawaiifi.svg" alt="KawaiiFi icon" width="96" height="96">
+</p>
 
-A Wi-Fi scanner for Linux with a GTK4/libadwaita interface.
+<h1 align="center">KawaiiFi</h1>
+
+<p align="center">
+  A Wi-Fi scanner for Linux built with GTK4/libadwaita
+</p>
+
+<p align="center">
+  <a href="https://github.com/zleytus/kawaiifi/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/zleytus/kawaiifi/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="LICENSE"><img alt="License: GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-blue.svg"></a>
+  <img alt="Platform: Linux" src="https://img.shields.io/badge/platform-Linux-blue.svg">
+  <img alt="Built with GTK4/libadwaita" src="https://img.shields.io/badge/GTK4%20%2F%20libadwaita-3584e4.svg">
+</p>
+
+<p align="center">
+  <img src="data/screenshots/01-main-window-bss-table.png" alt="KawaiiFi main window showing nearby Wi-Fi BSSs">
+</p>
 
 ## Dependencies
 
