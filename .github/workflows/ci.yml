@@ -94,7 +94,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y meson ninja-build blueprint-compiler libgtk-4-dev libpango1.0-dev libcairo2-dev libadwaita-1-dev libepoxy-dev
+          sudo apt-get install -y meson ninja-build blueprint-compiler desktop-file-utils libgtk-4-dev libpango1.0-dev libcairo2-dev libadwaita-1-dev libepoxy-dev
 
       - name: Configure
         run: meson setup builddir
