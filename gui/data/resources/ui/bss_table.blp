@@ -17,13 +17,15 @@ template $BssTable: Gtk.Box {
 
       ColumnViewColumn ssid_column {
         title: _("SSID");
+        fixed-width: 150;
         resizable: true;
         expand: true;
       }
 
       ColumnViewColumn bssid_column {
         title: _("BSSID");
-        resizable: true;
+        fixed-width: 155;
+        resizable: false;
         expand: true;
       }
 
