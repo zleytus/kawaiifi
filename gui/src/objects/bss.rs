@@ -90,7 +90,7 @@ impl BssObject {
     pub fn vendor(&self) -> String {
         self.bss()
             .vendor()
-            .map(|vendor| vendor.to_string())
+            .map(format_vendor_display_name)
             .unwrap_or_default()
     }
 
@@ -194,6 +194,26 @@ fn formatted_uptime_text(uptime: Duration) -> String {
     }
 }
 
+fn format_vendor_display_name(vendor: &str) -> String {
+    const MAX_UNCHANGED_LEN: usize = 20;
+
+    if vendor.chars().count() <= MAX_UNCHANGED_LEN {
+        return vendor.to_string();
+    }
+
+    let mut words = vendor
+        .split_whitespace()
+        .map(|word| word.trim().trim_end_matches([',', '-']).trim_end())
+        .filter(|word| !word.is_empty())
+        .collect::<Vec<_>>();
+
+    while words.len() > 2 && words.join(" ").chars().count() > MAX_UNCHANGED_LEN {
+        words.pop();
+    }
+
+    words.join(" ")
+}
+
 fn color_from_bssid(bssid: &[u8; 6]) -> RGBA {
     // Use last 3 bytes for RGB, scale to 0.4-0.9 range for pleasant colors
     let r = (bssid[3] as f64 / 255.0) * 0.5 + 0.4;
@@ -245,6 +265,60 @@ mod tests {
                 (((2 * 365 + 10) * 24 + 3) * 60 + 4) * 60
             )),
             "2y 10d 3h 4m"
+        );
+    }
+
+    #[test]
+    fn vendor_display_name_leaves_short_names_unchanged() {
+        assert_eq!(format_vendor_display_name("Cisco Meraki"), "Cisco Meraki");
+        assert_eq!(format_vendor_display_name("CommScope Inc"), "CommScope Inc");
+    }
+
+    #[test]
+    fn vendor_display_name_shortens_long_names_to_two_words() {
+        assert_eq!(
+            format_vendor_display_name("Extreme Networks Headquarters"),
+            "Extreme Networks"
+        );
+        assert_eq!(
+            format_vendor_display_name("Sagemcom Broadband SAS"),
+            "Sagemcom Broadband"
+        );
+        assert_eq!(
+            format_vendor_display_name("Hewlett Packard Enterprise"),
+            "Hewlett Packard"
+        );
+    }
+
+    #[test]
+    fn vendor_display_name_keeps_more_than_two_words_when_they_fit() {
+        assert_eq!(
+            format_vendor_display_name("Hon Hai Precision Ind. Co.,Ltd."),
+            "Hon Hai Precision"
+        );
+    }
+
+    #[test]
+    fn vendor_display_name_strips_trailing_commas() {
+        assert_eq!(
+            format_vendor_display_name("Cisco Systems, Incorporated"),
+            "Cisco Systems"
+        );
+    }
+
+    #[test]
+    fn vendor_display_name_strips_trailing_hyphens_and_whitespace() {
+        assert_eq!(
+            format_vendor_display_name("Example- Vendor- Incorporated"),
+            "Example Vendor"
+        );
+    }
+
+    #[test]
+    fn vendor_display_name_ignores_separator_tokens() {
+        assert_eq!(
+            format_vendor_display_name("Vantiva - Connected Home"),
+            "Vantiva Connected"
         );
     }
 }
