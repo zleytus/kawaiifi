@@ -85,7 +85,7 @@ jobs:
 
   build-gui:
     name: Build GUI
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v6
 
