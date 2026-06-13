@@ -1,0 +1,6 @@
+option(
+  'cargo-home',
+  type: 'string',
+  value: '',
+  description: 'Override CARGO_HOME for offline builds (e.g. Flatpak). Defaults to build dir when empty.'
+)

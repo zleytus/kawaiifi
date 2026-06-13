@@ -1,0 +1,390 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $BssFilter: Gtk.Box {
+  orientation: vertical;
+
+  ScrolledWindow {
+    hscrollbar-policy: never;
+    vexpand: true;
+
+    Adw.PreferencesGroup {
+      title: _("Filters");
+      separate-rows: true;
+      margin-top: 12;
+      margin-start: 12;
+      margin-end: 12;
+
+      header-suffix: Button reset_filter_button {
+        icon-name: "view-refresh-symbolic";
+        tooltip-text: _("Reset Filters");
+
+        styles [
+          "flat",
+        ]
+      };
+
+      Adw.EntryRow ssid_entry {
+        title: _("SSID");
+      }
+
+      Adw.EntryRow bssid_entry {
+        title: _("BSSID");
+      }
+
+      Adw.EntryRow vendor_entry {
+        title: _("Vendor");
+      }
+
+      Adw.ExpanderRow {
+        title: _("Band");
+
+        Adw.ActionRow {
+          title: _("2.4 GHz");
+          activatable-widget: band_2_4_check;
+
+          [suffix]
+          CheckButton band_2_4_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("5 GHz");
+          activatable-widget: band_5_check;
+
+          [suffix]
+          CheckButton band_5_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("6 GHz");
+          activatable-widget: band_6_check;
+
+          [suffix]
+          CheckButton band_6_check {
+            active: true;
+            valign: center;
+          }
+        }
+      }
+
+      Adw.ExpanderRow {
+        title: _("Security");
+
+        Adw.ActionRow {
+          title: _("Open");
+          activatable-widget: security_open_check;
+
+          [suffix]
+          CheckButton security_open_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("WEP");
+          activatable-widget: security_wep_check;
+
+          [suffix]
+          CheckButton security_wep_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("WPA");
+          activatable-widget: security_wpa_check;
+
+          [suffix]
+          CheckButton security_wpa_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("WPA2");
+          activatable-widget: security_wpa2_check;
+
+          [suffix]
+          CheckButton security_wpa2_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("WPA3");
+          activatable-widget: security_wpa3_check;
+
+          [suffix]
+          CheckButton security_wpa3_check {
+            active: true;
+            valign: center;
+          }
+        }
+      }
+
+      Adw.ExpanderRow {
+        title: _("Channel Width");
+
+        Adw.ActionRow {
+          title: _("20 MHz");
+          activatable-widget: width_20_check;
+
+          [suffix]
+          CheckButton width_20_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("40 MHz");
+          activatable-widget: width_40_check;
+
+          [suffix]
+          CheckButton width_40_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("80 MHz");
+          activatable-widget: width_80_check;
+
+          [suffix]
+          CheckButton width_80_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("80+80 MHz");
+          activatable-widget: width_80_80_check;
+
+          [suffix]
+          CheckButton width_80_80_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("160 MHz");
+          activatable-widget: width_160_check;
+
+          [suffix]
+          CheckButton width_160_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("320 MHz");
+          activatable-widget: width_320_check;
+
+          [suffix]
+          CheckButton width_320_check {
+            active: true;
+            valign: center;
+          }
+        }
+      }
+
+      Adw.ExpanderRow {
+        title: _("Protocols");
+
+        Adw.ActionRow {
+          title: _("802.11b");
+          activatable-widget: protocol_b_check;
+
+          [suffix]
+          CheckButton protocol_b_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("802.11a");
+          activatable-widget: protocol_a_check;
+
+          [suffix]
+          CheckButton protocol_a_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("802.11g");
+          activatable-widget: protocol_g_check;
+
+          [suffix]
+          CheckButton protocol_g_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("802.11n");
+          activatable-widget: protocol_n_check;
+
+          [suffix]
+          CheckButton protocol_n_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("802.11ac");
+          activatable-widget: protocol_ac_check;
+
+          [suffix]
+          CheckButton protocol_ac_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("802.11ax");
+          activatable-widget: protocol_ax_check;
+
+          [suffix]
+          CheckButton protocol_ax_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("802.11be");
+          activatable-widget: protocol_be_check;
+
+          [suffix]
+          CheckButton protocol_be_check {
+            active: true;
+            valign: center;
+          }
+        }
+      }
+
+      Adw.ExpanderRow {
+        title: _("Amendments");
+
+        Adw.ActionRow {
+          title: _("802.11d");
+          activatable-widget: amendment_d_check;
+
+          [suffix]
+          CheckButton amendment_d_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("802.11e");
+          activatable-widget: amendment_e_check;
+
+          [suffix]
+          CheckButton amendment_e_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("802.11h");
+          activatable-widget: amendment_h_check;
+
+          [suffix]
+          CheckButton amendment_h_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("802.11i");
+          activatable-widget: amendment_i_check;
+
+          [suffix]
+          CheckButton amendment_i_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("802.11k");
+          activatable-widget: amendment_k_check;
+
+          [suffix]
+          CheckButton amendment_k_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("802.11r");
+          activatable-widget: amendment_r_check;
+
+          [suffix]
+          CheckButton amendment_r_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("802.11s");
+          activatable-widget: amendment_s_check;
+
+          [suffix]
+          CheckButton amendment_s_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("802.11v");
+          activatable-widget: amendment_v_check;
+
+          [suffix]
+          CheckButton amendment_v_check {
+            active: true;
+            valign: center;
+          }
+        }
+
+        Adw.ActionRow {
+          title: _("802.11w");
+          activatable-widget: amendment_w_check;
+
+          [suffix]
+          CheckButton amendment_w_check {
+            active: true;
+            valign: center;
+          }
+        }
+      }
+    }
+  }
+}

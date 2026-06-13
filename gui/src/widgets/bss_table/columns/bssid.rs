@@ -1,0 +1,11 @@
+use gtk::SignalListItemFactory;
+
+use super::{create_bss_sorter_by, create_bss_text_factory};
+
+pub fn create_bssid_factory() -> SignalListItemFactory {
+    create_bss_text_factory(gtk::Align::Start, |bss| Some(bss.bssid()))
+}
+
+pub fn create_bssid_sorter() -> gtk::CustomSorter {
+    create_bss_sorter_by(|bss| bss.bssid())
+}

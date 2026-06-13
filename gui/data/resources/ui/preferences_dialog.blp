@@ -1,0 +1,95 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $PreferencesDialog: Adw.PreferencesDialog {
+  Adw.PreferencesPage {
+    title: _("");
+
+    Adw.PreferencesGroup {
+      title: _("General");
+
+      Adw.SwitchRow show_hidden_bsss_switch_row {
+        title: _("Show hidden BSSs");
+      }
+
+      Adw.ComboRow bss_retention_duration_combo_row {
+        title: _("Remove BSSs if not seen after");
+
+        model: StringList {
+          strings [
+            "1 minute",
+            "2 minutes",
+            "5 minutes",
+            "10 minutes",
+            "30 minutes",
+            "1 hour",
+          ]
+        };
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("Columns");
+
+      Adw.SwitchRow show_bssid_column_switch_row {
+        title: _("BSSID");
+      }
+
+      Adw.SwitchRow show_vendor_column_switch_row {
+        title: _("Vendor");
+      }
+
+      Adw.SwitchRow show_signal_column_switch_row {
+        title: _("Signal");
+      }
+
+      Adw.SwitchRow show_channel_column_switch_row {
+        title: _("Channel");
+      }
+
+      Adw.SwitchRow show_channel_width_column_switch_row {
+        title: _("Channel Width");
+      }
+
+      Adw.SwitchRow show_frequency_column_switch_row {
+        title: _("Frequency");
+      }
+
+      Adw.SwitchRow show_band_column_switch_row {
+        title: _("Band");
+      }
+
+      Adw.SwitchRow show_protocols_column_switch_row {
+        title: _("Protocols");
+      }
+
+      Adw.SwitchRow show_amendments_column_switch_row {
+        title: _("Amendments");
+      }
+
+      Adw.SwitchRow show_security_column_switch_row {
+        title: _("Security");
+      }
+
+      Adw.SwitchRow show_max_rate_column_switch_row {
+        title: _("Max Rate");
+      }
+
+      Adw.SwitchRow show_channel_utilization_column_switch_row {
+        title: _("Channel Utilization");
+      }
+
+      Adw.SwitchRow show_stations_column_switch_row {
+        title: _("Stations");
+      }
+
+      Adw.SwitchRow show_uptime_column_switch_row {
+        title: _("Uptime");
+      }
+
+      Adw.SwitchRow show_last_seen_column_switch_row {
+        title: _("Last Seen");
+      }
+    }
+  }
+}

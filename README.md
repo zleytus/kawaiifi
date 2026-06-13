@@ -16,6 +16,7 @@ This repository contains:
 - [`kawaiifi`](lib/) - the Rust library crate.
 - [`kawaiifi-ffi`](ffi/) - C-compatible FFI bindings for the Rust library.
 - [`Kawaiifi.Net`](dotnet/) - .NET wrapper around the Rust library.
+- [`kawaiifi-gui`](gui/) - Wi-Fi scanner app for Linux.
 
 ## Platform Support
 

@@ -1,0 +1,83 @@
+using Gtk 4.0;
+
+template $ScanInfoPopover: Gtk.Popover {
+  Gtk.Grid {
+    margin-top: 12;
+    margin-bottom: 12;
+    margin-start: 12;
+    margin-end: 12;
+    row-spacing: 6;
+    column-spacing: 12;
+    // Scan start time
+    Gtk.Label {
+      label: _("Scan Start:");
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 2;
+      }
+    }
+
+    Gtk.Label start_time_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 2;
+      }
+    }
+
+    // Scan end time
+    Gtk.Label {
+      label: _("Scan End:");
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 3;
+      }
+    }
+
+    Gtk.Label end_time_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 3;
+      }
+    }
+
+    // Scan duration
+    Gtk.Label {
+      label: _("Duration:");
+      halign: end;
+
+      styles [
+        "dim-label",
+      ]
+
+      layout {
+        column: 0;
+        row: 4;
+      }
+    }
+
+    Gtk.Label duration_label {
+      halign: start;
+
+      layout {
+        column: 1;
+        row: 4;
+      }
+    }
+  }
+}

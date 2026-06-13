@@ -1,0 +1,89 @@
+using Gtk 4.0;
+
+template $BssTable: Gtk.Box {
+  orientation: vertical;
+
+  Gtk.ScrolledWindow {
+    hexpand: true;
+    vexpand: true;
+
+    ColumnView column_view {
+      show-row-separators: true;
+      show-column-separators: false;
+
+      ColumnViewColumn color_column {
+        title: _("");
+      }
+
+      ColumnViewColumn ssid_column {
+        title: _("SSID");
+        resizable: true;
+        expand: true;
+      }
+
+      ColumnViewColumn bssid_column {
+        title: _("BSSID");
+        resizable: true;
+        expand: true;
+      }
+
+      ColumnViewColumn vendor_column {
+        title: _("Vendor");
+        resizable: true;
+        expand: true;
+      }
+
+      ColumnViewColumn signal_column {
+        title: _("Signal");
+      }
+
+      ColumnViewColumn channel_column {
+        title: _("Channel");
+      }
+
+      ColumnViewColumn channel_width_column {
+        title: _("Channel Width");
+      }
+
+      ColumnViewColumn frequency_column {
+        title: _("Frequency");
+      }
+
+      ColumnViewColumn band_column {
+        title: _("Band");
+      }
+
+      ColumnViewColumn protocols_column {
+        title: _("Protocols");
+      }
+
+      ColumnViewColumn amendments_column {
+        title: _("Amendments");
+      }
+
+      ColumnViewColumn security_column {
+        title: _("Security");
+      }
+
+      ColumnViewColumn max_rate_column {
+        title: _("Max Rate");
+      }
+
+      ColumnViewColumn channel_utilization_column {
+        title: _("Channel Utilization");
+      }
+
+      ColumnViewColumn station_count_column {
+        title: _("Stations");
+      }
+
+      ColumnViewColumn uptime_column {
+        title: _("Uptime");
+      }
+
+      ColumnViewColumn last_seen_column {
+        title: _("Last Seen");
+      }
+    }
+  }
+}

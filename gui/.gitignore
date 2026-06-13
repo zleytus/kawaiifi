@@ -1,0 +1,14 @@
+# Generated GResource files
+compiled.gresource
+
+# Ignore all .ui files (generated from .blp files)
+*.ui
+
+# Ignore all .flatpak files
+*.flatpak
+
+# Build directories
+builddir/
+builddir-flatpak/
+repo/
+.flatpak-builder/
