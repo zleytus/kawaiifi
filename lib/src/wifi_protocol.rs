@@ -5,10 +5,7 @@ use derive_more::{
 };
 use enumflags2::{BitFlags, bitflags};
 
-use crate::{
-    Ie, IeData,
-    ies::supported_rates::{DataRate, ExtendedSupportedRates, SupportedRates},
-};
+use crate::{Band, Ie, IeData, ies::supported_rates::DataRate};
 
 /// An 802.11 Wi-Fi protocol generation supported by a BSS.
 #[bitflags]
@@ -84,48 +81,17 @@ impl PartialOrd for WifiProtocols {
     }
 }
 
-impl From<&SupportedRates> for WifiProtocols {
-    fn from(supported_rates: &SupportedRates) -> Self {
-        let mut protocols = WifiProtocols(BitFlags::empty());
-
-        for rate in supported_rates.rates() {
-            match rate {
-                DataRate::OneMbps(_) | DataRate::TwoMbps(_) | DataRate::FivePointFiveMbps(_) => {
-                    protocols.insert(WifiProtocol::B)
-                }
-                DataRate::SixMbps(_)
-                | DataRate::NineMbps(_)
-                | DataRate::TwelveMbps(_)
-                | DataRate::EighteenMbps(_)
-                | DataRate::TwentyFourMbps(_)
-                | DataRate::ThirtySixMbps(_)
-                | DataRate::FortyEightMbps(_)
-                | DataRate::FiftyFourMbps(_) => protocols.insert(WifiProtocol::G),
-                _ => continue,
-            }
-        }
-
-        protocols
-    }
-}
-
-impl From<&ExtendedSupportedRates> for WifiProtocols {
-    fn from(extended_supported_rates: &ExtendedSupportedRates) -> Self {
-        WifiProtocols::from(extended_supported_rates.as_ref())
-    }
-}
-
-impl From<&[Ie]> for WifiProtocols {
-    fn from(ies: &[Ie]) -> Self {
+impl WifiProtocols {
+    pub(crate) fn from_ies_for_band(ies: &[Ie], band: Band) -> Self {
         let mut protocols = WifiProtocols(BitFlags::empty());
 
         for ie in ies {
             match &ie.data {
                 IeData::SupportedRates(supported_rates) => {
-                    protocols.insert(*WifiProtocols::from(supported_rates));
+                    protocols.insert(*protocols_from_rates(supported_rates.rates(), band));
                 }
                 IeData::ExtendedSupportedRates(supported_rates) => {
-                    protocols.insert(*WifiProtocols::from(supported_rates));
+                    protocols.insert(*protocols_from_rates(supported_rates.rates(), band));
                 }
                 IeData::HtCapabilities(_) => protocols.insert(WifiProtocol::N),
                 IeData::VhtCapabilities(_) => protocols.insert(WifiProtocol::AC),
@@ -149,5 +115,73 @@ impl Display for WifiProtocols {
                 .collect::<Vec<String>>()
                 .join("/")
         )
+    }
+}
+
+fn protocols_from_rates(rates: impl IntoIterator<Item = DataRate>, band: Band) -> WifiProtocols {
+    let mut protocols = WifiProtocols(BitFlags::empty());
+
+    for rate in rates {
+        match rate {
+            DataRate::OneMbps(_) | DataRate::TwoMbps(_) | DataRate::FivePointFiveMbps(_) => {
+                if band == Band::TwoPointFourGhz {
+                    protocols.insert(WifiProtocol::B)
+                }
+            }
+            DataRate::SixMbps(_)
+            | DataRate::NineMbps(_)
+            | DataRate::TwelveMbps(_)
+            | DataRate::EighteenMbps(_)
+            | DataRate::TwentyFourMbps(_)
+            | DataRate::ThirtySixMbps(_)
+            | DataRate::FortyEightMbps(_)
+            | DataRate::FiftyFourMbps(_) => match band {
+                Band::TwoPointFourGhz => protocols.insert(WifiProtocol::G),
+                Band::FiveGhz => protocols.insert(WifiProtocol::A),
+                Band::SixGhz => {}
+            },
+            _ => continue,
+        }
+    }
+
+    protocols
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ofdm_rates_are_802_11g_on_two_point_four_ghz() {
+        let protocols = protocols_from_rates([DataRate::SixMbps(false)], Band::TwoPointFourGhz);
+
+        assert!(protocols.contains(WifiProtocol::G));
+        assert!(!protocols.contains(WifiProtocol::A));
+    }
+
+    #[test]
+    fn ofdm_rates_are_802_11a_on_five_ghz() {
+        let protocols = protocols_from_rates([DataRate::SixMbps(false)], Band::FiveGhz);
+
+        assert!(protocols.contains(WifiProtocol::A));
+        assert!(!protocols.contains(WifiProtocol::G));
+    }
+
+    #[test]
+    fn legacy_rates_do_not_mark_six_ghz_as_802_11a_or_802_11g() {
+        let protocols = protocols_from_rates([DataRate::SixMbps(false)], Band::SixGhz);
+
+        assert!(!protocols.contains(WifiProtocol::A));
+        assert!(!protocols.contains(WifiProtocol::G));
+    }
+
+    #[test]
+    fn dsss_rates_are_802_11b_only_on_two_point_four_ghz() {
+        let two_point_four =
+            protocols_from_rates([DataRate::OneMbps(false)], Band::TwoPointFourGhz);
+        let five = protocols_from_rates([DataRate::OneMbps(false)], Band::FiveGhz);
+
+        assert!(two_point_four.contains(WifiProtocol::B));
+        assert!(!five.contains(WifiProtocol::B));
     }
 }

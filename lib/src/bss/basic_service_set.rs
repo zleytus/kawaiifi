@@ -314,7 +314,7 @@ impl Bss {
 
     /// The Wi-Fi protocols supported by the BSS.
     pub fn wifi_protocols(&self) -> WifiProtocols {
-        WifiProtocols::from(self.ies.as_slice())
+        WifiProtocols::from_ies_for_band(self.ies.as_slice(), self.band())
     }
 
     /// The Wi-Fi amendments supported by the BSS.
