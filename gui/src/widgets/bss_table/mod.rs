@@ -29,6 +29,7 @@ pub(super) mod column_settings {
     pub const SHOW_MAX_RATE: &str = "show-max-rate-column";
     pub const SHOW_CHANNEL_UTILIZATION: &str = "show-channel-utilization-column";
     pub const SHOW_STATIONS: &str = "show-stations-column";
+    pub const SHOW_STREAMS: &str = "show-streams-column";
     pub const SHOW_UPTIME: &str = "show-uptime-column";
     pub const SHOW_LAST_SEEN: &str = "show-last-seen-column";
 }
@@ -76,11 +77,13 @@ mod imp {
         #[template_child]
         pub security_column: TemplateChild<gtk::ColumnViewColumn>,
         #[template_child]
+        pub max_rate_column: TemplateChild<gtk::ColumnViewColumn>,
+        #[template_child]
         pub channel_utilization_column: TemplateChild<gtk::ColumnViewColumn>,
         #[template_child]
         pub station_count_column: TemplateChild<gtk::ColumnViewColumn>,
         #[template_child]
-        pub max_rate_column: TemplateChild<gtk::ColumnViewColumn>,
+        pub streams_column: TemplateChild<gtk::ColumnViewColumn>,
         #[template_child]
         pub uptime_column: TemplateChild<gtk::ColumnViewColumn>,
         #[template_child]
@@ -129,6 +132,7 @@ mod imp {
                     "Frequency",
                     "Max Rate",
                     "Stations",
+                    "Streams",
                     "Uptime",
                     "Last Seen",
                 ],

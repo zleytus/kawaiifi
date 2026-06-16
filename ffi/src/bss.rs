@@ -189,6 +189,13 @@ pub unsafe extern "C" fn kawaiifi_bss_station_count(
     }
 }
 
+/// Returns the maximum number of spatial streams advertised by the BSS for its current
+/// channel width.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kawaiifi_bss_max_spatial_streams(bss: Option<&Bss>) -> u8 {
+    bss.map(|bss| bss.max_spatial_streams()).unwrap_or_default()
+}
+
 /// Returns the number of information elements in the BSS, or 0 if `bss` is null.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_bss_ie_count(bss: Option<&Bss>) -> usize {

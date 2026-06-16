@@ -14,6 +14,9 @@
 - Fixed Wi-Fi protocol inference so 5 GHz OFDM rates are reported as 802.11a
   instead of 802.11g.
 
+#### Added
+- Added `Bss::max_spatial_streams()`
+
 ## 0.1.0 - 2026-06-09
 
 ### `kawaiifi`

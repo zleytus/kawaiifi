@@ -29,12 +29,14 @@ impl BssTable {
             .set_factory(Some(&create_amendments_factory()));
         imp.security_column
             .set_factory(Some(&create_security_factory()));
+        imp.max_rate_column
+            .set_factory(Some(&create_max_rate_factory()));
         imp.channel_utilization_column
             .set_factory(Some(&create_channel_utilization_factory()));
         imp.station_count_column
             .set_factory(Some(&create_station_count_factory()));
-        imp.max_rate_column
-            .set_factory(Some(&create_max_rate_factory()));
+        imp.streams_column
+            .set_factory(Some(&create_streams_factory()));
         imp.uptime_column
             .set_factory(Some(&create_uptime_factory()));
 
@@ -65,12 +67,14 @@ impl BssTable {
             .set_sorter(Some(&create_amendments_sorter()));
         imp.security_column
             .set_sorter(Some(&create_security_sorter()));
+        imp.max_rate_column
+            .set_sorter(Some(&create_max_rate_sorter()));
         imp.channel_utilization_column
             .set_sorter(Some(&create_channel_utilization_sorter()));
         imp.station_count_column
             .set_sorter(Some(&create_station_count_sorter()));
-        imp.max_rate_column
-            .set_sorter(Some(&create_max_rate_sorter()));
+        imp.streams_column
+            .set_sorter(Some(&create_streams_sorter()));
         imp.uptime_column.set_sorter(Some(&create_uptime_sorter()));
         imp.last_seen_column
             .set_sorter(Some(&create_last_seen_sorter()));
@@ -155,6 +159,13 @@ impl BssTable {
             .bind(
                 column_settings::SHOW_STATIONS,
                 &*imp.station_count_column,
+                "visible",
+            )
+            .build();
+        settings
+            .bind(
+                column_settings::SHOW_STREAMS,
+                &*imp.streams_column,
                 "visible",
             )
             .build();

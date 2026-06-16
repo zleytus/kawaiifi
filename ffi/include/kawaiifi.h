@@ -583,6 +583,12 @@ bool kawaiifi_bss_channel_utilization(const struct Bss *bss,
 bool kawaiifi_bss_station_count(const struct Bss *bss, uint16_t *station_count);
 
 /**
+ * Returns the maximum number of spatial streams advertised by the BSS for its current
+ * channel width.
+ */
+uint8_t kawaiifi_bss_max_spatial_streams(const struct Bss *bss);
+
+/**
  * Returns the number of information elements in the BSS, or 0 if `bss` is null.
  */
 uintptr_t kawaiifi_bss_ie_count(const struct Bss *bss);

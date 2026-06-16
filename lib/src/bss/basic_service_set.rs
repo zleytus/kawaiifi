@@ -409,6 +409,83 @@ impl Bss {
         })
     }
 
+    /// The maximum number of spatial streams advertised by the BSS for its current
+    /// channel width.
+    pub fn max_spatial_streams(&self) -> u8 {
+        let (mut eht_caps, mut he_caps, mut vht_caps, mut ht_caps) = (None, None, None, None);
+
+        for ie in self.ies.iter() {
+            match &ie.data {
+                IeData::EhtCapabilities(ie_data) => eht_caps = Some(ie_data),
+                IeData::HeCapabilities(ie_data) => he_caps = Some(ie_data),
+                IeData::VhtCapabilities(ie_data) => vht_caps = Some(ie_data),
+                IeData::HtCapabilities(ie_data) => ht_caps = Some(ie_data),
+                _ => continue,
+            }
+        }
+
+        if let Some(caps) = eht_caps
+            && let Some(mcs_nss_set) = &caps.supported_eht_mcs_and_nss_set
+        {
+            let default_mcs_map_spatial_streams = mcs_nss_set
+                .eht_mcs_map_bw_lte_80_mhz_except_20_mhz_only_non_ap_sta
+                .max_spatial_streams();
+            return match self.channel_width() {
+                ChannelWidth::TwentyMhz | ChannelWidth::FortyMhz | ChannelWidth::EightyMhz => {
+                    default_mcs_map_spatial_streams
+                }
+                ChannelWidth::EightyPlusEightyMhz | ChannelWidth::OneSixtyMhz => mcs_nss_set
+                    .eht_mcs_map_bw_eq_160_mhz
+                    .map_or(default_mcs_map_spatial_streams, |mcs_map| {
+                        mcs_map.max_spatial_streams()
+                    }),
+                ChannelWidth::ThreeHundredTwentyMhz => mcs_nss_set
+                    .eht_mcs_map_bw_eq_320_mhz
+                    .map_or(default_mcs_map_spatial_streams, |mcs_map| {
+                        mcs_map.max_spatial_streams()
+                    }),
+            };
+        }
+
+        if let Some(caps) = he_caps {
+            let default_mcs_map_spatial_streams = caps
+                .supported_he_mcs_and_nss_set
+                .rx_he_mcs_map_less_than_or_equal_to_eighty_mhz
+                .max_spatial_streams();
+            return match self.channel_width() {
+                ChannelWidth::TwentyMhz | ChannelWidth::FortyMhz | ChannelWidth::EightyMhz => {
+                    default_mcs_map_spatial_streams
+                }
+
+                ChannelWidth::EightyPlusEightyMhz => caps
+                    .supported_he_mcs_and_nss_set
+                    .rx_he_mcs_map_eighty_plus_eighty_mhz
+                    .map_or(default_mcs_map_spatial_streams, |mcs_map| {
+                        mcs_map.max_spatial_streams()
+                    }),
+                ChannelWidth::OneSixtyMhz | ChannelWidth::ThreeHundredTwentyMhz => caps
+                    .supported_he_mcs_and_nss_set
+                    .rx_he_mcs_map_one_hundred_sixty_mhz
+                    .map_or(default_mcs_map_spatial_streams, |mcs_map| {
+                        mcs_map.max_spatial_streams()
+                    }),
+            };
+        }
+
+        if let Some(caps) = vht_caps {
+            return caps
+                .supported_vht_mcs_and_nss_set
+                .rx_vht_mcs_map
+                .max_spatial_streams();
+        }
+
+        if let Some(caps) = ht_caps {
+            return caps.supported_mcs_set.max_spatial_streams();
+        }
+
+        1
+    }
+
     pub(crate) fn resolve_ie_dependencies(&mut self) {
         crate::ies::resolve_ie_dependencies(&mut self.ies);
     }

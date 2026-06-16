@@ -159,6 +159,12 @@ impl BssObject {
         self.bss().station_count()
     }
 
+    /// The maximum number of spatial streams advertised by the BSS for its current
+    /// channel width.
+    pub fn max_spatial_streams(&self) -> u8 {
+        self.bss().max_spatial_streams()
+    }
+
     /// The estimated time the BSS has been running, derived from its TSF timer.
     pub fn uptime(&self) -> Duration {
         self.bss().uptime()

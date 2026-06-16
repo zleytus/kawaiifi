@@ -13,6 +13,7 @@ mod security;
 mod signal;
 mod ssid;
 mod station_count;
+mod streams;
 mod uptime;
 mod vendor;
 
@@ -98,6 +99,7 @@ pub use security::*;
 pub use signal::*;
 pub use ssid::*;
 pub use station_count::*;
+pub use streams::*;
 pub use uptime::*;
 pub use vendor::*;
 

@@ -61,6 +61,10 @@
       <default>true</default>
       <summary>Show the Stations column</summary>
     </key>
+    <key name="show-streams-column" type="b">
+      <default>true</default>
+      <summary>Show the Streams column</summary>
+    </key>
     <key name="show-uptime-column" type="b">
       <default>true</default>
       <summary>Show the Uptime column</summary>

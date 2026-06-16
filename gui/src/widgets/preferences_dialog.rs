@@ -47,6 +47,8 @@ mod imp {
         #[template_child]
         pub show_stations_column_switch_row: TemplateChild<adw::SwitchRow>,
         #[template_child]
+        pub show_streams_column_switch_row: TemplateChild<adw::SwitchRow>,
+        #[template_child]
         pub show_uptime_column_switch_row: TemplateChild<adw::SwitchRow>,
         #[template_child]
         pub show_last_seen_column_switch_row: TemplateChild<adw::SwitchRow>,
@@ -177,6 +179,10 @@ mod imp {
                 (
                     column_settings::SHOW_STATIONS,
                     &*self.show_stations_column_switch_row,
+                ),
+                (
+                    column_settings::SHOW_STREAMS,
+                    &*self.show_streams_column_switch_row,
                 ),
                 (
                     column_settings::SHOW_UPTIME,

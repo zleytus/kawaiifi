@@ -139,6 +139,13 @@ namespace CsBindgen
         internal static extern bool kawaiifi_bss_station_count(Bss* bss, ushort* station_count);
 
         /// <summary>
+        ///  Returns the maximum number of spatial streams advertised by the BSS for its current
+        ///  channel width.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_max_spatial_streams", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern byte kawaiifi_bss_max_spatial_streams(Bss* bss);
+
+        /// <summary>
         ///  Returns the number of information elements in the BSS, or 0 if `bss` is null.
         /// </summary>
         [DllImport(__DllName, EntryPoint = "kawaiifi_bss_ie_count", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]

@@ -329,6 +329,18 @@ public class Bss
         }
     }
 
+    /// <summary>The maximum number of spatial streams advertised by the BSS for its current channel width.</summary>
+    public byte MaxSpatialStreams
+    {
+        get
+        {
+            unsafe
+            {
+                return NativeMethods.kawaiifi_bss_max_spatial_streams(_ptr);
+            }
+        }
+    }
+
     /// <summary>
     /// The information elements (IEs) included in the BSS's beacon or probe response.
     /// The returned <see cref="Ie"/> instances borrow memory owned by the parent <see cref="Scan"/>
