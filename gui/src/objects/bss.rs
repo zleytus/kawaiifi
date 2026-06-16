@@ -229,6 +229,58 @@ fn color_from_bssid(bssid: &[u8; 6]) -> RGBA {
     RGBA::new(r as f32, g as f32, b as f32, 1.0)
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BssInternal {
+    bss: kawaiifi::Bss,
+    vendor: Option<String>,
+    color: RGBA,
+}
+
+impl BssInternal {
+    /// Creates a new `BssInternal` wrapping the given [`kawaiifi::Bss`].
+    pub fn new(bss: kawaiifi::Bss) -> Self {
+        Self {
+            color: color_from_bssid(bss.bssid()),
+            bss,
+            vendor: None,
+        }
+    }
+
+    /// Replaces the underlying [`kawaiifi::Bss`] with a newer scan result.
+    pub fn update(&mut self, bss: kawaiifi::Bss) {
+        self.bss = bss;
+    }
+
+    /// The OUI vendor name, or `None` if unknown.
+    pub fn vendor(&self) -> Option<&str> {
+        self.vendor.as_deref()
+    }
+
+    /// Sets the OUI vendor name.
+    pub fn set_vendor(&mut self, vendor: String) {
+        self.vendor.replace(vendor);
+    }
+
+    /// The display color derived from the BSSID.
+    pub fn color(&self) -> RGBA {
+        self.color
+    }
+
+    /// How long ago this BSS was last seen, or `None` if the timestamp is unavailable.
+    pub fn time_since_last_seen(&self) -> Option<Duration> {
+        self.last_seen_utc()
+            .and_then(|utc| chrono::Utc::now().signed_duration_since(utc).to_std().ok())
+    }
+}
+
+impl Deref for BssInternal {
+    type Target = kawaiifi::Bss;
+
+    fn deref(&self) -> &Self::Target {
+        &self.bss
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -326,57 +378,5 @@ mod tests {
             format_vendor_display_name("Vantiva - Connected Home"),
             "Vantiva Connected"
         );
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BssInternal {
-    bss: kawaiifi::Bss,
-    vendor: Option<String>,
-    color: RGBA,
-}
-
-impl BssInternal {
-    /// Creates a new `BssInternal` wrapping the given [`kawaiifi::Bss`].
-    pub fn new(bss: kawaiifi::Bss) -> Self {
-        Self {
-            color: color_from_bssid(bss.bssid()),
-            bss,
-            vendor: None,
-        }
-    }
-
-    /// Replaces the underlying [`kawaiifi::Bss`] with a newer scan result.
-    pub fn update(&mut self, bss: kawaiifi::Bss) {
-        self.bss = bss;
-    }
-
-    /// The OUI vendor name, or `None` if unknown.
-    pub fn vendor(&self) -> Option<&str> {
-        self.vendor.as_deref()
-    }
-
-    /// Sets the OUI vendor name.
-    pub fn set_vendor(&mut self, vendor: String) {
-        self.vendor.replace(vendor);
-    }
-
-    /// The display color derived from the BSSID.
-    pub fn color(&self) -> RGBA {
-        self.color
-    }
-
-    /// How long ago this BSS was last seen, or `None` if the timestamp is unavailable.
-    pub fn time_since_last_seen(&self) -> Option<Duration> {
-        self.last_seen_utc()
-            .and_then(|utc| chrono::Utc::now().signed_duration_since(utc).to_std().ok())
-    }
-}
-
-impl Deref for BssInternal {
-    type Target = kawaiifi::Bss;
-
-    fn deref(&self) -> &Self::Target {
-        &self.bss
     }
 }
