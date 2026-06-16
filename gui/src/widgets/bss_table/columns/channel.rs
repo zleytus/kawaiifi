@@ -3,7 +3,7 @@ use gtk::SignalListItemFactory;
 use super::{create_bss_sorter_by, create_bss_text_factory};
 
 pub fn create_channel_factory() -> SignalListItemFactory {
-    create_bss_text_factory(gtk::Align::End, |bss| {
+    create_bss_text_factory(gtk::Align::End, None, |bss| {
         Some(bss.channel_number().to_string())
     })
 }
