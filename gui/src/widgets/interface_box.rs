@@ -2,12 +2,27 @@ use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gio, glib};
 
+#[derive(Default)]
+enum InterfaceState {
+    #[default]
+    Uninitialized,
+    Loaded(Vec<kawaiifi::Interface>),
+    Error(kawaiifi::InterfaceError),
+}
+
 mod imp {
+    use std::{
+        cell::{Cell, RefCell},
+        sync::OnceLock,
+    };
+
     use adw::ButtonContent;
-    use gtk::MenuButton;
+    use gtk::{MenuButton, glib::types::StaticType};
 
     use super::*;
     use crate::widgets::InterfacePopover;
+
+    pub const SIGNAL_INTERFACES_LOAD_FAILED: &str = "interfaces-load-failed";
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/fi/kawaii/kawaiifi/ui/interface_box.ui")]
@@ -18,7 +33,8 @@ mod imp {
         pub(crate) interface_popover: TemplateChild<InterfacePopover>,
         #[template_child]
         pub(crate) interface_menu_button: TemplateChild<MenuButton>,
-        pub(crate) selected_ifindex: std::cell::Cell<Option<u32>>,
+        pub(crate) selected_ifindex: Cell<Option<u32>>,
+        pub(super) interface_state: RefCell<InterfaceState>,
     }
 
     #[glib::object_subclass]
@@ -40,8 +56,19 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             let obj = self.obj();
-            obj.setup_action();
             obj.setup_interfaces();
+            obj.setup_action();
+        }
+
+        fn signals() -> &'static [glib::subclass::Signal] {
+            static SIGNALS: OnceLock<Vec<glib::subclass::Signal>> = OnceLock::new();
+            SIGNALS.get_or_init(|| {
+                vec![
+                    glib::subclass::Signal::builder(SIGNAL_INTERFACES_LOAD_FAILED)
+                        .param_types([String::static_type()])
+                        .build(),
+                ]
+            })
         }
     }
     impl WidgetImpl for InterfaceBox {}
@@ -61,9 +88,7 @@ impl InterfaceBox {
 
     fn setup_action(&self) {
         let action_group = gio::SimpleActionGroup::new();
-        let initial_ifindex = kawaiifi::default_interface()
-            .map(|i| i.index() as i32)
-            .unwrap_or(0);
+        let initial_ifindex = self.selected_interface_index().unwrap_or_default() as i32;
 
         let action = gio::SimpleAction::new_stateful(
             "select-interface",
@@ -86,11 +111,8 @@ impl InterfaceBox {
 
             action.set_state(&(ifindex as i32).to_variant());
 
-            if let Some(interface) = kawaiifi::interfaces()
-                .iter()
-                .find(|interface| interface.index() == ifindex)
-            {
-                widget.set_selected_interface(interface);
+            if let Some(interface) = widget.interface_by_index(ifindex) {
+                widget.set_selected_interface(&interface);
             }
         });
 
@@ -100,30 +122,61 @@ impl InterfaceBox {
     }
 
     fn setup_interfaces(&self) {
-        // Get available interfaces
-        let interfaces = kawaiifi::interfaces();
-
-        // Create menu
         let menu = gio::Menu::new();
 
-        for interface in interfaces.iter() {
-            let label = format!("{} ({})", interface.name(), interface.bus_type(),);
-            menu.append(
-                Some(&label),
-                Some(&format!(
-                    "interface.select-interface({})",
-                    interface.index()
-                )),
-            );
+        match kawaiifi::interfaces() {
+            Ok(interfaces) => {
+                for interface in &interfaces {
+                    let label = format!("{} ({})", interface.name(), interface.bus_type());
+                    menu.append(
+                        Some(&label),
+                        Some(&format!(
+                            "interface.select-interface({})",
+                            interface.index()
+                        )),
+                    );
+                }
+
+                let default_interface = interfaces.first().cloned();
+                self.imp()
+                    .interface_state
+                    .replace(InterfaceState::Loaded(interfaces));
+
+                if let Some(default_interface) = default_interface {
+                    self.set_selected_interface(&default_interface);
+                    self.imp().interface_menu_button.set_sensitive(true);
+                } else {
+                    self.imp().interface_button_label.set_label("No Interfaces");
+                    self.imp().interface_button_label.set_icon_name("");
+                    self.imp().interface_menu_button.set_sensitive(false);
+                }
+            }
+            Err(error) => {
+                tracing::error!(error = %error, "Failed to enumerate Wi-Fi interfaces");
+                self.imp()
+                    .interface_state
+                    .replace(InterfaceState::Error(error));
+                self.imp()
+                    .interface_button_label
+                    .set_label("Interfaces Unavailable");
+                self.imp().interface_button_label.set_icon_name("");
+                self.imp().interface_menu_button.set_sensitive(false);
+
+                glib::idle_add_local_once(glib::clone!(
+                    #[weak(rename_to = interface_box)]
+                    self,
+                    move || {
+                        let Some(error) = interface_box.interface_error() else {
+                            return;
+                        };
+                        interface_box
+                            .emit_by_name::<()>(imp::SIGNAL_INTERFACES_LOAD_FAILED, &[&error]);
+                    }
+                ));
+            }
         }
 
-        // Set menu on MenuButton
         self.imp().interface_menu_button.set_menu_model(Some(&menu));
-
-        // Set initial interface
-        if let Some(default_interface) = kawaiifi::default_interface() {
-            self.set_selected_interface(&default_interface);
-        }
     }
 
     pub fn selected_interface_index(&self) -> Option<u32> {
@@ -131,10 +184,36 @@ impl InterfaceBox {
     }
 
     pub fn selected_interface(&self) -> Option<kawaiifi::Interface> {
-        self.selected_interface_index().and_then(|index| {
-            kawaiifi::interfaces()
-                .into_iter()
+        self.selected_interface_index()
+            .and_then(|index| self.interface_by_index(index))
+    }
+
+    fn interface_by_index(&self, index: u32) -> Option<kawaiifi::Interface> {
+        match &*self.imp().interface_state.borrow() {
+            InterfaceState::Loaded(interfaces) => interfaces
+                .iter()
                 .find(|interface| interface.index() == index)
+                .cloned(),
+            InterfaceState::Uninitialized | InterfaceState::Error(_) => None,
+        }
+    }
+
+    fn interface_error(&self) -> Option<String> {
+        match &*self.imp().interface_state.borrow() {
+            InterfaceState::Error(error) => Some(error.to_string()),
+            InterfaceState::Uninitialized | InterfaceState::Loaded(_) => None,
+        }
+    }
+
+    pub fn connect_interfaces_load_failed<F: Fn(&Self, &str) + 'static>(
+        &self,
+        f: F,
+    ) -> glib::SignalHandlerId {
+        self.connect_local(imp::SIGNAL_INTERFACES_LOAD_FAILED, false, move |args| {
+            let interface_box = args[0].get::<Self>().unwrap();
+            let error = args[1].get::<String>().unwrap();
+            f(&interface_box, &error);
+            None
         })
     }
 

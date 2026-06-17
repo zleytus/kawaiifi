@@ -10,6 +10,9 @@
   supported-rate elements that did not include band context.
 - Removed `Backend` on Linux. Scans are now triggered using `NetworkManager` by
   default.
+- Changed `kawaiifi::interfaces()` and `kawaiifi::default_interface()` to return
+  `Result<Vec<Interface>, InterfaceError>` and `Result<Option<Interface>, InterfaceError>`
+  respectively
 
 #### Fixed
 

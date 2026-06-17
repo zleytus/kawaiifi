@@ -100,6 +100,7 @@ impl KawaiiFiWindow {
         if self.imp().interface_box.selected_interface().is_none() {
             tracing::warn!("Cannot start scanning without a selected interface");
             self.stop_scanning();
+            self.imp().start_scanning_button.set_sensitive(false);
             return;
         }
 

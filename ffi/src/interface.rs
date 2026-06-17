@@ -8,7 +8,7 @@ pub struct InterfaceList(Vec<Interface>);
 /// The caller must free the returned list with `kawaiifi_interface_list_free`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_interfaces() -> Box<InterfaceList> {
-    Box::new(InterfaceList(kawaiifi::interfaces()))
+    Box::new(InterfaceList(kawaiifi::interfaces().unwrap_or_default()))
 }
 
 /// Returns the number of interfaces in the list, or 0 if `list` is null.
@@ -39,7 +39,7 @@ pub unsafe extern "C" fn kawaiifi_interface_list_free(list: Option<Box<Interface
 /// The caller must free the returned interface with `kawaiifi_interface_free`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_default_interface() -> Option<Box<Interface>> {
-    kawaiifi::default_interface().map(Box::new)
+    kawaiifi::default_interface().ok()?.map(Box::new)
 }
 
 /// Frees an interface returned by `kawaiifi_default_interface`. Does nothing if `interface` is null.

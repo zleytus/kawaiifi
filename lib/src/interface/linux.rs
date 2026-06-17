@@ -18,7 +18,7 @@ use crate::{
     scan,
 };
 
-pub(super) fn interfaces() -> Result<Vec<Interface>, ScanError> {
+pub(super) fn interfaces() -> Result<Vec<Interface>, super::Error> {
     // Create a generic netlink socket and resolve nl80211 family
     let (socket, _) = NlRouter::connect(NlFamily::Generic, None, Groups::empty())?;
     let family_id = socket.resolve_genl_family(NL80211_FAMILY_NAME)?;

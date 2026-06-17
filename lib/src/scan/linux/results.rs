@@ -33,7 +33,7 @@ use crate::{
 ///
 /// ```no_run
 /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-/// let interface = kawaiifi::default_interface()
+/// let interface = kawaiifi::default_interface()?
 ///     .expect("Expected to find a wireless interface");
 /// let scan = interface.scan().await?;
 ///

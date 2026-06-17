@@ -4,7 +4,7 @@ use kawaiifi::Scan;
 use kawaiifi::ies::Field;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");
+    let interface = kawaiifi::default_interface()?.expect("Expected to find a wireless interface");
     let scan = interface.scan_blocking()?;
     print_scan_ies(&scan);
 

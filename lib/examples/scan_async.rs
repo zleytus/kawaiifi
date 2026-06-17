@@ -3,7 +3,7 @@ use std::error::Error;
 #[cfg(target_os = "linux")]
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");
+    let interface = kawaiifi::default_interface()?.expect("Expected to find a wireless interface");
 
     let scan = interface.scan().await?;
 
@@ -21,7 +21,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 #[cfg(target_os = "macos")]
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");
+    let interface = kawaiifi::default_interface()?.expect("Expected to find a wireless interface");
 
     let scan = interface.scan().await?;
 
@@ -38,7 +38,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 #[cfg(target_os = "windows")]
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");
+    let interface = kawaiifi::default_interface()?.expect("Expected to find a wireless interface");
 
     let scan = interface.scan().await?;
 

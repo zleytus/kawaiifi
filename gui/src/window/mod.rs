@@ -142,6 +142,15 @@ mod imp {
 
             self.obj().connect_components_to_models();
 
+            self.interface_box
+                .connect_interfaces_load_failed(glib::clone!(
+                    #[weak(rename_to = window)]
+                    self.obj(),
+                    move |_, error| {
+                        window.show_error("Could Not Load Wi-Fi Interfaces", error);
+                    }
+                ));
+
             self.obj().setup_actions();
             self.obj().setup_search();
             self.obj().setup_scan_controls();

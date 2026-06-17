@@ -2,7 +2,7 @@ use std::error::Error;
 
 #[cfg(target_os = "linux")]
 fn main() -> Result<(), Box<dyn Error>> {
-    let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");
+    let interface = kawaiifi::default_interface()?.expect("Expected to find a wireless interface");
 
     let scan = interface.scan_blocking()?;
 
@@ -19,7 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 #[cfg(target_os = "macos")]
 fn main() -> Result<(), Box<dyn Error>> {
-    let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");
+    let interface = kawaiifi::default_interface()?.expect("Expected to find a wireless interface");
 
     let scan = interface.scan_blocking()?;
 
@@ -35,7 +35,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 #[cfg(target_os = "windows")]
 fn main() -> Result<(), Box<dyn Error>> {
-    let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");
+    let interface = kawaiifi::default_interface()?.expect("Expected to find a wireless interface");
 
     let scan = interface.scan_blocking()?;
 

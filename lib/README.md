@@ -23,7 +23,7 @@ Use `kawaiifi::default_interface()` to get the first available interface.
 ```rust
 use kawaiifi::Interface;
 
-let interface: Interface = kawaiifi::default_interface().ok_or("No Wi-Fi interface found")?;
+let interface: Interface = kawaiifi::default_interface()?.ok_or("No Wi-Fi interface found")?;
 ```
 
 Use `kawaiifi::interfaces()` to get all available interfaces.
@@ -31,7 +31,7 @@ Use `kawaiifi::interfaces()` to get all available interfaces.
 ```rust
 use kawaiifi::Interface;
 
-let interfaces: Vec<Interface> = kawaiifi::interfaces();
+let interfaces: Vec<Interface> = kawaiifi::interfaces()?;
 ```
 
 Some `Interface` properties are platform-specific.

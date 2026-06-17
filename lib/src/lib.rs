@@ -12,7 +12,7 @@
 //! # fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! use kawaiifi::Interface;
 //!
-//! let interface: Interface = kawaiifi::default_interface().ok_or("No Wi-Fi interface found")?;
+//! let interface: Interface = kawaiifi::default_interface()?.ok_or("No Wi-Fi interface found")?;
 //! # Ok(())
 //! # }
 //! ```
@@ -20,10 +20,11 @@
 //! Use [`interfaces`] to get all available interfaces.
 //!
 //! ```
-//! # fn example() {
+//! # fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! use kawaiifi::Interface;
 //!
-//! let interfaces: Vec<Interface> = kawaiifi::interfaces();
+//! let interfaces: Vec<Interface> = kawaiifi::interfaces()?;
+//! # Ok(())
 //! # }
 //! ```
 //!
@@ -50,7 +51,7 @@
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! use kawaiifi::Scan;
 //!
-//! # let interface = kawaiifi::default_interface().ok_or("No Wi-Fi interface found")?;
+//! # let interface = kawaiifi::default_interface()?.ok_or("No Wi-Fi interface found")?;
 //! let scan: Scan = interface.scan_blocking()?;
 //! # Ok(())
 //! # }
@@ -59,7 +60,7 @@
 //!
 //! ```no_run
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-//! let interface = kawaiifi::default_interface()
+//! # let interface = kawaiifi::default_interface()?
 //!     .expect("Expected to find a wireless interface");
 //! let scan = interface.scan().await?;
 //! # Ok(())
@@ -175,7 +176,7 @@ pub use channel_width::{ChannelWidth, ChannelWidths};
 pub use ies::{Ie, IeData};
 #[cfg(target_os = "linux")]
 pub use interface::BusType;
-pub use interface::{Interface, default_interface, interfaces};
+pub use interface::{Error as InterfaceError, Interface, default_interface, interfaces};
 #[cfg(target_os = "linux")]
 pub use nl80211::BssStatus;
 pub use scan::Error as ScanError;
