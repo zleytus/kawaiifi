@@ -36,10 +36,15 @@ modules:
 
   - name: kawaiifi
     buildsystem: meson
-    subdir: gui
     config-opts:
       - -Dcargo-home=/run/build/kawaiifi/cargo
     sources:
       - type: dir
-        path: ../..
+        path: ..
+        skip:
+          - .flatpak-builder
+          - builddir*
+          - repo
+          - '*.flatpak'
+          - '*.snap'
       - cargo-sources.json
