@@ -17,7 +17,7 @@
 
   <PropertyGroup>
     <PackageId>Kawaiifi.Net</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.1.0-preview.1</Version>
     <Authors>Zach Leytus</Authors>
     <Description>A Wi-Fi scanning library for Linux, macOS, and Windows.</Description>
     <Copyright>Copyright (c) 2026 Zach Leytus</Copyright>
