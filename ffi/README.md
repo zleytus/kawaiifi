@@ -52,9 +52,7 @@ kawaiifi_string_free(description);
 
 ### Triggering a Wi-Fi Scan
 
-On Linux, scans can be triggered through either [NetworkManager](https://networkmanager.dev/) or [nl80211](https://wireless.docs.kernel.org/en/latest/en/developers/documentation/nl80211.html) (Netlink), so a `Backend` must be specified.
-
-On macOS and Windows, scans are triggered through [CoreWLAN](https://developer.apple.com/documentation/CoreWLAN) and [Native Wifi](https://learn.microsoft.com/en-us/windows/win32/nativewifi/portal) respectively.
+Use `kawaiifi_interface_scan` to trigger a Wi-Fi scan.
 
 ```c
 #include "kawaiifi.h"
@@ -67,11 +65,7 @@ int main() {
         return -1;
     }
 
-    #if defined(__linux__)
-    Scan *scan = kawaiifi_interface_scan(interface, BACKEND_NETWORK_MANAGER);
-    #else
     Scan *scan = kawaiifi_interface_scan(interface);
-    #endif
 
     uintptr_t count = kawaiifi_scan_bss_count(scan);
     printf("Found %zu BSS(s)\n", count);

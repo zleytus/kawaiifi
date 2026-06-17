@@ -6,7 +6,7 @@ mod nl80211;
 mod results;
 mod scan;
 
-pub use backend::Backend;
+pub(crate) use backend::Backend;
 pub use error::Error;
 pub use flags::Flags;
 pub use results::Scan;

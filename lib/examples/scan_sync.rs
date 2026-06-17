@@ -2,11 +2,9 @@ use std::error::Error;
 
 #[cfg(target_os = "linux")]
 fn main() -> Result<(), Box<dyn Error>> {
-    use kawaiifi::Backend;
-
     let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");
 
-    let scan = interface.scan_blocking(Backend::NetworkManager)?;
+    let scan = interface.scan_blocking()?;
 
     println!(
         "Found {} BSS(s) in {:#?} on {} frequencies using {}",

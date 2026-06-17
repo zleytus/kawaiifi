@@ -13,7 +13,7 @@ use pci_ids::FromId as FromPciId;
 use usb_ids::FromId as FromUsbId;
 
 use crate::{
-    Backend, Bss, ChannelWidth, Scan, ScanError,
+    Bss, ChannelWidth, Scan, ScanError,
     nl80211::{Attr, ChanWidth, Cmd, IfType, NL80211_FAMILY_NAME, ParseError},
     scan,
 };
@@ -273,17 +273,17 @@ impl Interface {
 
     /// Triggers a new scan and returns the results.
     #[tracing::instrument(skip(self), fields(interface = %self.name()))]
-    pub async fn scan(&self, backend: Backend) -> Result<Scan, ScanError> {
-        scan::scan(self, backend).await
+    pub async fn scan(&self) -> Result<Scan, ScanError> {
+        scan::scan(self, crate::scan::Backend::NetworkManager).await
     }
 
     /// Triggers a new scan and returns the results, blocking the current thread.
     #[tracing::instrument(skip(self), fields(interface = %self.name()))]
-    pub fn scan_blocking(&self, backend: Backend) -> Result<Scan, ScanError> {
+    pub fn scan_blocking(&self) -> Result<Scan, ScanError> {
         tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()?
-            .block_on(scan::scan(self, backend))
+            .block_on(scan::scan(self, crate::scan::Backend::NetworkManager))
     }
 
     /// Returns the most recently cached scan results without triggering a new scan.

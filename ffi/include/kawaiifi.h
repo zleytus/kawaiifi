@@ -104,20 +104,6 @@ typedef enum BusType {
 } BusType;
 #endif
 
-#if defined(__linux__)
-/**
- * FFI-safe equivalent of kawaiifi::Backend.
- */
-typedef enum Backend {
-#if defined(__linux__)
-  BACKEND_NL80211,
-#endif
-#if defined(__linux__)
-  BACKEND_NETWORK_MANAGER,
-#endif
-} Backend;
-#endif
-
 #if defined(__APPLE__)
 /**
  * FFI-safe equivalent of CoreWLAN's CWSecurity.
@@ -742,6 +728,12 @@ struct Interface *kawaiifi_default_interface(void);
 void kawaiifi_interface_free(struct Interface *interface);
 
 /**
+ * Performs a blocking scan and returns the result, or null on error.
+ * The caller must free the returned scan with `kawaiifi_scan_free`.
+ */
+struct Scan *kawaiifi_interface_scan(const struct Interface *interface);
+
+/**
  * Returns the cached BSS list for the given interface, or null if `interface` is null or an error occurs.
  * The caller must free the returned list with `kawaiifi_bss_list_free`.
  */
@@ -1042,14 +1034,6 @@ enum BusType kawaiifi_interface_bus_type(const struct Interface *interface);
 
 #if defined(__linux__)
 /**
- * Performs a blocking scan and returns the result, or null on error.
- * The caller must free the returned scan with `kawaiifi_scan_free`.
- */
-struct Scan *kawaiifi_interface_scan(const struct Interface *interface, enum Backend backend);
-#endif
-
-#if defined(__linux__)
-/**
  * Returns the wiphy index of the radio that performed the scan, or 0 if `scan` is null.
  */
 uint32_t kawaiifi_scan_wiphy(const struct Scan *scan);
@@ -1212,14 +1196,6 @@ char *kawaiifi_interface_country_code(const struct Interface *interface);
 bool kawaiifi_interface_service_active(const struct Interface *interface);
 #endif
 
-#if defined(__APPLE__)
-/**
- * Performs a blocking scan and returns the result, or null on error.
- * The caller must free the returned scan with `kawaiifi_scan_free`.
- */
-struct Scan *kawaiifi_interface_scan(const struct Interface *interface);
-#endif
-
 #if defined(_WIN32)
 /**
  * Returns the 802.11 capability information flags for the BSS.
@@ -1262,14 +1238,6 @@ GUID kawaiifi_interface_guid(const struct Interface *interface);
  * The caller must free the returned string with `kawaiifi_string_free`.
  */
 char *kawaiifi_interface_description(const struct Interface *interface);
-#endif
-
-#if defined(_WIN32)
-/**
- * Performs a blocking scan and returns the result, or null on error.
- * The caller must free the returned scan with `kawaiifi_scan_free`.
- */
-struct Scan *kawaiifi_interface_scan(const struct Interface *interface);
 #endif
 
 #ifdef __cplusplus

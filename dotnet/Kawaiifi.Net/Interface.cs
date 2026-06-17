@@ -669,49 +669,15 @@ public class Interface : IDisposable
     }
 
     /// <summary>
-    /// Performs a blocking Wi-Fi scan using the specified backend and returns the results.
-    /// Dispose the returned <see cref="Kawaiifi.Net.Scan"/> when done.
-    /// </summary>
-    [SupportedOSPlatform("linux")]
-    public Scan Scan(Backend backend)
-    {
-        unsafe
-        {
-            var scan = backend switch
-            {
-                Backend.Nl80211 => NativeMethodsLinux.kawaiifi_interface_scan(Ptr, CsBindgen.Backend.Nl80211),
-                Backend.NetworkManager => NativeMethodsLinux.kawaiifi_interface_scan(Ptr,
-                    CsBindgen.Backend.NetworkManager),
-                _ => throw new ArgumentOutOfRangeException(nameof(backend)),
-            };
-
-            return new Scan(scan);
-        }
-    }
-
-    /// <summary>
     /// Performs a blocking Wi-Fi scan and returns the results.
     /// Dispose the returned <see cref="Kawaiifi.Net.Scan"/> when done.
     /// </summary>
-    [SupportedOSPlatform("macos")]
-    [SupportedOSPlatform("windows")]
     public Scan Scan()
     {
         unsafe
         {
-            if (OperatingSystem.IsMacOS())
-            {
-                var scan = NativeMethodsMacOS.kawaiifi_interface_scan(Ptr);
-                return new Scan(scan);
-            }
-
-            if (OperatingSystem.IsWindows())
-            {
-                var scan = NativeMethodsWindows.kawaiifi_interface_scan(Ptr);
-                return new Scan(scan);
-            }
-
-            throw new PlatformNotSupportedException();
+            var scan = NativeMethods.kawaiifi_interface_scan(Ptr);
+            return new Scan(scan);
         }
     }
 

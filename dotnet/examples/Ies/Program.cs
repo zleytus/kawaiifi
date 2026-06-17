@@ -1,20 +1,8 @@
 using Kawaiifi.Net;
 
 using var defaultInterface = Interface.Default();
-
-if (OperatingSystem.IsLinux())
-{
-    using var scan = defaultInterface?.Scan(Backend.NetworkManager);
-    PrintScanIes(scan);
-}
-
-if (OperatingSystem.IsMacOS() || OperatingSystem.IsWindows())
-{
-    using var scan = defaultInterface?.Scan();
-    PrintScanIes(scan);
-}
-
-return;
+using var scan = defaultInterface?.Scan();
+PrintScanIes(scan);
 
 static void PrintScanIes(Scan? scan)
 {

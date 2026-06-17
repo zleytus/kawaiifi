@@ -8,6 +8,8 @@
 
 - Removed ambiguous `WifiProtocols` conversions from information elements and
   supported-rate elements that did not include band context.
+- Removed `Backend` on Linux. Scans are now triggered using `NetworkManager` by
+  default.
 
 #### Fixed
 

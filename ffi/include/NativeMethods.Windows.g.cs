@@ -58,13 +58,6 @@ namespace CsBindgen
         [DllImport(__DllName, EntryPoint = "kawaiifi_interface_description", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern byte* kawaiifi_interface_description(Interface* @interface);
 
-        /// <summary>
-        ///  Performs a blocking scan and returns the result, or null on error.
-        ///  The caller must free the returned scan with `kawaiifi_scan_free`.
-        /// </summary>
-        [DllImport(__DllName, EntryPoint = "kawaiifi_interface_scan", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern Scan* kawaiifi_interface_scan(Interface* @interface);
-
 
     }
 

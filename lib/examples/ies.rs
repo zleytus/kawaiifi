@@ -3,18 +3,6 @@ use std::error::Error;
 use kawaiifi::Scan;
 use kawaiifi::ies::Field;
 
-#[cfg(target_os = "linux")]
-fn main() -> Result<(), Box<dyn Error>> {
-    use kawaiifi::Backend;
-
-    let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");
-    let scan = interface.scan_blocking(Backend::NetworkManager)?;
-    print_scan_ies(&scan);
-
-    Ok(())
-}
-
-#[cfg(any(target_os = "macos", target_os = "windows"))]
 fn main() -> Result<(), Box<dyn Error>> {
     let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");
     let scan = interface.scan_blocking()?;

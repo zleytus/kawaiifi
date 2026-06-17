@@ -25,7 +25,7 @@ This repository contains:
 
 | Platform | API |
 |----------|---------|
-| Linux | [NetworkManager](https://networkmanager.dev/) or [nl80211](https://wireless.docs.kernel.org/en/latest/en/developers/documentation/nl80211.html) (Netlink) |
+| Linux | [NetworkManager](https://networkmanager.dev/) and [nl80211](https://wireless.docs.kernel.org/en/latest/en/developers/documentation/nl80211.html) (Netlink) |
 | macOS | [CoreWLAN](https://developer.apple.com/documentation/CoreWLAN) |
 | Windows | [Native Wifi](https://learn.microsoft.com/en-us/windows/win32/nativewifi/portal) (Win32) |
 
@@ -36,9 +36,13 @@ can be used to determine physical location and other sensitive information.
 
 ### Linux
 
-Scanning via the `Nl80211` backend requires either root privileges or the
-`CAP_NET_ADMIN` capability. The `NetworkManager` backend does not have this
-requirement because NetworkManager handles the scan on behalf of the application.
+`kawaiifi` uses nl80211 to enumerate Wi-Fi interfaces and retrieve scan results.
+It uses NetworkManager to trigger scans, which avoids requiring root privileges
+or the `CAP_NET_ADMIN` capability.
+
+Sandboxed packages may need additional permissions to use both nl80211 and
+NetworkManager. For example, Snap packages require the `network-control` interface
+for nl80211 and the `network-manager` interface for NetworkManager.
 
 ### macOS
 

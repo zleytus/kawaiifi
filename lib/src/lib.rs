@@ -44,30 +44,9 @@
 //!
 //! ## Triggering a Wi-Fi Scan
 //!
-//! Both blocking and asynchronous scans are available through
-//! [`Interface::scan_blocking`] and [`Interface::scan`].
-//!
-//! On Linux, scans can be triggered through either NetworkManager or nl80211
-//! (Netlink), so a `Backend` must be specified.
+//! Blocking scans are triggered using [`Interface::scan_blocking`].
 //!
 //! ```no_run
-//! # #[cfg(target_os = "linux")]
-//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! use kawaiifi::{Backend, Scan};
-//!
-//! # let interface = kawaiifi::default_interface().ok_or("No Wi-Fi interface found")?;
-//! let scan: Scan = interface.scan_blocking(Backend::NetworkManager)?;
-//! # Ok(())
-//! # }
-//! # #[cfg(not(target_os = "linux"))]
-//! # fn main() {}
-//! ```
-//!
-//! On macOS and Windows, scans are triggered through CoreWLAN and Native Wifi
-//! respectively.
-//!
-//! ```no_run
-//! # #[cfg(any(target_os = "macos", target_os = "windows"))]
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! use kawaiifi::Scan;
 //!
@@ -75,8 +54,16 @@
 //! let scan: Scan = interface.scan_blocking()?;
 //! # Ok(())
 //! # }
-//! # #[cfg(not(any(target_os = "macos", target_os = "windows")))]
-//! # fn main() {}
+//! ```
+//! Asynchronous scans are triggered using [`Interface::scan`].
+//!
+//! ```no_run
+//! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+//! let interface = kawaiifi::default_interface()
+//!     .expect("Expected to find a wireless interface");
+//! let scan = interface.scan().await?;
+//! # Ok(())
+//! # }
 //! ```
 //!
 //! ## Accessing BSS Data
@@ -191,8 +178,6 @@ pub use interface::BusType;
 pub use interface::{Interface, default_interface, interfaces};
 #[cfg(target_os = "linux")]
 pub use nl80211::BssStatus;
-#[cfg(target_os = "linux")]
-pub use scan::Backend;
 pub use scan::Error as ScanError;
 #[cfg(target_os = "linux")]
 pub use scan::Flags as ScanFlags;

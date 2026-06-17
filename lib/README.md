@@ -49,23 +49,20 @@ println!("Description: {}", interface.description());
 
 ### Triggering a Wi-Fi Scan
 
-Blocking scans are available through `Interface::scan_blocking()` and asynchronous scans
-through `Interface::scan()`.
-
-On Linux, scans can be triggered through either [NetworkManager](https://networkmanager.dev/) or [nl80211](https://wireless.docs.kernel.org/en/latest/en/developers/documentation/nl80211.html) (Netlink), so a `Backend` must be specified.
-
-```rust
-use kawaiifi::{Backend, Scan};
-
-let scan: Scan = interface.scan_blocking(Backend::NetworkManager)?;
-```
-
-On macOS and Windows, scans are triggered through [CoreWLAN](https://developer.apple.com/documentation/CoreWLAN) and [Native Wifi](https://learn.microsoft.com/en-us/windows/win32/nativewifi/portal) respectively.
+Blocking scans are triggered using `Interface::scan_blocking()`.
 
 ```rust
 use kawaiifi::Scan;
 
 let scan: Scan = interface.scan_blocking()?;
+```
+
+Asynchronous scans are triggered using `Interface::scan()`.
+
+```rust
+use kawaiifi::Scan;
+
+let scan: Scan = interface.scan().await?;
 ```
 
 ### Accessing BSS Data

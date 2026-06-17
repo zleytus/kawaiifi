@@ -1,6 +1,6 @@
 use std::ffi::c_char;
 
-use kawaiifi::{Interface, Scan};
+use kawaiifi::Interface;
 use objc2_core_wlan::{CWInterfaceMode, CWPHYMode, CWSecurity};
 
 use crate::common::string_to_c;
@@ -269,13 +269,4 @@ pub unsafe extern "C" fn kawaiifi_interface_country_code(
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_interface_service_active(interface: Option<&Interface>) -> bool {
     interface.map(Interface::service_active).unwrap_or_default()
-}
-
-/// Performs a blocking scan and returns the result, or null on error.
-/// The caller must free the returned scan with `kawaiifi_scan_free`.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn kawaiifi_interface_scan(
-    interface: Option<&Interface>,
-) -> Option<Box<Scan>> {
-    interface?.scan_blocking().ok().map(Box::new)
 }

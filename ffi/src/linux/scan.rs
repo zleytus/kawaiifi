@@ -1,13 +1,5 @@
 use kawaiifi::Scan;
 
-/// FFI-safe equivalent of kawaiifi::Backend.
-#[repr(C)]
-#[allow(dead_code)]
-pub enum Backend {
-    Nl80211,
-    NetworkManager,
-}
-
 #[repr(C)]
 pub struct ScanFlags {
     /// The scan can be delayed or paused to allow normal data transmission

@@ -32,12 +32,10 @@ use crate::{
 /// # Example
 ///
 /// ```no_run
-/// use kawaiifi::Backend;
-///
 /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 /// let interface = kawaiifi::default_interface()
 ///     .expect("Expected to find a wireless interface");
-/// let scan = interface.scan(Backend::NetworkManager).await?;
+/// let scan = interface.scan().await?;
 ///
 /// println!("Found {} BSSs", scan.bss_list().len());
 /// println!("Scanned {} frequencies", scan.freqs_mhz().len());

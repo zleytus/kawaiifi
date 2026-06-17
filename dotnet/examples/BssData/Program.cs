@@ -1,20 +1,9 @@
 using Kawaiifi.Net;
 
 using var defaultInterface = Interface.Default();
+using var scan = defaultInterface?.Scan();
 
-if (OperatingSystem.IsLinux())
-{
-    using var scan = defaultInterface?.Scan(Backend.NetworkManager);
-    PrintScanBssData(scan);
-}
-
-if (OperatingSystem.IsMacOS() || OperatingSystem.IsWindows())
-{
-    using var scan = defaultInterface?.Scan();
-    PrintScanBssData(scan);
-}
-
-return;
+PrintScanBssData(scan);
 
 static void PrintScanBssData(Scan? scan)
 {
@@ -22,7 +11,7 @@ static void PrintScanBssData(Scan? scan)
     {
         return;
     }
-    
+
     foreach (var bss in scan.BssList)
     {
         Console.WriteLine($"BSSID: {BitConverter.ToString(bss.Bssid).Replace('-', ':')}");

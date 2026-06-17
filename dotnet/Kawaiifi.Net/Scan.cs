@@ -213,14 +213,3 @@ public readonly record struct ScanFlags(
     bool MinPreqContent,
     bool FrequencyKhz,
     bool Colocated6Ghz);
-
-/// <summary>The scan backend to use when performing a Wi-Fi scan on Linux.</summary>
-[SupportedOSPlatform("linux")]
-public enum Backend
-{
-    /// <summary>Use the nl80211 netlink interface directly.</summary>
-    Nl80211,
-
-    /// <summary>Use NetworkManager as the scan backend.</summary>
-    NetworkManager
-}

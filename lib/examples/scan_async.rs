@@ -3,11 +3,9 @@ use std::error::Error;
 #[cfg(target_os = "linux")]
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    use kawaiifi::Backend;
-
     let interface = kawaiifi::default_interface().expect("Expected to find a wireless interface");
 
-    let scan = interface.scan(Backend::NetworkManager).await?;
+    let scan = interface.scan().await?;
 
     println!(
         "Found {} BSS(s) in {:#?} on {} frequencies using {}",

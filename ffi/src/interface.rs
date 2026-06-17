@@ -1,4 +1,4 @@
-use kawaiifi::Interface;
+use kawaiifi::{Interface, Scan};
 
 use crate::bss::BssList;
 
@@ -48,6 +48,15 @@ pub unsafe extern "C" fn kawaiifi_interface_free(interface: Option<&mut Interfac
     if let Some(interface) = interface {
         drop(unsafe { Box::from_raw(interface) });
     }
+}
+
+/// Performs a blocking scan and returns the result, or null on error.
+/// The caller must free the returned scan with `kawaiifi_scan_free`.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kawaiifi_interface_scan(
+    interface: Option<&Interface>,
+) -> Option<Box<Scan>> {
+    interface?.scan_blocking().ok().map(Box::new)
 }
 
 /// Returns the cached BSS list for the given interface, or null if `interface` is null or an error occurs.

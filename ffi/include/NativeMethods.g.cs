@@ -325,6 +325,13 @@ namespace CsBindgen
         internal static extern void kawaiifi_interface_free(Interface* @interface);
 
         /// <summary>
+        ///  Performs a blocking scan and returns the result, or null on error.
+        ///  The caller must free the returned scan with `kawaiifi_scan_free`.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_interface_scan", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern Scan* kawaiifi_interface_scan(Interface* @interface);
+
+        /// <summary>
         ///  Returns the cached BSS list for the given interface, or null if `interface` is null or an error occurs.
         ///  The caller must free the returned list with `kawaiifi_bss_list_free`.
         /// </summary>

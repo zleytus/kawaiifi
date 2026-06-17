@@ -9,11 +9,7 @@ int main() {
         return -1;
     }
 
-    #if defined(__linux__)
-    Scan *scan = kawaiifi_interface_scan(interface, BACKEND_NETWORK_MANAGER);
-    #else
     Scan *scan = kawaiifi_interface_scan(interface);
-    #endif
 
     uintptr_t bss_count = kawaiifi_scan_bss_count(scan);
     for (uintptr_t i = 0; i < bss_count; ++i) {

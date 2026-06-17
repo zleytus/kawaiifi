@@ -264,13 +264,6 @@ namespace CsBindgen
         internal static extern BusType kawaiifi_interface_bus_type(Interface* @interface);
 
         /// <summary>
-        ///  Performs a blocking scan and returns the result, or null on error.
-        ///  The caller must free the returned scan with `kawaiifi_scan_free`.
-        /// </summary>
-        [DllImport(__DllName, EntryPoint = "kawaiifi_interface_scan", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern Scan* kawaiifi_interface_scan(Interface* @interface, Backend backend);
-
-        /// <summary>
         ///  Returns the wiphy index of the radio that performed the scan, or 0 if `scan` is null.
         /// </summary>
         [DllImport(__DllName, EntryPoint = "kawaiifi_scan_wiphy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
@@ -397,15 +390,6 @@ namespace CsBindgen
         Usb,
         Sdio,
         Unknown,
-    }
-
-    /// <summary>
-    ///  FFI-safe equivalent of kawaiifi::Backend.
-    /// </summary>
-    internal enum Backend : uint
-    {
-        Nl80211,
-        NetworkManager,
     }
 
 

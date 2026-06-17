@@ -1,6 +1,6 @@
 use std::ffi::c_char;
 
-use kawaiifi::{Interface, Scan};
+use kawaiifi::Interface;
 use windows_sys::core::GUID;
 
 use crate::common::string_to_c;
@@ -20,13 +20,4 @@ pub unsafe extern "C" fn kawaiifi_interface_description(
     interface
         .map(|i| string_to_c(i.description()))
         .unwrap_or(std::ptr::null_mut())
-}
-
-/// Performs a blocking scan and returns the result, or null on error.
-/// The caller must free the returned scan with `kawaiifi_scan_free`.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn kawaiifi_interface_scan(
-    interface: Option<&Interface>,
-) -> Option<Box<Scan>> {
-    interface?.scan_blocking().ok().map(Box::new)
 }

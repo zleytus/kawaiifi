@@ -1,8 +1,6 @@
 //! Wi-Fi scan APIs and scan result types.
 //!
-//! The contents of this module are platform-specific. Linux exposes an explicit
-//! [`Backend`] selection, while macOS and Windows expose the platform-native scan
-//! API directly through [`crate::Interface`].
+//! The contents of this module are platform-specific.
 
 #[cfg(target_os = "linux")]
 mod linux;

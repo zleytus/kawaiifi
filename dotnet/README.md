@@ -61,24 +61,12 @@ if (OperatingSystem.IsWindows())
 
 ### Triggering a Wi-Fi Scan
 
-On Linux, scans can be triggered through either [NetworkManager](https://networkmanager.dev/) or [nl80211](https://wireless.docs.kernel.org/en/latest/en/developers/documentation/nl80211.html) (Netlink), so a `Backend` must be specified.
-
-On macOS and Windows, scans are triggered through [CoreWLAN](https://developer.apple.com/documentation/CoreWLAN) and [Native Wifi](https://learn.microsoft.com/en-us/windows/win32/nativewifi/portal) respectively.
+Use `Interface.Scan()` to trigger a Wi-Fi scan.
 
 ```csharp
 using var defaultInterface = Interface.Default();
-
-if (OperatingSystem.IsLinux())
-{
-    using var scan = defaultInterface?.Scan(Backend.NetworkManager);
-    Console.WriteLine($"Found {scan?.BssList.Count} BSS(s)");
-}
-
-if (OperatingSystem.IsMacOS() || OperatingSystem.IsWindows())
-{
-    using var scan = defaultInterface?.Scan();
-    Console.WriteLine($"Found {scan?.BssList.Count} BSS(s)");
-}
+using var scan = defaultInterface?.Scan();
+Console.WriteLine($"Found {scan?.BssList.Count} BSS(s)");
 ```
 
 See [`Scan/Program.cs`](https://github.com/zleytus/kawaiifi/blob/master/dotnet/examples/Scan/Program.cs).

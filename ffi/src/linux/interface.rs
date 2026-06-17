@@ -1,11 +1,9 @@
 use std::ffi::c_char;
 
-use kawaiifi::{Interface, Scan};
+use kawaiifi::Interface;
 
 use crate::bss::ChannelWidth;
-
 use crate::common::{str_to_c, string_to_c};
-use crate::linux::scan::Backend;
 
 /// FFI-safe equivalent of kawaiifi::BusType.
 #[repr(C)]
@@ -290,19 +288,4 @@ pub unsafe extern "C" fn kawaiifi_interface_bus_type(interface: Option<&Interfac
         Some(kawaiifi::BusType::Sdio) => BusType::Sdio,
         _ => BusType::Unknown,
     }
-}
-
-/// Performs a blocking scan and returns the result, or null on error.
-/// The caller must free the returned scan with `kawaiifi_scan_free`.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn kawaiifi_interface_scan(
-    interface: Option<&Interface>,
-    backend: Backend,
-) -> Option<Box<Scan>> {
-    let interface = interface?;
-    let backend = match backend {
-        Backend::Nl80211 => kawaiifi::Backend::Nl80211,
-        Backend::NetworkManager => kawaiifi::Backend::NetworkManager,
-    };
-    interface.scan_blocking(backend).ok().map(Box::new)
 }

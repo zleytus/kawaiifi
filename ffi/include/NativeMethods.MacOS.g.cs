@@ -124,13 +124,6 @@ namespace CsBindgen
         [return: MarshalAs(UnmanagedType.U1)]
         internal static extern bool kawaiifi_interface_service_active(Interface* @interface);
 
-        /// <summary>
-        ///  Performs a blocking scan and returns the result, or null on error.
-        ///  The caller must free the returned scan with `kawaiifi_scan_free`.
-        /// </summary>
-        [DllImport(__DllName, EntryPoint = "kawaiifi_interface_scan", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern Scan* kawaiifi_interface_scan(Interface* @interface);
-
 
     }
 
