@@ -1,5 +1,6 @@
 # Kawaiifi.Net
 
+[![NuGet](https://img.shields.io/nuget/vpre/Kawaiifi.Net.svg)](https://www.nuget.org/packages/Kawaiifi.Net)
 [![.NET 8+](https://img.shields.io/badge/.NET-8%2B-512BD4)](https://dotnet.microsoft.com/)
 [![License: MIT or Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](https://github.com/zleytus/kawaiifi/blob/master/LICENSE-MIT)
 

@@ -1,6 +1,7 @@
 # kawaiifi
 
 [![crates.io](https://img.shields.io/crates/v/kawaiifi.svg)](https://crates.io/crates/kawaiifi)
+[![NuGet](https://img.shields.io/nuget/vpre/Kawaiifi.Net.svg)](https://www.nuget.org/packages/Kawaiifi.Net)
 [![docs.rs](https://docs.rs/kawaiifi/badge.svg)](https://docs.rs/kawaiifi)
 [![CI](https://github.com/zleytus/kawaiifi/actions/workflows/ci.yml/badge.svg)](https://github.com/zleytus/kawaiifi/actions/workflows/ci.yml)
 [![License: MIT or Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE-MIT)
