@@ -23,14 +23,8 @@ const GRID_DOT_SIZE_PX: u32 = 2;
 const GRID_DOT_SPACING_PX: u32 = 6;
 const GRID_ALPHA: f64 = 0.85;
 
-fn borrow_plotters_cairo_context(cr: &gtk::cairo::Context) -> cairo_021::Context {
-    // plotters-cairo expects cairo-rs 0.21; GTK provides cairo-rs 0.22.
-    // Both wrap the same cairo_t, so borrow the raw pointer for this draw call.
-    unsafe { cairo_021::Context::from_raw_none(cr.to_raw_none() as *mut cairo_021::ffi::cairo_t) }
-}
-
 pub(super) fn draw_plot(
-    cr: &gtk::cairo::Context,
+    ctx: &gtk::cairo::Context,
     width: u32,
     height: u32,
     band: Band,
@@ -39,8 +33,7 @@ pub(super) fn draw_plot(
     is_dark: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let (freq_start, freq_end) = get_band_frequency_range(band);
-    let cairo_context = borrow_plotters_cairo_context(cr);
-    let backend = CairoBackend::new(&cairo_context, (width, height))?;
+    let backend = CairoBackend::new(ctx, (width, height))?;
     let root = backend.into_drawing_area();
 
     let (background, text, grid) = if is_dark {
