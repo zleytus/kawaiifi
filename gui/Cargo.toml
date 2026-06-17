@@ -10,7 +10,7 @@ name = "kawaiifi"
 path = "src/main.rs"
 
 [dependencies]
-adw = { package = "libadwaita", version = "0.9.1", features = ["v1_8"] }
+adw = { package = "libadwaita", version = "0.9.1", features = ["v1_7"] }
 async-channel = "2.5.0"
 chrono = "0.4.44"
 const-hex = "1.18.1"
