@@ -1,0 +1,55 @@
+name: kawaiifi
+base: core24
+version: "0.1.0"
+summary: Wi-Fi network scanner
+description: |
+  KawaiiFi is a Wi-Fi network scanner.
+
+grade: devel
+confinement: strict
+
+slots:
+  kawaiifi:
+    interface: dbus
+    bus: session
+    name: fi.kawaii.kawaiifi
+
+apps:
+  kawaiifi:
+    command: usr/bin/kawaiifi
+    desktop: usr/share/applications/fi.kawaii.kawaiifi.desktop
+    common-id: fi.kawaii.kawaiifi.desktop
+    extensions: [gnome]
+    plugs:
+      - network
+      - network-manager
+      - network-control
+      - home
+
+parts:
+  kawaiifi:
+    plugin: nil
+    source: .
+    build-packages:
+      - curl
+      - ca-certificates
+      - build-essential
+      - meson
+      - ninja-build
+      - pkg-config
+      - blueprint-compiler
+      - libgtk-4-dev
+      - libadwaita-1-dev
+      - libfontconfig1-dev
+      - libdbus-1-dev
+    override-build: |
+      export CARGO_HOME="$CRAFT_PART_BUILD/cargo-home"
+      export RUSTUP_HOME="$CRAFT_PART_BUILD/rustup-home"
+      export PATH="$CARGO_HOME/bin:$PATH"
+
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+              | sh -s -- -y --profile minimal --default-toolchain stable
+
+      meson setup build "$CRAFT_PART_SRC" --prefix=/usr --buildtype=release
+      meson compile -C build
+      meson install -C build --destdir "$CRAFT_PART_INSTALL"
