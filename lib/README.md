@@ -13,7 +13,7 @@ It discovers local Basic Service Sets (BSSs) and reports their SSID, BSSID, sign
 
 ```toml
 [dependencies]
-kawaiifi = "0.1"
+kawaiifi = "0.2"
 ```
 
 ### Obtaining a Wi-Fi Interface

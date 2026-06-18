@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 - 2026-06-17
 
 ### `kawaiifi`
 
@@ -12,7 +12,7 @@
   default.
 - Changed `kawaiifi::interfaces()` and `kawaiifi::default_interface()` to return
   `Result<Vec<Interface>, InterfaceError>` and `Result<Option<Interface>, InterfaceError>`
-  respectively
+  respectively.
 
 #### Fixed
 
@@ -20,7 +20,19 @@
   instead of 802.11g.
 
 #### Added
+
 - Added `Bss::max_spatial_streams()`
+
+### `kawaiifi-ffi`
+
+#### Breaking
+
+- Removed `Backend` on Linux. `kawaiifi_interface_scan` only has one argument
+  on Linux now, just like on macOS and Windows.
+
+#### Added
+
+- Added `kawaiifi_bss_max_spatial_streams`
 
 ## 0.1.0 - 2026-06-09
 
