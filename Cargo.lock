@@ -1305,7 +1305,7 @@ dependencies = [
  "const-hex",
  "enumflags2",
  "gtk4",
- "kawaiifi 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "kawaiifi 0.2.0",
  "libadwaita",
  "nix",
  "oui",
@@ -1422,32 +1422,6 @@ dependencies = [
 [[package]]
 name = "kawaiifi"
 version = "0.2.0"
-dependencies = [
- "base64",
- "chrono",
- "deku",
- "derive_more",
- "enumflags2",
- "libc",
- "neli",
- "num_enum",
- "objc2",
- "objc2-core-wlan",
- "objc2-foundation",
- "pci-ids",
- "serde",
- "thiserror",
- "tokio",
- "tracing",
- "typed-builder",
- "usb-ids",
- "windows-sys",
- "zbus",
-]
-
-[[package]]
-name = "kawaiifi"
-version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eb65d137aba93ead76689da5a2dbbbf4388a314e2b4fad8fb95caabdc665930f"
 dependencies = [
@@ -1474,12 +1448,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "kawaiifi"
+version = "0.2.1"
+dependencies = [
+ "base64",
+ "chrono",
+ "deku",
+ "derive_more",
+ "enumflags2",
+ "libc",
+ "neli",
+ "num_enum",
+ "objc2",
+ "objc2-core-wlan",
+ "objc2-foundation",
+ "pci-ids",
+ "serde",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "typed-builder",
+ "usb-ids",
+ "windows-sys",
+ "zbus",
+]
+
+[[package]]
 name = "kawaiifi-ffi"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "cbindgen",
  "csbindgen",
- "kawaiifi 0.2.0",
+ "kawaiifi 0.2.1",
  "objc2-core-wlan",
  "windows-sys",
 ]

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 - 2026-06-17
+
+- Fixed formatting in the asynchronous scan example in the generated crate documentation.
+
 ## 0.2.0 - 2026-06-17
 
 ### `kawaiifi`
