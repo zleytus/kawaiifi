@@ -52,7 +52,7 @@ mod imp {
         #[template_child]
         pub active_scan_spinner: TemplateChild<Widget>,
         #[template_child]
-        pub search_toggle: TemplateChild<ToggleButton>,
+        pub filter_toggle: TemplateChild<ToggleButton>,
         #[template_child]
         pub overlay_split_view: TemplateChild<adw::OverlaySplitView>,
         #[template_child]

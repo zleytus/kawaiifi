@@ -91,10 +91,10 @@ impl KawaiiFiWindow {
         self.add_action(&action_open);
     }
 
-    pub fn setup_search(&self) {
+    fn setup_filtering(&self) {
         let imp = self.imp();
 
-        imp.search_toggle.connect_toggled(glib::clone!(
+        imp.filter_toggle.connect_toggled(glib::clone!(
             #[weak(rename_to = window)]
             self,
             move |toggle| {
