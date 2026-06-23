@@ -10,7 +10,6 @@ mod preferences_dialog;
 pub use bss_chart::BssChart;
 pub use bss_elements::BssElements;
 pub use bss_filter::BssFilter;
-pub(crate) use bss_filter::CHANNEL_WIDTH_FILTER_OPTIONS;
 pub use bss_table::BssTable;
 pub use interface_box::InterfaceBox;
 pub use interface_popover::InterfacePopover;
