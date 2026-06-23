@@ -19,6 +19,7 @@ pub fn create_last_seen_factory(
 
     factory.connect_setup(move |_, list_item| {
         let label = gtk::Label::new(None);
+        label.add_css_class("numeric");
         label.set_halign(gtk::Align::End);
         list_item
             .downcast_ref::<gtk::ListItem>()

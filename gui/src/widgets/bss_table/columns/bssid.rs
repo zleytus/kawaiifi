@@ -6,6 +6,7 @@ pub fn create_bssid_factory() -> SignalListItemFactory {
     create_bss_text_factory(
         gtk::Align::Start,
         Some(gtk::pango::EllipsizeMode::Middle),
+        &["numeric"],
         |bss| Some(bss.data().formatted_bssid()),
     )
 }

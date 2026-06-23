@@ -9,6 +9,7 @@ pub fn create_channel_utilization_factory() -> SignalListItemFactory {
 
     factory.connect_setup(move |_, list_item| {
         let label = gtk::Label::new(None);
+        label.add_css_class("numeric");
         label.set_halign(gtk::Align::End);
         label.set_width_chars(4);
         let level_bar = gtk::LevelBar::new();

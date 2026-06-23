@@ -34,6 +34,7 @@ pub(super) fn set_bss_label(label: &gtk::Label, text: impl AsRef<str>, associate
 pub(super) fn create_bss_text_factory<F>(
     halign: gtk::Align,
     ellipsize: Option<gtk::pango::EllipsizeMode>,
+    css_classes: &'static [&'static str],
     text_for_bss: F,
 ) -> SignalListItemFactory
 where
@@ -44,6 +45,11 @@ where
     factory.connect_setup(move |_, list_item| {
         let label = gtk::Label::new(None);
         label.set_halign(halign);
+
+        for class in css_classes {
+            label.add_css_class(class);
+        }
+
         if let Some(ellipsize) = ellipsize {
             label.set_ellipsize(ellipsize);
         }

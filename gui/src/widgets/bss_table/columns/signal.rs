@@ -9,6 +9,7 @@ pub fn create_signal_factory() -> SignalListItemFactory {
 
     factory.connect_setup(move |_, list_item| {
         let label = gtk::Label::new(None);
+        label.add_css_class("numeric");
         label.set_halign(gtk::Align::End);
         label.set_hexpand(true);
         let level_bar = gtk::LevelBar::new();

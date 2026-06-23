@@ -6,6 +6,7 @@ pub fn create_vendor_factory() -> SignalListItemFactory {
     create_bss_text_factory(
         gtk::Align::Start,
         Some(gtk::pango::EllipsizeMode::End),
+        &[],
         |bss| Some(bss.data().formatted_vendor()),
     )
 }
