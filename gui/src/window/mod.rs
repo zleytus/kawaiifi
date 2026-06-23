@@ -43,6 +43,7 @@ mod imp {
         // Scanning state
         pub scanning_enabled: Cell<bool>,
         pub scan_source_id: RefCell<Option<glib::SourceId>>, // To cancel scan timer
+        pub scan_generation: Cell<u64>,
 
         // UI components
         #[template_child]

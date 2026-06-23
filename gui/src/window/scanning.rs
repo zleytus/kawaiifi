@@ -1,125 +1,31 @@
-use std::{path::Path, sync::Arc, thread, time::Duration};
+use std::time::Duration;
 
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::{
-    gio::prelude::{ListModelExt, ListModelExtManual, SettingsExt},
+    gio::prelude::SettingsExt,
     glib::{self, object::ObjectExt},
-    prelude::WidgetExt,
 };
+use kawaiifi::Interface;
 
-use super::{
-    KawaiiFiWindow, imp, scan_processing::fill_vendors_from_cache, scan_processing::lookup_vendor,
-    scan_processing::merge_new_scan_results_with_existing,
-};
+use super::{KawaiiFiWindow, imp};
 use crate::{
-    objects::{BssInternal, BssObject},
-    scan_file::ScanFile,
+    objects::BssInternal,
+    scan::{ProcessedScan, spawn_scan_processing},
 };
-
-enum ScanAndProcessingResult {
-    Ok {
-        scan: kawaiifi::Scan,
-        merged_bss_list: Vec<BssInternal>,
-    },
-    Err {
-        scan_error: kawaiifi::ScanError,
-    },
-}
-
-enum CachedScanResult {
-    Ok {
-        bss_count: usize,
-        merged_bss_list: Vec<BssInternal>,
-    },
-    Err {
-        scan_error: kawaiifi::ScanError,
-    },
-}
 
 impl KawaiiFiWindow {
-    pub fn show_cached_scan_results(&self) {
-        let Some(interface) = self.imp().interface_box.selected_interface() else {
-            tracing::warn!("Cannot show cached scan results without a selected interface");
-            return;
-        };
-
-        let existing_bss_data = self.current_bss_data();
-        let vendor_cache = Arc::clone(self.imp().vendor_cache.get().unwrap());
-        let (sender, receiver) = async_channel::unbounded();
-
-        // Cached scan retrieval is blocking, so keep it off the UI thread.
-        thread::spawn(move || {
-            let result = interface.cached_scan_results_blocking();
-            let mut vendor_cache = vendor_cache.lock().unwrap();
-            match result {
-                Ok(scan_results) => {
-                    // Cached results are from before this app run, so keep the existing
-                    // uptime cache rather than treating this as a fresh scan boundary.
-                    let bss_count = scan_results.len();
-                    let merged_bss_list = merge_new_scan_results_with_existing(
-                        &existing_bss_data,
-                        &scan_results,
-                        &mut vendor_cache,
-                    );
-                    _ = sender.send_blocking(CachedScanResult::Ok {
-                        bss_count,
-                        merged_bss_list,
-                    });
-                }
-                Err(scan_error) => {
-                    _ = sender.send_blocking(CachedScanResult::Err { scan_error });
-                }
-            }
-        });
-
-        let window = self.clone();
-        glib::spawn_future_local(async move {
-            // GTK widgets must be updated from the main thread; the worker only sends
-            // processed data back through the channel.
-            match receiver.recv().await {
-                Ok(CachedScanResult::Ok {
-                    bss_count,
-                    merged_bss_list,
-                }) => {
-                    tracing::info!(bss_count, "Received cached scan results");
-                    if window.bss_list_store().n_items() == 0 {
-                        window.apply_merged_results(merged_bss_list);
-                    }
-                }
-                Ok(CachedScanResult::Err { scan_error }) => {
-                    tracing::warn!(error = %scan_error, "Failed to read cached scan results");
-                }
-                Err(recv_error) => {
-                    tracing::warn!(error = %recv_error, "Cached scan worker stopped before sending results");
-                }
-            }
-        });
-    }
-
-    pub fn start_scanning(&self) {
-        if self.imp().interface_box.selected_interface().is_none() {
-            tracing::warn!("Cannot start scanning without a selected interface");
-            self.stop_scanning();
-            self.imp().start_scanning_button.set_sensitive(false);
-            return;
-        }
-
-        // Stop any existing timer
-        self.stop_scanning();
-
+    pub(super) fn enable_scanning(&self) {
         let imp = self.imp();
-        imp.scanning_enabled.set(true);
-
-        // Do first scan immediately
-        self.scan();
-
-        imp.start_scanning_button.set_sensitive(false);
-        imp.stop_scanning_button.set_sensitive(true);
+        self.cancel_scheduled_scan();
+        let was_enabled = imp.scanning_enabled.replace(true);
+        if !was_enabled {
+            self.emit_by_name::<()>(imp::SIGNAL_SCANNING_STARTED, &[]);
+        }
     }
 
     /// Schedule the next scan after the configured interval
     /// This is called after a scan completes or fails
-    fn schedule_next_scan(&self) {
+    pub(super) fn schedule_active_scan(&self, interface: Interface, delay: Duration) {
         let imp = self.imp();
 
         // Only schedule if scanning is still enabled
@@ -127,11 +33,10 @@ impl KawaiiFiWindow {
             return;
         }
 
-        let interval_seconds = super::SCAN_INTERVAL_SECONDS;
-        tracing::debug!(interval_seconds, "Scheduling next scan");
+        tracing::debug!(delay_secs = %delay.as_secs(), "Scheduling next scan");
 
         let source_id = glib::timeout_add_local_once(
-            std::time::Duration::from_secs(u64::from(interval_seconds)),
+            delay,
             glib::clone!(
                 #[weak(rename_to = window)]
                 self,
@@ -139,7 +44,7 @@ impl KawaiiFiWindow {
                     window.imp().scan_source_id.replace(None);
 
                     if window.imp().scanning_enabled.get() {
-                        window.scan();
+                        window.start_active_scan(interface);
                     }
                 }
             ),
@@ -149,169 +54,142 @@ impl KawaiiFiWindow {
 
     pub fn stop_scanning(&self) {
         let imp = self.imp();
-        imp.scanning_enabled.set(false);
+        let was_enabled = imp.scanning_enabled.replace(false);
+        self.cancel_scheduled_scan();
 
+        if was_enabled {
+            self.emit_by_name::<()>(imp::SIGNAL_SCANNING_STOPPED, &[]);
+        }
+    }
+
+    fn cancel_scheduled_scan(&self) {
+        let imp = self.imp();
         if let Some(source_id) = imp.scan_source_id.take() {
             source_id.remove();
         }
-
-        imp.active_scan_spinner.set_visible(false);
-        imp.start_scanning_button.set_sensitive(true);
-        imp.stop_scanning_button.set_sensitive(false);
     }
 
-    fn scan(&self) {
-        self.imp().file_label.set_visible(false);
-        self.imp().interface_box.set_visible(true);
-        let Some(interface) = self.imp().interface_box.selected_interface() else {
-            self.stop_scanning();
-            return;
-        };
-        self.imp().active_scan_spinner.set_visible(true);
+    fn start_active_scan(&self, interface: Interface) {
+        let generation = self.scan_generation();
+        let existing_bss_data = self.current_bss_data();
+        let vendor_cache = self.vendor_cache_snapshot();
+        let next_scan_interface = interface.clone();
 
         self.emit_by_name::<()>(imp::SIGNAL_SCAN_STARTED, &[]);
 
-        let (sender, receiver) = async_channel::unbounded();
+        glib::spawn_future_local(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            async move {
+                let fetch_from_scan = move || {
+                    let scan = interface.scan_blocking();
+                    scan.map(|scan| scan.bss_list().to_vec())
+                };
+                let result =
+                    spawn_scan_processing(fetch_from_scan, vendor_cache, existing_bss_data).await;
 
-        let existing_bss_data = self.current_bss_data();
-        let vendor_cache = Arc::clone(self.imp().vendor_cache.get().unwrap());
-        thread::spawn(move || {
-            let result = interface.scan_blocking();
-            let mut vendor_cache = vendor_cache.lock().unwrap();
-            // TSF uptimes change between scans, so uptime-derived vendor matches are
-            // only valid within a single fresh scan result set.
-            vendor_cache.clear_uptime_map();
-            match result {
-                Ok(scan) => {
-                    let merged_bss_list = merge_new_scan_results_with_existing(
-                        &existing_bss_data,
-                        scan.bss_list(),
-                        &mut vendor_cache,
-                    );
-                    _ = sender.send_blocking(ScanAndProcessingResult::Ok {
-                        scan,
-                        merged_bss_list,
-                    });
+                // The user may switch interfaces while the blocking scan is still running.
+                if !window.generation_is_current(generation) {
+                    tracing::debug!("Discarding scan result for a previous interface");
+                    return;
                 }
-                Err(e) => _ = sender.send_blocking(ScanAndProcessingResult::Err { scan_error: e }),
-            }
-        });
 
-        let window = self.clone();
-        glib::spawn_future_local(async move {
-            let scan_result = receiver.recv().await;
-            window.imp().active_scan_spinner.set_visible(false);
-            match scan_result {
-                Ok(scan_and_processing_result) => {
-                    window.handle_scan_result(scan_and_processing_result);
+                match result {
+                    Ok(Ok(processed)) => {
+                        if window.imp().scanning_enabled.get() {
+                            window.apply_active_scan_result(processed);
+                        }
+                        window.emit_by_name::<()>(imp::SIGNAL_SCAN_COMPLETED, &[]);
+                    }
+                    Ok(Err(scan_error)) => {
+                        tracing::error!(error = %scan_error, "Scan failed");
+                        window.emit_by_name::<()>(
+                            imp::SIGNAL_SCAN_FAILED,
+                            &[&scan_error.to_string()],
+                        );
+                    }
+                    Err(_) => {
+                        let message = "Scan worker panicked";
+                        tracing::error!(message);
+                        window.emit_by_name::<()>(imp::SIGNAL_SCAN_FAILED, &[&message]);
+                    }
                 }
-                Err(recv_error) => {
-                    let message = "Scan worker stopped before sending results";
-                    tracing::error!(error = %recv_error, message);
-                    window.emit_by_name::<()>(imp::SIGNAL_SCAN_FAILED, &[&message]);
-                    window.schedule_next_scan();
-                }
+
+                window.schedule_active_scan(
+                    next_scan_interface,
+                    Duration::from_secs(super::SCAN_INTERVAL_SECONDS),
+                );
             }
-        });
+        ));
     }
 
-    fn handle_scan_result(&self, result: ScanAndProcessingResult) {
-        match result {
-            ScanAndProcessingResult::Ok {
-                scan,
-                merged_bss_list,
-            } if self.imp().scanning_enabled.get() => {
-                self.imp().scan_info_popover.set_scan_info(&scan);
-                tracing::info!(bss_count = scan.bss_list().len(), "Received scan results");
+    fn apply_active_scan_result(&self, processed: ProcessedScan) {
+        self.install_vendor_cache(processed.vendor_cache);
 
-                let retention_secs =
-                    u64::try_from(self.settings().int("bss-retention-duration")).unwrap_or(300);
-                let retention = Duration::from_secs(retention_secs);
-                let merged_bss_list: Vec<BssInternal> = merged_bss_list
-                    .into_iter()
-                    .filter(|bss| {
-                        bss.time_since_last_seen()
-                            .is_none_or(|age| age <= retention)
-                    })
-                    .collect();
-
-                // Applying merged results replaces BssObject instances, so preserve
-                // the user's selection by the stable BSSID.
-                let selected_bssid = self
-                    .imp()
-                    .bss_table
-                    .selected_bss()
-                    .map(|bss| bss.bssid_bytes());
-                self.apply_merged_results(merged_bss_list);
-                if let Some(bssid) = &selected_bssid {
-                    self.imp().bss_table.set_selected_by_bssid(bssid);
-                }
-
-                self.emit_by_name::<()>(imp::SIGNAL_SCAN_COMPLETED, &[]);
-
-                // Schedule the next scan after this one completed
-                self.schedule_next_scan();
-            }
-            ScanAndProcessingResult::Ok {
-                scan,
-                merged_bss_list: _,
-            } => {
-                // Scanning was paused while this scan was in flight. Discard the results
-                // rather than updating the UI unexpectedly after the user paused.
-                tracing::info!(bss_count = scan.bss_list().len(), "Received scan results");
-
-                self.emit_by_name::<()>(imp::SIGNAL_SCAN_COMPLETED, &[]);
-            }
-            ScanAndProcessingResult::Err { scan_error } => {
-                tracing::error!(error = %scan_error, "Scan failed");
-                self.emit_by_name::<()>(imp::SIGNAL_SCAN_FAILED, &[&scan_error.to_string()]);
-
-                // Schedule the next scan even if this one failed
-                self.schedule_next_scan();
-            }
-        }
-    }
-
-    pub fn apply_loaded_scan(&self, scan_file: ScanFile, path: &Path) {
-        self.imp().file_label.set_label(&path.to_string_lossy());
-        self.imp().file_label.set_visible(true);
-        self.imp().interface_box.set_visible(false);
-        self.imp().scan_info_popover.clear();
-
-        let mut vendor_cache = self.imp().vendor_cache.get().unwrap().lock().unwrap();
-        let mut bss_list: Vec<BssInternal> = scan_file
-            .bss_list()
-            .iter()
-            .map(|bss| {
-                let mut bss_internal = BssInternal::new(bss.clone());
-                if let Some(vendor) = lookup_vendor(bss) {
-                    bss_internal.set_vendor(vendor.clone());
-                    vendor_cache.insert(bss_internal.bssid(), vendor.clone());
-                    vendor_cache.insert_uptime(bss_internal.uptime(), vendor);
-                }
-                bss_internal
+        let retention_secs =
+            u64::try_from(self.settings().int("bss-retention-duration")).unwrap_or(300);
+        let retention = Duration::from_secs(retention_secs);
+        let merged_bss_list: Vec<BssInternal> = processed
+            .bss_list
+            .into_iter()
+            .filter(|bss| {
+                bss.time_since_last_seen()
+                    .is_none_or(|age| age <= retention)
             })
             .collect();
 
-        // Use the cache to resolve vendors for any remaining BSSs
-        fill_vendors_from_cache(&mut bss_list, &mut vendor_cache);
-        drop(vendor_cache);
-
-        self.apply_merged_results(bss_list);
+        // Applying merged results replaces BssObject instances, so preserve
+        // the user's selection by the stable BSSID.
+        let selected_bssid = self
+            .imp()
+            .bss_table
+            .selected_bss()
+            .map(|bss| *bss.data().bssid());
+        self.apply_merged_results(merged_bss_list);
+        if let Some(bssid) = &selected_bssid {
+            self.imp().bss_table.set_selected_by_bssid(bssid);
+        }
     }
 
-    fn apply_merged_results(&self, merged_bss_list: Vec<BssInternal>) {
-        let bss_objects: Vec<BssObject> = merged_bss_list.into_iter().map(BssObject::new).collect();
+    pub(super) fn start_cached_scan(&self, interface: Interface) {
+        let generation = self.scan_generation();
+        let existing_bss_data = self.current_bss_data();
+        let vendor_cache = self.vendor_cache_snapshot();
+        let next_scan_interface = interface.clone();
 
-        let list_store = self.bss_list_store();
-        list_store.splice(0, list_store.n_items(), &bss_objects);
+        glib::spawn_future_local(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            async move {
+                let fetch_from_cache = move || interface.cached_scan_results_blocking();
+                let result =
+                    spawn_scan_processing(fetch_from_cache, vendor_cache, existing_bss_data).await;
+
+                if !window.generation_is_current(generation) {
+                    tracing::debug!("Discarding cached scan results for a previous interface");
+                    return;
+                }
+
+                match result {
+                    Ok(Ok(processed)) => {
+                        window.apply_cached_scan_result(processed);
+                    }
+                    Ok(Err(scan_error)) => {
+                        tracing::warn!(error = %scan_error, "Failed to read cached scan results");
+                    }
+                    Err(_) => {
+                        let message = "Scan worker panicked";
+                        tracing::error!(message);
+                    }
+                }
+
+                window.schedule_active_scan(next_scan_interface, Duration::ZERO);
+            }
+        ));
     }
 
-    fn current_bss_data(&self) -> Vec<BssInternal> {
-        self.bss_list_store()
-            .iter::<BssObject>()
-            .filter_map(|obj| obj.ok())
-            .map(|obj: BssObject| obj.bss().clone())
-            .collect()
+    fn apply_cached_scan_result(&self, processed: ProcessedScan) {
+        self.install_vendor_cache(processed.vendor_cache);
+        self.apply_merged_results(processed.bss_list);
     }
 }
