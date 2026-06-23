@@ -4,7 +4,7 @@ mod objects;
 mod oui;
 mod scan;
 mod util;
-mod vendor_cache;
+mod vendor;
 mod widgets;
 mod window;
 

@@ -5,6 +5,7 @@ use gtk::{gio, glib};
 
 use crate::config;
 use crate::objects::BssObject;
+use crate::vendor::VendorCache;
 use crate::widgets::{BssChart, BssElements, BssFilter, BssTable};
 
 mod scan_file_actions;
@@ -23,6 +24,7 @@ mod imp {
     use gtk::{Button, Label, ToggleButton, Widget, glib::types::StaticType};
 
     use super::*;
+    use crate::{vendor::VendorCache, widgets::InterfaceBox};
 
     pub const SIGNAL_SCAN_STARTED: &str = "scan-started";
     pub const SIGNAL_SCAN_COMPLETED: &str = "scan-completed";
