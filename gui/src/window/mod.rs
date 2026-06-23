@@ -7,9 +7,7 @@ use crate::config;
 use crate::objects::BssObject;
 use crate::widgets::{BssChart, BssElements, BssFilter, BssTable};
 
-mod filtering;
-mod scan_file_dialog;
-mod scan_processing;
+mod scan_file_actions;
 mod scanning;
 mod setup;
 
@@ -22,14 +20,9 @@ mod imp {
         sync::{Arc, Mutex, OnceLock},
     };
 
-    use adw::ButtonContent;
     use gtk::{Button, Label, ToggleButton, Widget, glib::types::StaticType};
 
     use super::*;
-    use crate::{
-        vendor_cache::VendorCache,
-        widgets::{InterfaceBox, ScanInfoPopover},
-    };
 
     pub const SIGNAL_SCAN_STARTED: &str = "scan-started";
     pub const SIGNAL_SCAN_COMPLETED: &str = "scan-completed";
@@ -81,9 +74,7 @@ mod imp {
 
         // Bottom Panel
         #[template_child]
-        pub scan_info_popover: TemplateChild<ScanInfoPopover>,
-        #[template_child]
-        pub statusbar_content: TemplateChild<ButtonContent>,
+        pub statusbar_label: TemplateChild<Label>,
         #[template_child]
         pub bottom_stack: TemplateChild<adw::ViewStack>,
 
@@ -221,11 +212,11 @@ impl KawaiiFiWindow {
         dialog.present(Some(self));
     }
 
-    fn update_status_bar(&self) {
+    pub(super) fn update_status_bar(&self) {
         let total = self.bss_list_store().n_items();
         let displayed = self.bss_filter_model().n_items();
         self.imp()
-            .statusbar_content
+            .statusbar_label
             .set_label(&bss_status_label(total, displayed));
     }
 }

@@ -5,12 +5,12 @@ use gtk::prelude::*;
 use gtk::{gio, glib};
 
 use crate::config;
-use crate::widgets::{BssChart, BssElements, BssFilter, BssTable, PreferencesDialog};
+use crate::widgets::{
+    BssChart, BssElements, BssFilter, BssTable, InterfaceBox, InterfacePopover, PreferencesDialog,
+};
 use crate::window::KawaiiFiWindow;
 
 mod imp {
-    use crate::widgets::{InterfaceBox, InterfacePopover, ScanInfoPopover};
-
     use super::*;
 
     #[derive(Default)]
@@ -34,7 +34,6 @@ mod imp {
     fn register_custom_types() {
         InterfaceBox::static_type();
         InterfacePopover::static_type();
-        ScanInfoPopover::static_type();
         BssTable::static_type();
         BssChart::static_type();
         BssFilter::static_type();

@@ -108,16 +108,21 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
       show-end-title-buttons: false;
 
       [start]
-      MenuButton {
-        styles [
-          "flat",
-        ]
+      Box {
+        spacing: 6;
 
-        Adw.ButtonContent statusbar_content {
+        Image {
           icon-name: "access-point-symbolic";
+          margin-start: 5;
         }
 
-        popover: $ScanInfoPopover scan_info_popover {};
+        Label statusbar_label {
+          styles [
+            "heading",
+          ]
+
+          label: _("");
+        }
       }
 
       [title]

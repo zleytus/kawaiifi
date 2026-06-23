@@ -8,7 +8,6 @@ blueprints = custom_target(
         'ui/interface_box.blp',
         'ui/interface_popover.blp',
         'ui/preferences_dialog.blp',
-        'ui/scan_info_popover.blp',
         'ui/window.blp',
     ),
     output: '.',
