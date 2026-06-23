@@ -10,7 +10,7 @@ use gtk::{
     prelude::{ButtonExt, ToggleButtonExt, WidgetExt},
 };
 
-use crate::objects::BssObject;
+use crate::widgets::InterfaceBox;
 
 use super::{KawaiiFiWindow, filtering::BssFilterState};
 
@@ -40,11 +40,28 @@ impl KawaiiFiWindow {
             }
         ));
 
-        imp.stop_scanning_button.connect_clicked(glib::clone!(
+    fn setup_interface_box(&self) {
+        let imp = self.imp();
+
+        imp.interface_box
+            .connect_interfaces_load_failed(glib::clone!(
+                #[weak(rename_to = window)]
+                self,
+                move |_, error| {
+                    window.show_error("Could Not Load Wi-Fi Interfaces", error);
+                }
+            ));
+        imp.interface_box.connect_interface_changed(glib::clone!(
             #[weak(rename_to = window)]
             self,
-            move |_| {
+            move |interface_box: &InterfaceBox, _| {
+                let restart_scanning = window.imp().scanning_enabled.get();
                 window.stop_scanning();
+                window.invalidate_scan_generation();
+                window.apply_merged_results(Vec::new());
+                if let Some(interface) = interface_box.selected_interface() {
+                    window.load_interface(interface, restart_scanning);
+                }
             }
         ));
     }

@@ -23,6 +23,7 @@ mod imp {
     use crate::widgets::InterfacePopover;
 
     pub const SIGNAL_INTERFACES_LOAD_FAILED: &str = "interfaces-load-failed";
+    pub const SIGNAL_INTERFACE_CHANGED: &str = "interface-changed";
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/fi/kawaii/kawaiifi/ui/interface_box.ui")]
@@ -56,6 +57,7 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
             let obj = self.obj();
+            // Load interfaces first so the stateful menu action starts with the selected ifindex.
             obj.setup_interfaces();
             obj.setup_action();
         }
@@ -66,6 +68,9 @@ mod imp {
                 vec![
                     glib::subclass::Signal::builder(SIGNAL_INTERFACES_LOAD_FAILED)
                         .param_types([String::static_type()])
+                        .build(),
+                    glib::subclass::Signal::builder(SIGNAL_INTERFACE_CHANGED)
+                        .param_types([u32::static_type()])
                         .build(),
                 ]
             })
@@ -217,7 +222,20 @@ impl InterfaceBox {
         })
     }
 
+    pub fn connect_interface_changed<F: Fn(&Self, u32) + 'static>(
+        &self,
+        f: F,
+    ) -> glib::SignalHandlerId {
+        self.connect_local(imp::SIGNAL_INTERFACE_CHANGED, false, move |args| {
+            let interface_box = args[0].get::<Self>().unwrap();
+            let ifindex = args[1].get::<u32>().unwrap();
+            f(&interface_box, ifindex);
+            None
+        })
+    }
+
     fn set_selected_interface(&self, interface: &kawaiifi::Interface) {
+        let previous_ifindex = self.selected_interface_index();
         let button_label = &self.imp().interface_button_label;
         button_label.set_label(&format!("{} ({})", interface.name(), interface.bus_type()));
         match interface.bus_type() {
@@ -229,7 +247,12 @@ impl InterfaceBox {
         let popover = &self.imp().interface_popover;
         popover.set_interface(interface);
 
-        self.imp().selected_ifindex.set(Some(interface.index()))
+        let ifindex = interface.index();
+        self.imp().selected_ifindex.set(Some(ifindex));
+
+        if previous_ifindex.is_some_and(|previous| previous != ifindex) {
+            self.emit_by_name::<()>(imp::SIGNAL_INTERFACE_CHANGED, &[&ifindex]);
+        }
     }
 }
 
