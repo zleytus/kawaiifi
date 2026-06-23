@@ -6,10 +6,10 @@ pub fn create_vendor_factory() -> SignalListItemFactory {
     create_bss_text_factory(
         gtk::Align::Start,
         Some(gtk::pango::EllipsizeMode::End),
-        |bss| Some(bss.vendor()),
+        |bss| Some(bss.data().formatted_vendor()),
     )
 }
 
 pub fn create_vendor_sorter() -> gtk::CustomSorter {
-    create_bss_sorter_by(|bss| bss.vendor())
+    create_bss_sorter_by(|bss| bss.data().formatted_vendor())
 }

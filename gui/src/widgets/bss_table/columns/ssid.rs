@@ -21,10 +21,11 @@ pub fn create_ssid_factory() -> SignalListItemFactory {
         let list_item = list_item.downcast_ref::<gtk::ListItem>().unwrap();
         let bss = list_item.item().and_downcast::<BssObject>().unwrap();
         let label = list_item.child().and_downcast::<gtk::Label>().unwrap();
-        if let Some(ssid) = bss.ssid() {
-            set_bss_label(&label, ssid, bss.is_associated());
+        if let Some(ssid) = bss.data().formatted_ssid() {
+            set_bss_label(&label, ssid, bss.data().is_associated());
         } else {
-            label.set_markup("<i><span alpha='50%'>Hidden</span></i>");
+            label.set_markup("<i>Hidden</i>");
+            label.set_css_classes(&["dimmed"]);
         }
     });
 
@@ -36,8 +37,16 @@ pub fn create_ssid_sorter() -> gtk::CustomSorter {
         let bss1 = obj1.downcast_ref::<BssObject>().unwrap();
         let bss2 = obj2.downcast_ref::<BssObject>().unwrap();
 
-        let ssid1 = bss1.ssid().unwrap_or_default().to_ascii_lowercase();
-        let ssid2 = bss2.ssid().unwrap_or_default().to_ascii_lowercase();
+        let ssid1 = bss1
+            .data()
+            .formatted_ssid()
+            .unwrap_or_default()
+            .to_ascii_lowercase();
+        let ssid2 = bss2
+            .data()
+            .formatted_ssid()
+            .unwrap_or_default()
+            .to_ascii_lowercase();
         ssid1.cmp(&ssid2).into()
     })
 }

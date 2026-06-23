@@ -196,7 +196,7 @@ impl BssTable {
             selection_model
                 .item(i)
                 .and_downcast::<BssObject>()
-                .is_some_and(|bss| &bss.bssid_bytes() == bssid)
+                .is_some_and(|bss| bss.data().bssid() == bssid)
         }) else {
             return;
         };

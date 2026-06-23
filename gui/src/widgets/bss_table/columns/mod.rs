@@ -60,7 +60,7 @@ where
 
         if let Some(text) = text_for_bss(&bss) {
             label.set_visible(true);
-            set_bss_label(&label, text, bss.is_associated());
+            set_bss_label(&label, text, bss.data().is_associated());
         } else {
             label.set_label("");
             label.set_visible(false);

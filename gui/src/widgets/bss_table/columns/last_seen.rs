@@ -57,7 +57,11 @@ pub fn create_last_seen_sorter() -> gtk::CustomSorter {
     gtk::CustomSorter::new(|obj1, obj2| {
         let bss1 = obj1.downcast_ref::<BssObject>().unwrap();
         let bss2 = obj2.downcast_ref::<BssObject>().unwrap();
-        compare_last_seen_ages(bss1.time_since_last_seen(), bss2.time_since_last_seen()).into()
+        compare_last_seen_ages(
+            bss1.data().time_since_last_seen(),
+            bss2.data().time_since_last_seen(),
+        )
+        .into()
     })
 }
 
@@ -101,8 +105,8 @@ fn last_seen_text(age: Option<Duration>) -> String {
 pub fn update_last_seen_label(label: &gtk::Label, bss: &BssObject) {
     set_bss_label(
         label,
-        last_seen_text(bss.time_since_last_seen()),
-        bss.is_associated(),
+        last_seen_text(bss.data().time_since_last_seen()),
+        bss.data().is_associated(),
     );
 }
 

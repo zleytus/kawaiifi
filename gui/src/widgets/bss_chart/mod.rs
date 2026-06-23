@@ -122,7 +122,7 @@ impl BssChart {
 
         let band_filter = gtk::CustomFilter::new(move |obj| {
             let bss = obj.downcast_ref::<BssObject>().unwrap();
-            bss.band() == band
+            bss.data().band() == band
         });
 
         let band_filter_model =
@@ -163,7 +163,7 @@ impl BssChart {
             .get()
             .and_then(|sm| sm.selected_item())
             .and_then(|obj| obj.downcast::<BssObject>().ok())
-            .map(|bss| bss.bssid_bytes());
+            .map(|bss| *bss.data().bssid());
 
         let mut data = imp.chart_data.borrow_mut();
         data.clear();
@@ -173,14 +173,14 @@ impl BssChart {
             .filter_map(Result::ok)
             .filter_map(|obj| obj.downcast::<BssObject>().ok())
         {
-            let color = bss.color();
+            let color = bss.data().color();
 
             data.push(BssChartData {
-                selected: selected_bssid.is_some_and(|id| id == bss.bssid_bytes()),
-                ssid: bss.ssid(),
-                freq: bss.center_frequency_mhz() as f64,
-                signal: bss.signal_strength() as f64,
-                width: channel_width_half_mhz(bss.channel_width()),
+                selected: selected_bssid.is_some_and(|id| &id == bss.data().bssid()),
+                ssid: bss.data().formatted_ssid(),
+                freq: bss.data().center_frequency_mhz() as f64,
+                signal: bss.data().signal_dbm() as f64,
+                width: channel_width_half_mhz(bss.data().channel_width()),
                 color: (
                     (color.red() * 255.0) as u8,
                     (color.green() * 255.0) as u8,

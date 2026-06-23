@@ -52,13 +52,13 @@ pub fn create_signal_factory() -> SignalListItemFactory {
             .and_downcast::<gtk::LevelBar>()
             .unwrap();
 
-        let signal_fraction = ((bss.signal_strength() + 100) as f64 / 80.0).clamp(0.0, 1.0);
+        let signal_fraction = ((bss.data().signal_dbm() + 100) as f64 / 80.0).clamp(0.0, 1.0);
 
         level_bar.set_value(signal_fraction);
         set_bss_label(
             &label,
-            format!("{} dBm", bss.signal_strength()),
-            bss.is_associated(),
+            format!("{} dBm", bss.data().signal_dbm()),
+            bss.data().is_associated(),
         );
     });
 
@@ -70,8 +70,8 @@ pub fn create_signal_sorter() -> gtk::CustomSorter {
         let bss1 = obj1.downcast_ref::<BssObject>().unwrap();
         let bss2 = obj2.downcast_ref::<BssObject>().unwrap();
 
-        let sig1 = bss1.signal_strength();
-        let sig2 = bss2.signal_strength();
+        let sig1 = bss1.data().signal_dbm();
+        let sig2 = bss2.data().signal_dbm();
         sig1.cmp(&sig2).into()
     })
 }

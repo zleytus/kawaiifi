@@ -3,9 +3,6 @@ use std::{cell::RefCell, ops::Deref, time::Duration};
 use gtk::gdk::RGBA;
 use gtk::glib;
 use gtk::subclass::prelude::*;
-use kawaiifi::{
-    Band, CapabilityInfo, ChannelWidth, SecurityProtocols, WifiAmendments, WifiProtocols,
-};
 
 mod imp {
     use super::*;
@@ -45,129 +42,49 @@ impl BssObject {
     }
 
     /// Returns a reference to the underlying [`BssInternal`].
-    pub fn bss(&self) -> std::cell::Ref<'_, BssInternal> {
+    pub fn data(&self) -> std::cell::Ref<'_, BssInternal> {
         std::cell::Ref::map(self.imp().bss.borrow(), |opt| {
             opt.as_ref().expect("BssObject not properly initialized")
         })
     }
+}
 
-    fn bss_mut(&self) -> std::cell::RefMut<'_, BssInternal> {
-        std::cell::RefMut::map(self.imp().bss.borrow_mut(), |opt| {
-            opt.as_mut().expect("BssObject not properly initialized")
-        })
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BssInternal {
+    bss: kawaiifi::Bss,
+    vendor: Option<String>,
+    color: RGBA,
+}
+
+impl BssInternal {
+    /// Creates a new `BssInternal` wrapping the given [`kawaiifi::Bss`].
+    pub fn new(bss: kawaiifi::Bss) -> Self {
+        let vendor = crate::vendor::lookup_vendor(&bss);
+        Self {
+            color: color_from_bssid(bss.bssid()),
+            bss,
+            vendor,
+        }
     }
 
+    /// Replaces the underlying [`kawaiifi::Bss`] with a newer scan result.
+    pub fn update(&mut self, bss: kawaiifi::Bss) {
+        self.bss = bss;
+    }
+
+    /// Returns true if the machine is associated with the BSS.
     pub fn is_associated(&self) -> bool {
-        matches!(self.bss().status(), Some(kawaiifi::BssStatus::Associated))
-    }
-
-    /// How long ago this BSS was last seen, or `None` if the timestamp is unavailable.
-    pub fn time_since_last_seen(&self) -> Option<Duration> {
-        self.bss().time_since_last_seen()
-    }
-
-    /// The raw 6-byte BSSID.
-    pub fn bssid_bytes(&self) -> [u8; 6] {
-        *self.bss().bssid()
-    }
-
-    /// The display color derived from the BSSID.
-    pub fn color(&self) -> RGBA {
-        self.bss().color()
+        matches!(self.status(), Some(kawaiifi::BssStatus::Associated))
     }
 
     /// The SSID, or `None` for hidden networks.
-    pub fn ssid(&self) -> Option<String> {
-        self.bss().ssid().map(|s| s.replace('\0', "�"))
+    pub fn formatted_ssid(&self) -> Option<String> {
+        self.ssid().map(|s| s.replace('\0', "�"))
     }
 
     /// The BSSID formatted as a colon-separated hex string (e.g. `AA:BB:CC:DD:EE:FF`).
-    pub fn bssid(&self) -> String {
-        crate::util::format_mac(self.bss().bssid())
-    }
-
-    /// The OUI vendor name, or an empty string if unknown.
-    pub fn vendor(&self) -> String {
-        self.bss()
-            .vendor()
-            .map(format_vendor_display_name)
-            .unwrap_or_default()
-    }
-
-    /// Sets the OUI vendor name.
-    pub fn set_vendor(&self, vendor: String) {
-        self.bss_mut().set_vendor(vendor);
-    }
-
-    /// The received signal strength in dBm.
-    pub fn signal_strength(&self) -> i32 {
-        self.bss().signal_dbm()
-    }
-
-    /// The 802.11 channel number.
-    pub fn channel_number(&self) -> u8 {
-        self.bss().channel_number()
-    }
-
-    /// The channel width.
-    pub fn channel_width(&self) -> ChannelWidth {
-        self.bss().channel_width()
-    }
-
-    /// The operating frequency in MHz.
-    pub fn frequency_mhz(&self) -> u32 {
-        self.bss().frequency_mhz()
-    }
-
-    /// The center frequency of the full channel in MHz.
-    pub fn center_frequency_mhz(&self) -> u32 {
-        self.bss().center_frequency_mhz()
-    }
-
-    /// The frequency band the BSS operates on.
-    pub fn band(&self) -> Band {
-        self.bss().band()
-    }
-
-    /// The Wi-Fi protocols supported by the BSS.
-    pub fn protocols(&self) -> WifiProtocols {
-        self.bss().wifi_protocols()
-    }
-
-    /// The 802.11 amendments supported by the BSS.
-    pub fn amendments(&self) -> WifiAmendments {
-        self.bss().wifi_amendments()
-    }
-
-    /// The security protocols supported by the BSS.
-    pub fn security(&self) -> SecurityProtocols {
-        self.bss().security_protocols()
-    }
-
-    /// The maximum supported data rate in Mbps.
-    pub fn max_rate(&self) -> f64 {
-        self.bss().max_rate_mbps()
-    }
-
-    /// The channel utilization as a value from 0 to 255, where 255 represents 100%, or `None` if unavailable.
-    pub fn channel_utilization(&self) -> Option<u8> {
-        self.bss().channel_utilization()
-    }
-
-    /// The number of associated stations, or `None` if unavailable.
-    pub fn station_count(&self) -> Option<u16> {
-        self.bss().station_count()
-    }
-
-    /// The maximum number of spatial streams advertised by the BSS for its current
-    /// channel width.
-    pub fn max_spatial_streams(&self) -> u8 {
-        self.bss().max_spatial_streams()
-    }
-
-    /// The estimated time the BSS has been running, derived from its TSF timer.
-    pub fn uptime(&self) -> Duration {
-        self.bss().uptime()
+    pub fn formatted_bssid(&self) -> String {
+        crate::util::format_mac(self.bssid())
     }
 
     /// The uptime formatted as a human-readable string (e.g. `2d 3h 45m`).
@@ -175,9 +92,40 @@ impl BssObject {
         formatted_uptime_text(self.uptime())
     }
 
-    /// The 802.11 capability information flags.
-    pub fn capability_info(&self) -> CapabilityInfo {
-        self.bss().capability_info().clone()
+    /// The OUI vendor name, or an empty string if unknown.
+    pub fn formatted_vendor(&self) -> String {
+        self.vendor()
+            .map(format_vendor_display_name)
+            .unwrap_or_default()
+    }
+
+    /// The OUI vendor name, or `None` if unknown.
+    pub fn vendor(&self) -> Option<&str> {
+        self.vendor.as_deref()
+    }
+
+    /// Sets the OUI vendor name.
+    pub fn set_vendor(&mut self, vendor: String) {
+        self.vendor.replace(vendor);
+    }
+
+    /// The display color derived from the BSSID.
+    pub fn color(&self) -> RGBA {
+        self.color
+    }
+
+    /// How long ago this BSS was last seen, or `None` if the timestamp is unavailable.
+    pub fn time_since_last_seen(&self) -> Option<Duration> {
+        self.last_seen_utc()
+            .and_then(|utc| chrono::Utc::now().signed_duration_since(utc).to_std().ok())
+    }
+}
+
+impl Deref for BssInternal {
+    type Target = kawaiifi::Bss;
+
+    fn deref(&self) -> &Self::Target {
+        &self.bss
     }
 }
 
@@ -227,58 +175,6 @@ fn color_from_bssid(bssid: &[u8; 6]) -> RGBA {
     let b = (bssid[5] as f64 / 255.0) * 0.5 + 0.4;
 
     RGBA::new(r as f32, g as f32, b as f32, 1.0)
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BssInternal {
-    bss: kawaiifi::Bss,
-    vendor: Option<String>,
-    color: RGBA,
-}
-
-impl BssInternal {
-    /// Creates a new `BssInternal` wrapping the given [`kawaiifi::Bss`].
-    pub fn new(bss: kawaiifi::Bss) -> Self {
-        Self {
-            color: color_from_bssid(bss.bssid()),
-            bss,
-            vendor: None,
-        }
-    }
-
-    /// Replaces the underlying [`kawaiifi::Bss`] with a newer scan result.
-    pub fn update(&mut self, bss: kawaiifi::Bss) {
-        self.bss = bss;
-    }
-
-    /// The OUI vendor name, or `None` if unknown.
-    pub fn vendor(&self) -> Option<&str> {
-        self.vendor.as_deref()
-    }
-
-    /// Sets the OUI vendor name.
-    pub fn set_vendor(&mut self, vendor: String) {
-        self.vendor.replace(vendor);
-    }
-
-    /// The display color derived from the BSSID.
-    pub fn color(&self) -> RGBA {
-        self.color
-    }
-
-    /// How long ago this BSS was last seen, or `None` if the timestamp is unavailable.
-    pub fn time_since_last_seen(&self) -> Option<Duration> {
-        self.last_seen_utc()
-            .and_then(|utc| chrono::Utc::now().signed_duration_since(utc).to_std().ok())
-    }
-}
-
-impl Deref for BssInternal {
-    type Target = kawaiifi::Bss;
-
-    fn deref(&self) -> &Self::Target {
-        &self.bss
-    }
 }
 
 #[cfg(test)]

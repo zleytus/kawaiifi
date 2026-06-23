@@ -25,7 +25,7 @@ pub fn create_color_factory() -> SignalListItemFactory {
             .and_downcast::<gtk::DrawingArea>()
             .unwrap();
 
-        let color = bss.color();
+        let color = bss.data().color();
 
         drawing_area.set_draw_func(move |_, cr, width, height| {
             cr.set_source_rgba(

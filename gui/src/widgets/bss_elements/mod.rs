@@ -157,7 +157,7 @@ impl BssElements {
     pub fn set_bss(&self, bss: &BssObject) {
         let list_store = self.list_store();
         list_store.remove_all();
-        for ie in bss.bss().ies() {
+        for ie in bss.data().ies() {
             let ie_obj = IeObject::new(ie.clone());
             let tree_item = IeTreeItem::from_ie(ie_obj);
             list_store.append(&tree_item);

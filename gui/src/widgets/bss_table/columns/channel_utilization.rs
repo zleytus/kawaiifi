@@ -50,12 +50,12 @@ pub fn create_channel_utilization_factory() -> SignalListItemFactory {
             .and_downcast::<gtk::LevelBar>()
             .unwrap();
 
-        match bss.channel_utilization() {
+        match bss.data().channel_utilization() {
             Some(utilization) => {
                 let fraction = (utilization as f64 / 255.0).max(0.08);
                 let percent = (utilization as f64 / 255.0 * 100.0).round() as u32;
                 level_bar.set_value(fraction);
-                set_bss_label(&label, format!("{percent}%"), bss.is_associated());
+                set_bss_label(&label, format!("{percent}%"), bss.data().is_associated());
                 label.set_visible(true);
                 level_bar.set_visible(true);
             }
@@ -74,8 +74,8 @@ pub fn create_channel_utilization_sorter() -> gtk::CustomSorter {
         let bss1 = obj1.downcast_ref::<BssObject>().unwrap();
         let bss2 = obj2.downcast_ref::<BssObject>().unwrap();
 
-        let cu1 = bss1.channel_utilization();
-        let cu2 = bss2.channel_utilization();
+        let cu1 = bss1.data().channel_utilization();
+        let cu2 = bss2.data().channel_utilization();
         cu1.cmp(&cu2).into()
     })
 }
