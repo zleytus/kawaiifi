@@ -6,9 +6,11 @@ use adw::subclass::prelude::*;
 use enumflags2::BitFlags;
 use gtk::glib;
 use kawaiifi::{
-    ChannelWidth, ChannelWidths, SecurityProtocol, SecurityProtocols, WifiAmendment,
+    Band, ChannelWidth, ChannelWidths, SecurityProtocol, SecurityProtocols, WifiAmendment,
     WifiAmendments, WifiProtocol, WifiProtocols,
 };
+
+use crate::objects::BssObject;
 
 pub(crate) const CHANNEL_WIDTH_FILTER_OPTIONS: [ChannelWidth; 6] = [
     ChannelWidth::TwentyMhz,
@@ -239,6 +241,32 @@ impl BssFilter {
         glib::Object::builder().build()
     }
 
+    pub(crate) fn state(&self, show_hidden: bool) -> BssFilterState {
+        let band_state = self.band_state();
+        let (show_open, security_state) = self.security_state();
+        let width_state = self.width_state();
+        let protocol_state = self.protocol_state();
+        let amendment_state = self.amendment_state();
+
+        BssFilterState {
+            show_hidden,
+            band_state,
+            show_open,
+            band_all: band_state.iter().all(|&b| b),
+            security_all: show_open && security_state.is_all(),
+            width_all: all_channel_widths_selected(&width_state),
+            protocol_all: protocol_state.is_all(),
+            amendment_all: amendment_state.is_all(),
+            security_state,
+            width_state,
+            protocol_state,
+            amendment_state,
+            ssid_query: self.ssid_query(),
+            bssid_query: self.bssid_query(),
+            vendor_query: self.vendor_query(),
+        }
+    }
+
     pub fn band_state(&self) -> [bool; 3] {
         let imp = self.imp();
         [
@@ -354,8 +382,144 @@ impl BssFilter {
     }
 }
 
+pub(crate) struct BssFilterState {
+    show_hidden: bool,
+    band_state: [bool; 3],
+    show_open: bool,
+    security_state: SecurityProtocols,
+    width_state: ChannelWidths,
+    protocol_state: WifiProtocols,
+    amendment_state: WifiAmendments,
+    ssid_query: String,
+    bssid_query: String,
+    vendor_query: String,
+    band_all: bool,
+    security_all: bool,
+    width_all: bool,
+    protocol_all: bool,
+    amendment_all: bool,
+}
+
+impl BssFilterState {
+    pub(crate) fn matches(&self, bss: &BssObject) -> bool {
+        if !self.show_hidden && bss.data().formatted_ssid().is_none() {
+            return false;
+        }
+
+        if !self.ssid_query.is_empty() {
+            // Hidden BSSs are searchable by the visible placeholder text used in the table.
+            let ssid_match = match bss.data().formatted_ssid() {
+                Some(ssid) => ssid.to_lowercase().contains(&self.ssid_query),
+                None => "hidden".contains(&self.ssid_query),
+            };
+            if !ssid_match {
+                return false;
+            }
+        }
+
+        if !self.bssid_query.is_empty()
+            && !bss
+                .data()
+                .formatted_bssid()
+                .to_lowercase()
+                .contains(&self.bssid_query)
+        {
+            return false;
+        }
+
+        if !self.vendor_query.is_empty()
+            && !bss
+                .data()
+                .formatted_vendor()
+                .to_lowercase()
+                .contains(&self.vendor_query)
+        {
+            return false;
+        }
+
+        if !self.band_matches(bss) {
+            return false;
+        }
+
+        if !self.security_matches(bss) {
+            return false;
+        }
+
+        if !self.width_all && !self.width_state.contains(&bss.data().channel_width()) {
+            return false;
+        }
+
+        if !self.protocol_all && (*bss.data().wifi_protocols() & *self.protocol_state).is_empty() {
+            return false;
+        }
+
+        if !self.amendment_all && (*bss.data().wifi_amendments() & *self.amendment_state).is_empty()
+        {
+            return false;
+        }
+
+        true
+    }
+
+    fn band_matches(&self, bss: &BssObject) -> bool {
+        if self.band_all {
+            return true;
+        }
+
+        let allowed = [Band::TwoPointFourGhz, Band::FiveGhz, Band::SixGhz];
+        allowed
+            .iter()
+            .enumerate()
+            .any(|(i, b)| self.band_state[i] && *b == bss.data().band())
+    }
+
+    fn security_matches(&self, bss: &BssObject) -> bool {
+        if self.security_all {
+            return true;
+        }
+
+        let security = bss.data().security_protocols();
+        // Open networks have no security flags, so they are controlled by the separate
+        // "open" checkbox rather than by SecurityProtocols.
+        (self.show_open && security.is_empty())
+            || (!security.is_empty() && !(*security & *self.security_state).is_empty())
+    }
+}
+
+fn all_channel_widths_selected(widths: &ChannelWidths) -> bool {
+    CHANNEL_WIDTH_FILTER_OPTIONS
+        .iter()
+        .all(|width| widths.contains(width))
+}
+
 impl Default for BssFilter {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+
+    use super::*;
+
+    fn selected_widths(widths: &[ChannelWidth]) -> ChannelWidths {
+        ChannelWidths::from(widths.iter().copied().collect::<HashSet<_>>())
+    }
+
+    #[test]
+    fn all_channel_widths_selected_uses_filter_option_list() {
+        assert!(all_channel_widths_selected(&selected_widths(
+            &CHANNEL_WIDTH_FILTER_OPTIONS
+        )));
+    }
+
+    #[test]
+    fn all_channel_widths_selected_rejects_partial_selection() {
+        assert!(!all_channel_widths_selected(&selected_widths(&[
+            ChannelWidth::TwentyMhz,
+            ChannelWidth::FortyMhz,
+        ])));
     }
 }
