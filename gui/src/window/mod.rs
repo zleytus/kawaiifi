@@ -1,10 +1,12 @@
 use adw::prelude::*;
 use adw::subclass::prelude::*;
-use gtk::gio::prelude::ListModelExt;
+use gtk::gio::prelude::{ListModelExt, SettingsExt};
+use gtk::glib::object::Cast;
 use gtk::{gio, glib};
+use kawaiifi::Interface;
 
 use crate::config;
-use crate::objects::BssObject;
+use crate::objects::{BssInternal, BssObject};
 use crate::vendor::VendorCache;
 use crate::widgets::{BssChart, BssElements, BssFilter, BssTable};
 
@@ -114,7 +116,6 @@ mod imp {
             self.parent_constructed();
 
             let store = gio::ListStore::new::<BssObject>();
-
             let filter = gtk::CustomFilter::new(|_| true);
             let filter_model = gtk::FilterListModel::new(Some(store.clone()), Some(filter.clone()));
             filter_model.connect_items_changed(glib::clone!(
@@ -131,29 +132,11 @@ mod imp {
             self.settings
                 .set(gio::Settings::new(config::app_id()))
                 .unwrap();
-
             self.vendor_cache
-                .set(Arc::new(Mutex::new(VendorCache::default())))
+                .set(RefCell::new(VendorCache::default()))
                 .unwrap();
 
-            self.obj().connect_components_to_models();
-
-            self.interface_box
-                .connect_interfaces_load_failed(glib::clone!(
-                    #[weak(rename_to = window)]
-                    self.obj(),
-                    move |_, error| {
-                        window.show_error("Could Not Load Wi-Fi Interfaces", error);
-                    }
-                ));
-
-            self.obj().setup_actions();
-            self.obj().setup_search();
-            self.obj().setup_scan_controls();
-            self.obj().setup_bottom_panel_toggles();
-            self.obj().setup_settings();
-            self.obj().show_cached_scan_results();
-            self.obj().start_scanning();
+            self.obj().setup();
         }
 
         fn signals() -> &'static [glib::subclass::Signal] {
@@ -197,6 +180,10 @@ impl KawaiiFiWindow {
         self.imp().bss_list_store.get().unwrap()
     }
 
+    pub fn bss_filter_model(&self) -> &gtk::FilterListModel {
+        self.imp().bss_filter_model.get().unwrap()
+    }
+
     pub fn bss_filter(&self) -> &gtk::CustomFilter {
         self.imp().bss_custom_filter.get().unwrap()
     }
@@ -205,8 +192,70 @@ impl KawaiiFiWindow {
         self.imp().settings.get().unwrap()
     }
 
-    pub fn bss_filter_model(&self) -> &gtk::FilterListModel {
-        self.imp().bss_filter_model.get().unwrap()
+    pub(super) fn load_interface(&self, interface: Interface, start_scanning: bool) {
+        let was_showing_file = self.imp().file_label.is_visible();
+        self.imp().file_label.set_visible(false);
+        self.imp().interface_box.set_visible(true);
+
+        if was_showing_file {
+            self.invalidate_scan_generation();
+            self.apply_merged_results(Vec::new());
+        }
+
+        if start_scanning {
+            self.enable_scanning();
+        }
+
+        self.start_cached_scan(interface);
+    }
+
+    pub(super) fn current_bss_data(&self) -> Vec<BssInternal> {
+        self.bss_list_store()
+            .iter::<BssObject>()
+            .filter_map(|obj| obj.ok())
+            .map(|obj| obj.data().clone())
+            .collect()
+    }
+
+    pub(super) fn apply_merged_results(&self, merged_bss_list: Vec<BssInternal>) {
+        let bss_objects: Vec<BssObject> = merged_bss_list.into_iter().map(BssObject::new).collect();
+
+        let list_store = self.bss_list_store();
+        list_store.splice(0, list_store.n_items(), &bss_objects);
+        self.update_status_bar();
+    }
+
+    pub(super) fn update_filter(&self) {
+        let filter = self.bss_filter();
+        let show_hidden = self.settings().boolean("show-hidden-bsss");
+        let state = self.imp().bss_filter.state(show_hidden);
+
+        filter.set_filter_func(move |obj| {
+            let bss = obj.downcast_ref::<BssObject>().unwrap();
+            state.matches(bss)
+        });
+    }
+
+    pub(super) fn scan_generation(&self) -> u64 {
+        self.imp().scan_generation.get()
+    }
+
+    pub(super) fn invalidate_scan_generation(&self) {
+        self.imp()
+            .scan_generation
+            .set(self.scan_generation().wrapping_add(1));
+    }
+
+    pub(super) fn generation_is_current(&self, generation: u64) -> bool {
+        self.scan_generation() == generation
+    }
+
+    pub(super) fn vendor_cache_snapshot(&self) -> VendorCache {
+        self.imp().vendor_cache.get().unwrap().borrow().clone()
+    }
+
+    pub(super) fn install_vendor_cache(&self, vendor_cache: VendorCache) {
+        *self.imp().vendor_cache.get().unwrap().borrow_mut() = vendor_cache;
     }
 
     pub(super) fn show_error(&self, heading: &str, body: impl AsRef<str>) {

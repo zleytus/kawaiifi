@@ -6,39 +6,37 @@ use gtk::{
         self,
         prelude::{ActionMapExt, SettingsExt},
     },
-    glib::{self, object::Cast},
+    glib::{self, object::ObjectExt},
     prelude::{ButtonExt, ToggleButtonExt, WidgetExt},
 };
 
 use crate::widgets::InterfaceBox;
 
-use super::{KawaiiFiWindow, filtering::BssFilterState};
+use super::{KawaiiFiWindow, imp};
 
 impl KawaiiFiWindow {
-    pub fn setup_settings(&self) {
-        self.settings().connect_changed(
-            Some("show-hidden-bsss"),
-            glib::clone!(
-                #[weak(rename_to = window)]
-                self,
-                move |_, _| {
-                    window.reapply_filter();
-                }
-            ),
-        );
-        self.reapply_filter();
+    pub fn setup(&self) {
+        self.connect_components_to_models();
+        self.setup_interface_box();
+        self.setup_actions();
+        self.setup_filtering();
+        self.setup_scan_controls();
+        self.setup_bottom_panel_toggles();
+        self.setup_settings();
+        self.load_initial_interface();
     }
 
-    pub fn setup_scan_controls(&self) {
+    fn connect_components_to_models(&self) {
         let imp = self.imp();
 
-        imp.start_scanning_button.connect_clicked(glib::clone!(
-            #[weak(rename_to = window)]
-            self,
-            move |_| {
-                window.start_scanning();
-            }
-        ));
+        imp.bss_table.setup(self.bss_filter_model());
+        if let Some(selection_model) = imp.bss_table.selection_model() {
+            imp.bss_elements.set_selection_model(selection_model);
+            imp.bss_chart_2_4.set_selection_model(selection_model);
+            imp.bss_chart_5.set_selection_model(selection_model);
+            imp.bss_chart_6.set_selection_model(selection_model);
+        }
+    }
 
     fn setup_interface_box(&self) {
         let imp = self.imp();
@@ -66,7 +64,7 @@ impl KawaiiFiWindow {
         ));
     }
 
-    pub fn setup_actions(&self) {
+    fn setup_actions(&self) {
         let action_save_all = gio::SimpleAction::new("save-all", None);
         action_save_all.connect_activate(glib::clone!(
             #[weak(rename_to = window)]
@@ -126,12 +124,63 @@ impl KawaiiFiWindow {
             #[weak(rename_to = window)]
             self,
             move |_| {
-                window.reapply_filter();
+                window.update_filter();
             }
         ));
     }
 
-    pub fn setup_bottom_panel_toggles(&self) {
+    fn setup_scan_controls(&self) {
+        let imp = self.imp();
+
+        self.connect_local(imp::SIGNAL_SCAN_STARTED, false, move |args| {
+            let window = args[0].get::<Self>().unwrap();
+            window.imp().active_scan_spinner.set_visible(true);
+            None
+        });
+        self.connect_local(imp::SIGNAL_SCAN_COMPLETED, false, move |args| {
+            let window = args[0].get::<Self>().unwrap();
+            window.imp().active_scan_spinner.set_visible(false);
+            None
+        });
+        self.connect_local(imp::SIGNAL_SCAN_FAILED, false, move |args| {
+            let window = args[0].get::<Self>().unwrap();
+            window.imp().active_scan_spinner.set_visible(false);
+            None
+        });
+        self.connect_local(imp::SIGNAL_SCANNING_ENABLED, false, move |args| {
+            let window = args[0].get::<Self>().unwrap();
+            window.imp().start_scanning_button.set_sensitive(false);
+            window.imp().stop_scanning_button.set_sensitive(true);
+            None
+        });
+        self.connect_local(imp::SIGNAL_SCANNING_DISABLED, false, move |args| {
+            let window = args[0].get::<Self>().unwrap();
+            window.imp().active_scan_spinner.set_visible(false);
+            window.imp().start_scanning_button.set_sensitive(true);
+            window.imp().stop_scanning_button.set_sensitive(false);
+            None
+        });
+
+        imp.start_scanning_button.connect_clicked(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            move |_| {
+                if let Some(interface) = window.imp().interface_box.selected_interface() {
+                    window.load_interface(interface, true);
+                }
+            }
+        ));
+
+        imp.stop_scanning_button.connect_clicked(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            move |_| {
+                window.stop_scanning();
+            }
+        ));
+    }
+
+    fn setup_bottom_panel_toggles(&self) {
         let imp = self.imp();
 
         let active_button: Rc<RefCell<Option<gtk::ToggleButton>>> = Rc::new(RefCell::new(None));
@@ -162,51 +211,58 @@ impl KawaiiFiWindow {
             #[strong]
             active_button,
             move |_| {
-                let imp = window.imp();
-                let is_active = button.is_active();
-
-                let prev_button = active_button.borrow().clone();
-
-                if is_active {
-                    if let Some(prev) = prev_button
-                        && prev != button
-                    {
-                        prev.set_active(false);
-                    }
-
-                    imp.bottom_stack.set_visible_child_name(&view_name);
-                    imp.bottom_stack.set_visible(true);
-
-                    *active_button.borrow_mut() = Some(button.clone());
-                } else {
-                    if prev_button.as_ref().is_some_and(|b| *b == button) {
-                        imp.bottom_stack.set_visible(false);
-                        *active_button.borrow_mut() = None;
-                    }
-                }
+                window.handle_bottom_panel_toggle(&button, &view_name, &active_button);
             }
         ));
     }
 
-    pub fn connect_components_to_models(&self) {
+    fn handle_bottom_panel_toggle(
+        &self,
+        button: &gtk::ToggleButton,
+        view_name: &str,
+        active_button: &Rc<RefCell<Option<gtk::ToggleButton>>>,
+    ) {
         let imp = self.imp();
+        let is_active = button.is_active();
 
-        imp.bss_table.setup(self.bss_filter_model());
-        if let Some(selection_model) = imp.bss_table.selection_model() {
-            imp.bss_elements.set_selection_model(selection_model);
-            imp.bss_chart_2_4.set_selection_model(selection_model);
-            imp.bss_chart_5.set_selection_model(selection_model);
-            imp.bss_chart_6.set_selection_model(selection_model);
+        let prev_button = active_button.borrow().clone();
+
+        if is_active {
+            if let Some(prev) = prev_button
+                && prev != *button
+            {
+                prev.set_active(false);
+            }
+
+            imp.bottom_stack.set_visible_child_name(view_name);
+            imp.bottom_stack.set_visible(true);
+
+            *active_button.borrow_mut() = Some(button.clone());
+        } else {
+            if prev_button.as_ref().is_some_and(|b| *b == *button) {
+                imp.bottom_stack.set_visible(false);
+                *active_button.borrow_mut() = None;
+            }
         }
     }
 
-    pub fn reapply_filter(&self) {
-        let filter = self.bss_filter();
-        let state = BssFilterState::from_window(self);
+    fn setup_settings(&self) {
+        self.settings().connect_changed(
+            Some("show-hidden-bsss"),
+            glib::clone!(
+                #[weak(rename_to = window)]
+                self,
+                move |_, _| {
+                    window.update_filter();
+                }
+            ),
+        );
+        self.update_filter();
+    }
 
-        filter.set_filter_func(move |obj| {
-            let bss = obj.downcast_ref::<BssObject>().unwrap();
-            state.matches(bss)
-        });
+    fn load_initial_interface(&self) {
+        if let Some(interface) = self.imp().interface_box.selected_interface() {
+            self.load_interface(interface, true);
+        }
     }
 }
