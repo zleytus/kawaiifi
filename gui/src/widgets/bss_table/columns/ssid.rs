@@ -22,10 +22,11 @@ pub fn create_ssid_factory() -> SignalListItemFactory {
         let bss = list_item.item().and_downcast::<BssObject>().unwrap();
         let label = list_item.child().and_downcast::<gtk::Label>().unwrap();
         if let Some(ssid) = bss.data().formatted_ssid() {
+            label.remove_css_class("dimmed");
             set_bss_label(&label, ssid, bss.data().is_associated());
         } else {
+            label.add_css_class("dimmed");
             label.set_markup("<i>Hidden</i>");
-            label.set_css_classes(&["dimmed"]);
         }
     });
 
