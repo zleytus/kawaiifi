@@ -13,12 +13,12 @@ mod scanning;
 mod setup;
 
 /// Interval between automatic Wi-Fi scans, in seconds.
-const SCAN_INTERVAL_SECONDS: u32 = 10;
+const SCAN_INTERVAL_SECONDS: u64 = 10;
 
 mod imp {
     use std::{
         cell::{Cell, OnceCell, RefCell},
-        sync::{Arc, Mutex, OnceLock},
+        sync::OnceLock,
     };
 
     use gtk::{Button, Label, ToggleButton, Widget, glib::types::StaticType};
@@ -42,7 +42,7 @@ mod imp {
         pub settings: OnceCell<gio::Settings>,
 
         // Caches
-        pub vendor_cache: OnceCell<Arc<Mutex<VendorCache>>>,
+        pub vendor_cache: OnceCell<RefCell<VendorCache>>,
 
         // Scanning state
         pub scanning_enabled: Cell<bool>,
