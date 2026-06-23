@@ -19,7 +19,7 @@ impl KawaiiFiWindow {
         self.cancel_scheduled_scan();
         let was_enabled = imp.scanning_enabled.replace(true);
         if !was_enabled {
-            self.emit_by_name::<()>(imp::SIGNAL_SCANNING_STARTED, &[]);
+            self.emit_by_name::<()>(imp::SIGNAL_SCANNING_ENABLED, &[]);
         }
     }
 
@@ -58,7 +58,7 @@ impl KawaiiFiWindow {
         self.cancel_scheduled_scan();
 
         if was_enabled {
-            self.emit_by_name::<()>(imp::SIGNAL_SCANNING_STOPPED, &[]);
+            self.emit_by_name::<()>(imp::SIGNAL_SCANNING_DISABLED, &[]);
         }
     }
 

@@ -29,6 +29,8 @@ mod imp {
     pub const SIGNAL_SCAN_STARTED: &str = "scan-started";
     pub const SIGNAL_SCAN_COMPLETED: &str = "scan-completed";
     pub const SIGNAL_SCAN_FAILED: &str = "scan-failed";
+    pub const SIGNAL_SCANNING_ENABLED: &str = "scanning-enabled";
+    pub const SIGNAL_SCANNING_DISABLED: &str = "scanning-disabled";
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/fi/kawaii/kawaiifi/ui/window.ui")]
@@ -158,14 +160,13 @@ mod imp {
             static SIGNALS: OnceLock<Vec<glib::subclass::Signal>> = OnceLock::new();
             SIGNALS.get_or_init(|| {
                 vec![
-                    // Signal: scan-started (no parameters)
                     glib::subclass::Signal::builder(SIGNAL_SCAN_STARTED).build(),
-                    // Signal: scan-completed (no parameters)
                     glib::subclass::Signal::builder(SIGNAL_SCAN_COMPLETED).build(),
-                    // Signal: scan-failed (passes error message)
                     glib::subclass::Signal::builder(SIGNAL_SCAN_FAILED)
                         .param_types([String::static_type()])
                         .build(),
+                    glib::subclass::Signal::builder(SIGNAL_SCANNING_ENABLED).build(),
+                    glib::subclass::Signal::builder(SIGNAL_SCANNING_DISABLED).build(),
                 ]
             })
         }
