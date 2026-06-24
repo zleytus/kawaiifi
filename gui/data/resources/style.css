@@ -1,7 +1,3 @@
-searchbar box {
-    background-color: transparent;
-}
-
 /* Signal strength gradient - 20 levels using GNOME HIG palette */
 /* Red (weak) → Orange → Yellow → Green (strong) */
 levelbar block.signal-00 {
