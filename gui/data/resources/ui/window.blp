@@ -109,18 +109,9 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
 
       [start]
       Box {
-        spacing: 6;
+        $InterfaceBox interface_box {}
 
-        Image {
-          icon-name: "access-point-symbolic";
-          margin-start: 5;
-        }
-
-        Label statusbar_label {
-          styles [
-            "heading",
-          ]
-
+        Label file_label {
           label: _("");
         }
       }
@@ -168,9 +159,18 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
 
       [end]
       Box {
-        $InterfaceBox interface_box {}
+        spacing: 6;
+        margin-end: 5;
 
-        Label file_label {
+        Image {
+          icon-name: "access-point-symbolic";
+        }
+
+        Label statusbar_label {
+          styles [
+            "heading",
+          ]
+
           label: _("");
         }
       }
