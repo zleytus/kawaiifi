@@ -3,8 +3,9 @@
   <gresource prefix="/fi/kawaii/kawaiifi">
     <file compressed="true" preprocess="xml-stripblanks">ui/window.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/preferences_dialog.ui</file>
-    <file compressed="true" preprocess="xml-stripblanks">ui/interface_box.ui</file>
-    <file compressed="true" preprocess="xml-stripblanks">ui/interface_popover.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/interface_toggle.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/interface_list.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/interface_row.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/bss_table.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/bss_chart.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/bss_filter.ui</file>
@@ -12,6 +13,7 @@
     <file>icons/scalable/actions/funnel-symbolic.svg</file>
     <file>icons/scalable/actions/pci-card-symbolic.svg</file>
     <file>icons/scalable/actions/access-point-symbolic.svg</file>
+    <file>icons/scalable/actions/update-symbolic.svg</file>
     <file>style.css</file>
   </gresource>
 </gresources>

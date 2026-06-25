@@ -26,7 +26,10 @@ mod imp {
     use gtk::{Button, Label, ToggleButton, Widget, glib::types::StaticType};
 
     use super::*;
-    use crate::{vendor::VendorCache, widgets::InterfaceBox};
+    use crate::{
+        vendor::VendorCache,
+        widgets::{InterfaceList, InterfaceToggle},
+    };
 
     pub const SIGNAL_SCAN_STARTED: &str = "scan-started";
     pub const SIGNAL_SCAN_COMPLETED: &str = "scan-completed";
@@ -61,11 +64,15 @@ mod imp {
         #[template_child]
         pub filter_toggle: TemplateChild<ToggleButton>,
         #[template_child]
+        pub interface_split_view: TemplateChild<adw::OverlaySplitView>,
+        #[template_child]
         pub overlay_split_view: TemplateChild<adw::OverlaySplitView>,
         #[template_child]
         pub bss_filter: TemplateChild<BssFilter>,
         #[template_child]
-        pub interface_box: TemplateChild<InterfaceBox>,
+        pub interface_toggle: TemplateChild<InterfaceToggle>,
+        #[template_child]
+        pub interface_list: TemplateChild<InterfaceList>,
         #[template_child]
         pub file_label: TemplateChild<Label>,
         #[template_child]
@@ -195,7 +202,7 @@ impl KawaiiFiWindow {
     pub(super) fn load_interface(&self, interface: Interface, start_scanning: bool) {
         let was_showing_file = self.imp().file_label.is_visible();
         self.imp().file_label.set_visible(false);
-        self.imp().interface_box.set_visible(true);
+        self.imp().interface_toggle.set_visible(true);
 
         if was_showing_file {
             self.invalidate_scan_generation();

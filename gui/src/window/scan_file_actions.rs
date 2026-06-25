@@ -53,7 +53,8 @@ impl KawaiiFiWindow {
             .unwrap_or_else(|| file.uri().to_string());
         self.imp().file_label.set_label(&label);
         self.imp().file_label.set_visible(true);
-        self.imp().interface_box.set_visible(false);
+        self.imp().interface_split_view.set_show_sidebar(false);
+        self.imp().interface_toggle.set_visible(false);
 
         self.apply_merged_results(scan_file.bss_list());
     }

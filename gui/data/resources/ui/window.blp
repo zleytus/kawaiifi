@@ -47,58 +47,66 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
       }
     }
 
-    Adw.OverlaySplitView overlay_split_view {
+    Adw.OverlaySplitView interface_split_view {
       show-sidebar: false;
       collapsed: false;
-      sidebar-position: end;
+      sidebar-position: start;
 
-      sidebar: $BssFilter bss_filter {};
+      sidebar: $InterfaceList interface_list {};
 
-      content: Paned {
-        orientation: vertical;
-        position: 300;
+      content: Adw.OverlaySplitView overlay_split_view {
+        show-sidebar: false;
+        collapsed: false;
+        sidebar-position: end;
 
-        [start]
-        $BssTable bss_table {
-          vexpand: true;
-        }
+        sidebar: $BssFilter bss_filter {};
 
-        [end]
-        Adw.ViewStack bottom_stack {
-          vhomogeneous: false;
-          vexpand: false;
-          visible: false;
+        content: Paned {
+          orientation: vertical;
+          position: 300;
 
-          Adw.ViewStackPage {
-            name: "ies";
-
-            child: $BssElements bss_elements {};
+          [start]
+          $BssTable bss_table {
+            vexpand: true;
           }
 
-          Adw.ViewStackPage {
-            name: "two_point_four_ghz";
+          [end]
+          Adw.ViewStack bottom_stack {
+            vhomogeneous: false;
+            vexpand: false;
+            visible: false;
 
-            child: $BssChart bss_chart_2_4 {
-              band: "2.4 GHz";
-            };
+            Adw.ViewStackPage {
+              name: "ies";
+
+              child: $BssElements bss_elements {};
+            }
+
+            Adw.ViewStackPage {
+              name: "two_point_four_ghz";
+
+              child: $BssChart bss_chart_2_4 {
+                band: "2.4 GHz";
+              };
+            }
+
+            Adw.ViewStackPage {
+              name: "five_ghz";
+
+              child: $BssChart bss_chart_5 {
+                band: "5 GHz";
+              };
+            }
+
+            Adw.ViewStackPage {
+              name: "six_ghz";
+
+              child: $BssChart bss_chart_6 {
+                band: "6 GHz";
+              };
+            }
           }
-
-          Adw.ViewStackPage {
-            name: "five_ghz";
-
-            child: $BssChart bss_chart_5 {
-              band: "5 GHz";
-            };
-          }
-
-          Adw.ViewStackPage {
-            name: "six_ghz";
-
-            child: $BssChart bss_chart_6 {
-              band: "6 GHz";
-            };
-          }
-        }
+        };
       };
     }
 
@@ -109,7 +117,7 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
 
       [start]
       Box {
-        $InterfaceBox interface_box {}
+        $InterfaceToggle interface_toggle {}
 
         Label file_label {
           label: _("");

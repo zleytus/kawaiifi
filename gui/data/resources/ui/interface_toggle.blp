@@ -1,0 +1,16 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $InterfaceToggle: Box {
+  ToggleButton interface_button {
+    tooltip-text: _("Show Interfaces");
+
+    styles [
+      "flat",
+    ]
+
+    Adw.ButtonContent interface_button_content {
+      label: _("No Interfaces");
+    }
+  }
+}

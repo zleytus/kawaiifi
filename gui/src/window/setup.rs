@@ -10,14 +10,14 @@ use gtk::{
     prelude::{ButtonExt, ToggleButtonExt, WidgetExt},
 };
 
-use crate::widgets::InterfaceBox;
+use crate::widgets::InterfaceList;
 
 use super::{KawaiiFiWindow, imp};
 
 impl KawaiiFiWindow {
     pub fn setup(&self) {
         self.connect_components_to_models();
-        self.setup_interface_box();
+        self.setup_interface_controls();
         self.setup_actions();
         self.setup_filtering();
         self.setup_scan_controls();
@@ -38,10 +38,10 @@ impl KawaiiFiWindow {
         }
     }
 
-    fn setup_interface_box(&self) {
+    fn setup_interface_controls(&self) {
         let imp = self.imp();
 
-        imp.interface_box
+        imp.interface_list
             .connect_interfaces_load_failed(glib::clone!(
                 #[weak(rename_to = window)]
                 self,
@@ -49,19 +49,67 @@ impl KawaiiFiWindow {
                     window.show_error("Could Not Load Wi-Fi Interfaces", error);
                 }
             ));
-        imp.interface_box.connect_interface_changed(glib::clone!(
+        imp.interface_list.connect_interface_changed(glib::clone!(
             #[weak(rename_to = window)]
             self,
-            move |interface_box: &InterfaceBox, _| {
+            move |interface_list: &InterfaceList, _| {
+                let interface = interface_list.selected_interface();
+                window
+                    .imp()
+                    .interface_toggle
+                    .set_interface(interface.as_ref());
+
                 let restart_scanning = window.imp().scanning_enabled.get();
                 window.stop_scanning();
                 window.invalidate_scan_generation();
                 window.apply_merged_results(Vec::new());
-                if let Some(interface) = interface_box.selected_interface() {
+                if let Some(interface) = interface {
                     window.load_interface(interface, restart_scanning);
                 }
             }
         ));
+        imp.interface_list.connect_interfaces_updated(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            move |interface_list| {
+                let interface = interface_list.selected_interface();
+                window
+                    .imp()
+                    .interface_toggle
+                    .set_interface(interface.as_ref());
+
+                if interface.is_none() {
+                    window.stop_scanning();
+                    window.invalidate_scan_generation();
+                    window.apply_merged_results(Vec::new());
+                }
+            }
+        ));
+
+        imp.interface_toggle.connect_toggled(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            move |interface_toggle| {
+                window
+                    .imp()
+                    .interface_split_view
+                    .set_show_sidebar(interface_toggle.is_active());
+            }
+        ));
+        imp.interface_split_view
+            .connect_show_sidebar_notify(glib::clone!(
+                #[weak(rename_to = window)]
+                self,
+                move |split_view| {
+                    window
+                        .imp()
+                        .interface_toggle
+                        .set_active(split_view.shows_sidebar());
+                }
+            ));
+
+        imp.interface_toggle
+            .set_interface(imp.interface_list.selected_interface().as_ref());
     }
 
     fn setup_actions(&self) {
@@ -165,7 +213,7 @@ impl KawaiiFiWindow {
             #[weak(rename_to = window)]
             self,
             move |_| {
-                if let Some(interface) = window.imp().interface_box.selected_interface() {
+                if let Some(interface) = window.imp().interface_list.selected_interface() {
                     window.load_interface(interface, true);
                 }
             }
@@ -261,7 +309,7 @@ impl KawaiiFiWindow {
     }
 
     fn load_initial_interface(&self) {
-        if let Some(interface) = self.imp().interface_box.selected_interface() {
+        if let Some(interface) = self.imp().interface_list.selected_interface() {
             self.load_interface(interface, true);
         }
     }

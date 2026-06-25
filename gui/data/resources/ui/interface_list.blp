@@ -1,0 +1,146 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $InterfaceList: Box {
+  orientation: vertical;
+
+  CenterBox {
+    margin-start: 12;
+    margin-end: 6;
+    margin-top: 6;
+
+    [start]
+    Label {
+      label: _("Interfaces");
+
+      styles [
+        "title-4",
+      ]
+    }
+
+    [end]
+    Button refresh_button {
+      icon-name: "update-symbolic";
+      tooltip-text: _("Refresh Interfaces");
+
+      styles [
+        "flat",
+      ]
+    }
+  }
+
+  ListBox interface_list_box {
+    selection-mode: single;
+    activate-on-single-click: true;
+    margin-start: 2;
+    margin-end: 2;
+
+    styles [
+      "navigation-sidebar",
+    ]
+  }
+
+  ScrolledWindow {
+    hscrollbar-policy: never;
+    vexpand: true;
+
+    Adw.PreferencesGroup details_group {
+      visible: false;
+      title: _("Details");
+      margin-top: 12;
+      margin-bottom: 12;
+      margin-start: 12;
+      margin-end: 12;
+
+      Adw.ActionRow name_row {
+        title: _("Name");
+        subtitle-selectable: true;
+
+        styles [
+          "property",
+        ]
+      }
+
+      Adw.ActionRow vendor_row {
+        title: _("Vendor");
+        subtitle-selectable: true;
+
+        styles [
+          "property",
+        ]
+      }
+
+      Adw.ActionRow device_row {
+        title: _("Device");
+        subtitle-selectable: true;
+
+        styles [
+          "property",
+        ]
+      }
+
+      Adw.ActionRow driver_row {
+        title: _("Driver");
+        subtitle-selectable: true;
+
+        styles [
+          "property",
+        ]
+      }
+
+      Adw.ActionRow ssid_row {
+        title: _("SSID");
+        subtitle-selectable: true;
+
+        styles [
+          "property",
+        ]
+      }
+
+      Adw.ActionRow mac_row {
+        title: _("MAC Address");
+        subtitle-selectable: true;
+
+        styles [
+          "property",
+        ]
+      }
+
+      Adw.ActionRow freq_row {
+        title: _("Frequency");
+        subtitle-selectable: true;
+
+        styles [
+          "property",
+        ]
+      }
+
+      Adw.ActionRow index_row {
+        title: _("Index");
+        subtitle-selectable: true;
+
+        styles [
+          "property",
+        ]
+      }
+
+      Adw.ActionRow wiphy_row {
+        title: _("wiphy");
+        subtitle-selectable: true;
+
+        styles [
+          "property",
+        ]
+      }
+
+      Adw.ActionRow wdev_row {
+        title: _("wdev");
+        subtitle-selectable: true;
+
+        styles [
+          "property",
+        ]
+      }
+    }
+  }
+}
