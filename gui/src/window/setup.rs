@@ -6,13 +6,13 @@ use gtk::{
         self,
         prelude::{ActionMapExt, SettingsExt},
     },
-    glib::{self, object::ObjectExt},
+    glib::{self},
     prelude::{ButtonExt, ToggleButtonExt, WidgetExt},
 };
 
 use crate::widgets::InterfaceList;
 
-use super::{KawaiiFiWindow, imp};
+use super::KawaiiFiWindow;
 
 impl KawaiiFiWindow {
     pub fn setup(&self) {
@@ -180,35 +180,6 @@ impl KawaiiFiWindow {
     fn setup_scan_controls(&self) {
         let imp = self.imp();
 
-        self.connect_local(imp::SIGNAL_SCAN_STARTED, false, move |args| {
-            let window = args[0].get::<Self>().unwrap();
-            window.imp().active_scan_spinner.set_visible(true);
-            None
-        });
-        self.connect_local(imp::SIGNAL_SCAN_COMPLETED, false, move |args| {
-            let window = args[0].get::<Self>().unwrap();
-            window.imp().active_scan_spinner.set_visible(false);
-            None
-        });
-        self.connect_local(imp::SIGNAL_SCAN_FAILED, false, move |args| {
-            let window = args[0].get::<Self>().unwrap();
-            window.imp().active_scan_spinner.set_visible(false);
-            None
-        });
-        self.connect_local(imp::SIGNAL_SCANNING_ENABLED, false, move |args| {
-            let window = args[0].get::<Self>().unwrap();
-            window.imp().start_scanning_button.set_sensitive(false);
-            window.imp().stop_scanning_button.set_sensitive(true);
-            None
-        });
-        self.connect_local(imp::SIGNAL_SCANNING_DISABLED, false, move |args| {
-            let window = args[0].get::<Self>().unwrap();
-            window.imp().active_scan_spinner.set_visible(false);
-            window.imp().start_scanning_button.set_sensitive(true);
-            window.imp().stop_scanning_button.set_sensitive(false);
-            None
-        });
-
         imp.start_scanning_button.connect_clicked(glib::clone!(
             #[weak(rename_to = window)]
             self,
@@ -226,6 +197,9 @@ impl KawaiiFiWindow {
                 window.stop_scanning();
             }
         ));
+
+        imp.scan_failed_banner
+            .connect_button_clicked(|banner| banner.set_revealed(false));
     }
 
     fn setup_bottom_panel_toggles(&self) {

@@ -18,24 +18,16 @@ mod setup;
 const SCAN_INTERVAL_SECONDS: u64 = 10;
 
 mod imp {
-    use std::{
-        cell::{Cell, OnceCell, RefCell},
-        sync::OnceLock,
-    };
+    use std::cell::{Cell, OnceCell, RefCell};
 
-    use gtk::{Button, Label, ToggleButton, Widget, glib::types::StaticType};
+    use adw::Banner;
+    use gtk::{Button, Label, ToggleButton, Widget};
 
     use super::*;
     use crate::{
         vendor::VendorCache,
         widgets::{InterfaceList, InterfaceToggle},
     };
-
-    pub const SIGNAL_SCAN_STARTED: &str = "scan-started";
-    pub const SIGNAL_SCAN_COMPLETED: &str = "scan-completed";
-    pub const SIGNAL_SCAN_FAILED: &str = "scan-failed";
-    pub const SIGNAL_SCANNING_ENABLED: &str = "scanning-enabled";
-    pub const SIGNAL_SCANNING_DISABLED: &str = "scanning-disabled";
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/fi/kawaii/kawaiifi/ui/window.ui")]
@@ -61,6 +53,8 @@ mod imp {
         pub stop_scanning_button: TemplateChild<Button>,
         #[template_child]
         pub active_scan_spinner: TemplateChild<Widget>,
+        #[template_child]
+        pub scan_failed_banner: TemplateChild<Banner>,
         #[template_child]
         pub filter_toggle: TemplateChild<ToggleButton>,
         #[template_child]
@@ -144,21 +138,6 @@ mod imp {
                 .unwrap();
 
             self.obj().setup();
-        }
-
-        fn signals() -> &'static [glib::subclass::Signal] {
-            static SIGNALS: OnceLock<Vec<glib::subclass::Signal>> = OnceLock::new();
-            SIGNALS.get_or_init(|| {
-                vec![
-                    glib::subclass::Signal::builder(SIGNAL_SCAN_STARTED).build(),
-                    glib::subclass::Signal::builder(SIGNAL_SCAN_COMPLETED).build(),
-                    glib::subclass::Signal::builder(SIGNAL_SCAN_FAILED)
-                        .param_types([String::static_type()])
-                        .build(),
-                    glib::subclass::Signal::builder(SIGNAL_SCANNING_ENABLED).build(),
-                    glib::subclass::Signal::builder(SIGNAL_SCANNING_DISABLED).build(),
-                ]
-            })
         }
 
         fn dispose(&self) {

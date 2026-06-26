@@ -47,6 +47,12 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
       }
     }
 
+    [top]
+    Adw.Banner scan_failed_banner {
+      revealed: false;
+      button-label: _("Dismiss");
+    }
+
     Adw.OverlaySplitView interface_split_view {
       show-sidebar: false;
       collapsed: false;

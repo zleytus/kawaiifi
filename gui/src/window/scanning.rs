@@ -3,11 +3,12 @@ use std::time::Duration;
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::{
     gio::prelude::SettingsExt,
-    glib::{self, object::ObjectExt},
+    glib::{self},
+    prelude::WidgetExt,
 };
 use kawaiifi::Interface;
 
-use super::{KawaiiFiWindow, imp};
+use super::KawaiiFiWindow;
 use crate::{
     objects::BssInternal,
     scan::{ProcessedScan, spawn_scan_processing},
@@ -17,14 +18,29 @@ impl KawaiiFiWindow {
     pub(super) fn enable_scanning(&self) {
         let imp = self.imp();
         self.cancel_scheduled_scan();
-        let was_enabled = imp.scanning_enabled.replace(true);
-        if !was_enabled {
-            self.emit_by_name::<()>(imp::SIGNAL_SCANNING_ENABLED, &[]);
-        }
+        imp.scanning_enabled.replace(true);
+        self.update_scan_controls();
     }
 
-    /// Schedule the next scan after the configured interval
-    /// This is called after a scan completes or fails
+    pub fn stop_scanning(&self) {
+        let imp = self.imp();
+        imp.scanning_enabled.replace(false);
+        self.imp().active_scan_spinner.set_visible(false);
+        self.cancel_scheduled_scan();
+        self.update_scan_controls();
+    }
+
+    fn update_scan_controls(&self) {
+        let scanning_enabled = self.imp().scanning_enabled.get();
+        self.imp()
+            .start_scanning_button
+            .set_sensitive(!scanning_enabled);
+        self.imp()
+            .stop_scanning_button
+            .set_sensitive(scanning_enabled);
+    }
+
+    /// Schedule the next scan after the configured delay
     pub(super) fn schedule_active_scan(&self, interface: Interface, delay: Duration) {
         let imp = self.imp();
 
@@ -52,16 +68,6 @@ impl KawaiiFiWindow {
         imp.scan_source_id.replace(Some(source_id));
     }
 
-    pub fn stop_scanning(&self) {
-        let imp = self.imp();
-        let was_enabled = imp.scanning_enabled.replace(false);
-        self.cancel_scheduled_scan();
-
-        if was_enabled {
-            self.emit_by_name::<()>(imp::SIGNAL_SCANNING_DISABLED, &[]);
-        }
-    }
-
     fn cancel_scheduled_scan(&self) {
         let imp = self.imp();
         if let Some(source_id) = imp.scan_source_id.take() {
@@ -75,7 +81,7 @@ impl KawaiiFiWindow {
         let vendor_cache = self.vendor_cache_snapshot();
         let next_scan_interface = interface.clone();
 
-        self.emit_by_name::<()>(imp::SIGNAL_SCAN_STARTED, &[]);
+        self.on_scan_started();
 
         glib::spawn_future_local(glib::clone!(
             #[weak(rename_to = window)]
@@ -99,19 +105,18 @@ impl KawaiiFiWindow {
                         if window.imp().scanning_enabled.get() {
                             window.apply_active_scan_result(processed);
                         }
-                        window.emit_by_name::<()>(imp::SIGNAL_SCAN_COMPLETED, &[]);
+                        window.on_scan_completed();
                     }
                     Ok(Err(scan_error)) => {
                         tracing::error!(error = %scan_error, "Scan failed");
-                        window.emit_by_name::<()>(
-                            imp::SIGNAL_SCAN_FAILED,
-                            &[&scan_error.to_string()],
-                        );
+                        window.on_scan_failed(&scan_error.to_string());
+                        return;
                     }
                     Err(_) => {
                         let message = "Scan worker panicked";
                         tracing::error!(message);
-                        window.emit_by_name::<()>(imp::SIGNAL_SCAN_FAILED, &[&message]);
+                        window.on_scan_failed(&message);
+                        return;
                     }
                 }
 
@@ -173,13 +178,18 @@ impl KawaiiFiWindow {
                 match result {
                     Ok(Ok(processed)) => {
                         window.apply_cached_scan_result(processed);
+                        window.on_scan_completed();
                     }
                     Ok(Err(scan_error)) => {
                         tracing::warn!(error = %scan_error, "Failed to read cached scan results");
+                        window.on_scan_failed(&scan_error.to_string());
+                        return;
                     }
                     Err(_) => {
                         let message = "Scan worker panicked";
                         tracing::error!(message);
+                        window.on_scan_failed(message);
+                        return;
                     }
                 }
 
@@ -191,5 +201,22 @@ impl KawaiiFiWindow {
     fn apply_cached_scan_result(&self, processed: ProcessedScan) {
         self.install_vendor_cache(processed.vendor_cache);
         self.apply_merged_results(processed.bss_list);
+    }
+
+    fn on_scan_started(&self) {
+        self.imp().active_scan_spinner.set_visible(true);
+    }
+
+    fn on_scan_completed(&self) {
+        self.imp().active_scan_spinner.set_visible(false);
+        self.imp().scan_failed_banner.set_revealed(false);
+    }
+
+    fn on_scan_failed(&self, error: &str) {
+        self.stop_scanning();
+        self.imp().scan_failed_banner.set_revealed(true);
+        self.imp()
+            .scan_failed_banner
+            .set_title(&format!("Scan Failed: {}", error));
     }
 }
