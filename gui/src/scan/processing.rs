@@ -1,6 +1,6 @@
 use std::{any::Any, collections::HashMap};
 
-use kawaiifi::ScanError;
+use kawaiifi::{Interface, ScanError};
 
 use crate::{objects::BssInternal, vendor::VendorCache};
 
@@ -10,13 +10,18 @@ pub struct ProcessedScan {
 }
 
 pub async fn spawn_scan_processing(
-    fetch_bss_list: impl FnOnce() -> Result<Vec<kawaiifi::Bss>, ScanError> + Send + 'static,
+    fetch_bss_list: impl FnOnce(&Interface) -> Result<Vec<kawaiifi::Bss>, ScanError> + Send + 'static,
+    interface: Interface,
     vendor_cache: VendorCache,
     existing_bss_data: Vec<BssInternal>,
 ) -> Result<Result<ProcessedScan, ScanError>, Box<dyn Any + Send>> {
     gtk::gio::spawn_blocking(move || {
-        let bss_list = fetch_bss_list()?;
-        tracing::info!(bss_count = bss_list.len(), "Received scan results");
+        let bss_list = fetch_bss_list(&interface)?;
+        tracing::info!(
+            bss_count = bss_list.len(),
+            interface_name = interface.name(),
+            "Received scan results"
+        );
         Ok(process_scan_results(
             bss_list,
             existing_bss_data,

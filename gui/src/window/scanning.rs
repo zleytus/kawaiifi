@@ -87,12 +87,17 @@ impl KawaiiFiWindow {
             #[weak(rename_to = window)]
             self,
             async move {
-                let fetch_from_scan = move || {
+                let fetch_from_scan = |interface: &Interface| {
                     let scan = interface.scan_blocking();
                     scan.map(|scan| scan.bss_list().to_vec())
                 };
-                let result =
-                    spawn_scan_processing(fetch_from_scan, vendor_cache, existing_bss_data).await;
+                let result = spawn_scan_processing(
+                    fetch_from_scan,
+                    interface,
+                    vendor_cache,
+                    existing_bss_data,
+                )
+                .await;
 
                 // The user may switch interfaces while the blocking scan is still running.
                 if !window.generation_is_current(generation) {
@@ -166,9 +171,15 @@ impl KawaiiFiWindow {
             #[weak(rename_to = window)]
             self,
             async move {
-                let fetch_from_cache = move || interface.cached_scan_results_blocking();
-                let result =
-                    spawn_scan_processing(fetch_from_cache, vendor_cache, existing_bss_data).await;
+                let fetch_from_cache =
+                    |interface: &Interface| interface.cached_scan_results_blocking();
+                let result = spawn_scan_processing(
+                    fetch_from_cache,
+                    interface,
+                    vendor_cache,
+                    existing_bss_data,
+                )
+                .await;
 
                 if !window.generation_is_current(generation) {
                     tracing::debug!("Discarding cached scan results for a previous interface");
