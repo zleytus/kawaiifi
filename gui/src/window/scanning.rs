@@ -80,6 +80,11 @@ impl KawaiiFiWindow {
             return;
         }
 
+        if !interface_is_available(&interface) {
+            self.on_scan_failed(&format!("{} is no longer available", interface.name()));
+            return;
+        }
+
         let generation = self.scan_generation();
         let existing_bss_data = self.current_bss_data();
         let vendor_cache = self.vendor_cache_snapshot();
@@ -170,6 +175,11 @@ impl KawaiiFiWindow {
             return;
         }
 
+        if !interface_is_available(&interface) {
+            self.on_scan_failed(&format!("{} is no longer available", interface.name()));
+            return;
+        }
+
         let generation = self.scan_generation();
         let existing_bss_data = self.current_bss_data();
         let vendor_cache = self.vendor_cache_snapshot();
@@ -240,4 +250,12 @@ impl KawaiiFiWindow {
             .scan_failed_banner
             .set_title(&format!("Scan Failed: {}", error));
     }
+}
+
+fn interface_is_available(interface: &Interface) -> bool {
+    kawaiifi::interfaces().is_ok_and(|interfaces| {
+        interfaces.iter().any(|current| {
+            current.index() == interface.index() && current.mac_address() == interface.mac_address()
+        })
+    })
 }
