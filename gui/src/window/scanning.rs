@@ -76,6 +76,10 @@ impl KawaiiFiWindow {
     }
 
     fn start_active_scan(&self, interface: Interface) {
+        if !self.imp().scanning_enabled.get() {
+            return;
+        }
+
         let generation = self.scan_generation();
         let existing_bss_data = self.current_bss_data();
         let vendor_cache = self.vendor_cache_snapshot();
@@ -162,6 +166,10 @@ impl KawaiiFiWindow {
     }
 
     pub(super) fn start_cached_scan(&self, interface: Interface) {
+        if !self.imp().scanning_enabled.get() {
+            return;
+        }
+
         let generation = self.scan_generation();
         let existing_bss_data = self.current_bss_data();
         let vendor_cache = self.vendor_cache_snapshot();
