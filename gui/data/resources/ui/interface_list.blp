@@ -4,31 +4,6 @@ using Adw 1;
 template $InterfaceList: Box {
   orientation: vertical;
 
-  CenterBox {
-    margin-start: 12;
-    margin-end: 6;
-    margin-top: 6;
-
-    [start]
-    Label {
-      label: _("Interfaces");
-
-      styles [
-        "title-4",
-      ]
-    }
-
-    [end]
-    Button refresh_button {
-      icon-name: "update-symbolic";
-      tooltip-text: _("Refresh Interfaces");
-
-      styles [
-        "flat",
-      ]
-    }
-  }
-
   ListBox interface_list_box {
     selection-mode: single;
     activate-on-single-click: true;

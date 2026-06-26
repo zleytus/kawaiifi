@@ -6,61 +6,80 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
   default-height: 700;
   title: _("KawaiiFi");
 
-  content: Adw.ToolbarView {
-    [top]
-    Adw.HeaderBar {
-      [start]
-      Box {
-        spacing: 5;
+  content: Adw.OverlaySplitView interface_split_view {
+    show-sidebar: false;
+    collapsed: false;
+    sidebar-position: start;
 
-        Button start_scanning_button {
-          icon-name: "media-playback-start-symbolic";
-          tooltip-text: _("Start Scanning");
+    sidebar: Adw.ToolbarView {
+      [top]
+      Adw.HeaderBar {
+        title-widget: Adw.WindowTitle {
+          title: _("Interfaces");
+        };
+
+        [end]
+        Button refresh_interfaces_button {
+          icon-name: "update-symbolic";
+          tooltip-text: _("Refresh Interfaces");
+
+          styles [
+            "flat",
+          ]
+        }
+      }
+
+      content: $InterfaceList interface_list {};
+    };
+
+    content: Adw.ToolbarView {
+      [top]
+      Adw.HeaderBar {
+        [start]
+        Box {
+          spacing: 5;
+
+          Button start_scanning_button {
+            icon-name: "media-playback-start-symbolic";
+            tooltip-text: _("Start Scanning");
+          }
+
+          Button stop_scanning_button {
+            icon-name: "media-playback-stop-symbolic";
+            tooltip-text: _("Stop Scanning");
+          }
+
+          Adw.Spinner active_scan_spinner {
+            visible: false;
+            margin-start: 10;
+            margin-end: 5;
+          }
         }
 
-        Button stop_scanning_button {
-          icon-name: "media-playback-stop-symbolic";
-          tooltip-text: _("Stop Scanning");
-        }
+        [end]
+        Box {
+          spacing: 5;
 
-        Adw.Spinner active_scan_spinner {
-          visible: false;
-          margin-start: 10;
-          margin-end: 5;
+          ToggleButton filter_toggle {
+            icon-name: "funnel-symbolic";
+            tooltip-text: _("Show Filters");
+          }
+
+          MenuButton {
+            icon-name: "open-menu-symbolic";
+            menu-model: primary_menu;
+            tooltip-text: _("Main Menu");
+          }
         }
       }
 
-      [end]
-      Box {
-        spacing: 5;
-
-        ToggleButton filter_toggle {
-          icon-name: "funnel-symbolic";
-          tooltip-text: _("Show Filters");
-        }
-
-        MenuButton {
-          icon-name: "open-menu-symbolic";
-          menu-model: primary_menu;
-          tooltip-text: _("Main Menu");
-        }
+      [top]
+      Adw.Banner scan_failed_banner {
+        revealed: false;
+        button-label: _("Dismiss");
       }
-    }
 
-    [top]
-    Adw.Banner scan_failed_banner {
-      revealed: false;
-      button-label: _("Dismiss");
-    }
-
-    Adw.OverlaySplitView interface_split_view {
-      show-sidebar: false;
-      collapsed: false;
-      sidebar-position: start;
-
-      sidebar: $InterfaceList interface_list {};
-
-      content: Adw.OverlaySplitView overlay_split_view {
+      Adw.OverlaySplitView overlay_split_view {
         show-sidebar: false;
         collapsed: false;
         sidebar-position: end;
@@ -113,82 +132,82 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
             }
           }
         };
-      };
-    }
-
-    [bottom]
-    Adw.HeaderBar {
-      show-start-title-buttons: false;
-      show-end-title-buttons: false;
-
-      [start]
-      Box {
-        $InterfaceToggle interface_toggle {}
-
-        Label file_label {
-          label: _("");
-        }
       }
 
-      [title]
-      Box {
-        spacing: 5;
+      [bottom]
+      Adw.HeaderBar {
+        show-start-title-buttons: false;
+        show-end-title-buttons: false;
 
-        ToggleButton ies_toggle_button {
-          styles [
-            "flat",
-          ]
+        [start]
+        Box {
+          $InterfaceToggle interface_toggle {}
 
-          label: _("IEs");
-          tooltip-text: _("Show Information Elements");
+          Label file_label {
+            label: _("");
+          }
         }
 
-        ToggleButton two_point_four_ghz_toggle_button {
-          styles [
-            "flat",
-          ]
+        [title]
+        Box {
+          spacing: 5;
 
-          label: _("2.4 GHz");
-          tooltip-text: _("Show 2.4 GHz");
+          ToggleButton ies_toggle_button {
+            styles [
+              "flat",
+            ]
+
+            label: _("IEs");
+            tooltip-text: _("Show Information Elements");
+          }
+
+          ToggleButton two_point_four_ghz_toggle_button {
+            styles [
+              "flat",
+            ]
+
+            label: _("2.4 GHz");
+            tooltip-text: _("Show 2.4 GHz");
+          }
+
+          ToggleButton five_ghz_toggle_button {
+            styles [
+              "flat",
+            ]
+
+            label: _("5 GHz");
+            tooltip-text: _("Show 5 GHz");
+          }
+
+          ToggleButton six_ghz_toggle_button {
+            styles [
+              "flat",
+            ]
+
+            label: _("6 GHz");
+            tooltip-text: _("Show 6 GHz");
+          }
         }
 
-        ToggleButton five_ghz_toggle_button {
-          styles [
-            "flat",
-          ]
+        [end]
+        Box {
+          spacing: 6;
+          margin-end: 5;
 
-          label: _("5 GHz");
-          tooltip-text: _("Show 5 GHz");
-        }
+          Image {
+            icon-name: "access-point-symbolic";
+          }
 
-        ToggleButton six_ghz_toggle_button {
-          styles [
-            "flat",
-          ]
+          Label statusbar_label {
+            styles [
+              "heading",
+            ]
 
-          label: _("6 GHz");
-          tooltip-text: _("Show 6 GHz");
+            label: _("");
+          }
         }
       }
-
-      [end]
-      Box {
-        spacing: 6;
-        margin-end: 5;
-
-        Image {
-          icon-name: "access-point-symbolic";
-        }
-
-        Label statusbar_label {
-          styles [
-            "heading",
-          ]
-
-          label: _("");
-        }
-      }
-    }
+    };
   };
 }
 

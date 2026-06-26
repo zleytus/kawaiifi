@@ -86,6 +86,14 @@ impl KawaiiFiWindow {
             }
         ));
 
+        imp.refresh_interfaces_button.connect_clicked(glib::clone!(
+            #[weak(rename_to = window)]
+            self,
+            move |_| {
+                window.imp().interface_list.load_interfaces(true);
+            }
+        ));
+
         imp.interface_toggle.connect_toggled(glib::clone!(
             #[weak(rename_to = window)]
             self,

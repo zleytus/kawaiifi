@@ -66,6 +66,8 @@ mod imp {
         #[template_child]
         pub interface_toggle: TemplateChild<InterfaceToggle>,
         #[template_child]
+        pub refresh_interfaces_button: TemplateChild<Button>,
+        #[template_child]
         pub interface_list: TemplateChild<InterfaceList>,
         #[template_child]
         pub file_label: TemplateChild<Label>,
@@ -190,9 +192,8 @@ impl KawaiiFiWindow {
 
         if start_scanning {
             self.enable_scanning();
+            self.start_cached_scan(interface);
         }
-
-        self.start_cached_scan(interface);
     }
 
     pub(super) fn current_bss_data(&self) -> Vec<BssInternal> {

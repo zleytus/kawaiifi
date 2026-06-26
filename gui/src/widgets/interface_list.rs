@@ -95,7 +95,7 @@ mod imp {
     };
 
     use adw::{ActionRow, PreferencesGroup};
-    use gtk::{Button, ListBox, glib::types::StaticType};
+    use gtk::{ListBox, glib::types::StaticType};
 
     use super::*;
 
@@ -106,8 +106,6 @@ mod imp {
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/fi/kawaii/kawaiifi/ui/interface_list.ui")]
     pub struct InterfaceList {
-        #[template_child]
-        pub refresh_button: TemplateChild<Button>,
         #[template_child]
         pub interface_list_box: TemplateChild<ListBox>,
         #[template_child]
@@ -166,11 +164,6 @@ mod imp {
                     obj.select_interface(&row.interface(), true);
                 }
             ));
-            self.refresh_button.connect_clicked(glib::clone!(
-                #[weak]
-                obj,
-                move |_| obj.load_interfaces(true)
-            ));
 
             obj.load_interfaces(false);
         }
@@ -206,12 +199,13 @@ impl InterfaceList {
         glib::Object::new()
     }
 
-    fn load_interfaces(&self, emit_selection_change: bool) {
+    pub fn load_interfaces(&self, emit_selection_change: bool) {
         let previous_ifindex = self.selected_interface_index();
         self.clear_rows();
 
         match kawaiifi::interfaces() {
-            Ok(interfaces) => {
+            Ok(mut interfaces) => {
+                interfaces.sort_by(|i1, i2| i1.name().cmp(i2.name()));
                 for interface in &interfaces {
                     self.imp()
                         .interface_list_box
