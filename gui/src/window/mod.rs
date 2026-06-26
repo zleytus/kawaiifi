@@ -192,7 +192,7 @@ impl KawaiiFiWindow {
 
         if start_scanning {
             self.enable_scanning();
-            self.start_cached_scan(interface);
+            self.start_scan_loop(interface);
         }
     }
 

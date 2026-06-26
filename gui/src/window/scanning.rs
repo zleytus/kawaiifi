@@ -41,7 +41,7 @@ impl KawaiiFiWindow {
     }
 
     /// Schedule the next scan after the configured delay
-    pub(super) fn schedule_active_scan(&self, interface: Interface, delay: Duration) {
+    fn schedule_active_scan(&self, interface: Interface, delay: Duration) {
         let imp = self.imp();
 
         // Only schedule if scanning is still enabled
@@ -171,7 +171,7 @@ impl KawaiiFiWindow {
         }
     }
 
-    pub(super) fn start_cached_scan(&self, interface: Interface) {
+    pub(super) fn start_scan_loop(&self, interface: Interface) {
         if !self.imp().scanning_enabled.get() {
             return;
         }
