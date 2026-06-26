@@ -188,7 +188,9 @@ impl KawaiiFiWindow {
 
                 match result {
                     Ok(Ok(processed)) => {
-                        window.apply_cached_scan_result(processed);
+                        if window.imp().scanning_enabled.get() {
+                            window.apply_cached_scan_result(processed);
+                        }
                         window.on_scan_completed();
                     }
                     Ok(Err(scan_error)) => {
