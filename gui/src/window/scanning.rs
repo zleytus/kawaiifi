@@ -96,17 +96,13 @@ impl KawaiiFiWindow {
             #[weak(rename_to = window)]
             self,
             async move {
-                let fetch_from_scan = |interface: &Interface| {
+                let interface_name = interface.name().to_string();
+                let fetch_from_scan = move || {
                     let scan = interface.scan_blocking();
                     scan.map(|scan| scan.bss_list().to_vec())
                 };
-                let result = spawn_scan_processing(
-                    fetch_from_scan,
-                    interface,
-                    vendor_cache,
-                    existing_bss_data,
-                )
-                .await;
+                let result =
+                    spawn_scan_processing(fetch_from_scan, vendor_cache, existing_bss_data).await;
 
                 // The user may switch interfaces while the blocking scan is still running.
                 if !window.generation_is_current(generation) {
@@ -116,6 +112,11 @@ impl KawaiiFiWindow {
 
                 match result {
                     Ok(Ok(processed)) => {
+                        tracing::info!(
+                            bss_count = processed.bss_list.len(),
+                            interface_name,
+                            "Received scan results"
+                        );
                         if window.imp().scanning_enabled.get() {
                             window.apply_active_scan_result(processed);
                         }
@@ -189,23 +190,26 @@ impl KawaiiFiWindow {
             #[weak(rename_to = window)]
             self,
             async move {
-                let fetch_from_cache =
-                    |interface: &Interface| interface.cached_scan_results_blocking();
-                let result = spawn_scan_processing(
-                    fetch_from_cache,
-                    interface,
-                    vendor_cache,
-                    existing_bss_data,
-                )
-                .await;
+                let interface_name = interface.name().to_string();
+                let fetch_from_cache = move || interface.cached_scan_results_blocking();
+                let result =
+                    spawn_scan_processing(fetch_from_cache, vendor_cache, existing_bss_data).await;
 
                 if !window.generation_is_current(generation) {
-                    tracing::debug!("Discarding cached scan results for a previous interface");
+                    tracing::debug!(
+                        interface_name,
+                        "Discarding cached scan results for a previous interface"
+                    );
                     return;
                 }
 
                 match result {
                     Ok(Ok(processed)) => {
+                        tracing::info!(
+                            bss_count = processed.bss_list.len(),
+                            interface_name,
+                            "Received cached scan results"
+                        );
                         if window.imp().scanning_enabled.get() {
                             window.apply_cached_scan_result(processed);
                         }
