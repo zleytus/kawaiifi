@@ -15,14 +15,16 @@ use crate::{
 };
 
 impl KawaiiFiWindow {
-    pub(super) fn enable_scanning(&self) {
+    pub(super) fn start_scanning(&self, interface: Interface) {
         let imp = self.imp();
         self.cancel_scheduled_scan();
         imp.scanning_enabled.replace(true);
         self.update_scan_controls();
+
+        self.start_scan_loop(interface);
     }
 
-    pub fn stop_scanning(&self) {
+    pub(super) fn stop_scanning(&self) {
         let imp = self.imp();
         imp.scanning_enabled.replace(false);
         self.imp().active_scan_spinner.set_visible(false);
@@ -40,7 +42,7 @@ impl KawaiiFiWindow {
             .set_sensitive(scanning_enabled);
     }
 
-    /// Schedule the next scan after the configured delay
+    /// Schedule the next active scan after the configured delay
     fn schedule_active_scan(&self, interface: Interface, delay: Duration) {
         let imp = self.imp();
 
@@ -171,7 +173,7 @@ impl KawaiiFiWindow {
         }
     }
 
-    pub(super) fn start_scan_loop(&self, interface: Interface) {
+    fn start_scan_loop(&self, interface: Interface) {
         if !self.imp().scanning_enabled.get() {
             return;
         }
