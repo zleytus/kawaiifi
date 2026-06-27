@@ -33,8 +33,16 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
     };
 
     content: Adw.ToolbarView {
+      styles [
+        "main-content",
+      ]
+
       [top]
       Adw.HeaderBar {
+        styles [
+          "main-content-headerbar",
+        ]
+
         [start]
         Box {
           spacing: 5;
@@ -138,6 +146,11 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
       Adw.HeaderBar {
         show-start-title-buttons: false;
         show-end-title-buttons: false;
+
+        styles [
+          "main-content-headerbar",
+          "statusbar-headerbar",
+        ]
 
         [start]
         Box {
