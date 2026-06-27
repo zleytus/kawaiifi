@@ -54,7 +54,7 @@ mod imp {
         #[template_child]
         pub active_scan_spinner: TemplateChild<Widget>,
         #[template_child]
-        pub scan_failed_banner: TemplateChild<Banner>,
+        pub status_banner: TemplateChild<Banner>,
         #[template_child]
         pub filter_toggle: TemplateChild<ToggleButton>,
         #[template_child]

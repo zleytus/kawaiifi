@@ -246,14 +246,14 @@ impl KawaiiFiWindow {
 
     fn on_scan_completed(&self) {
         self.imp().active_scan_spinner.set_visible(false);
-        self.imp().scan_failed_banner.set_revealed(false);
+        self.imp().status_banner.set_revealed(false);
     }
 
     fn on_scan_failed(&self, error: &str) {
         self.stop_scanning();
-        self.imp().scan_failed_banner.set_revealed(true);
+        self.imp().status_banner.set_revealed(true);
         self.imp()
-            .scan_failed_banner
+            .status_banner
             .set_title(&format!("Scan Failed: {}", error));
     }
 }

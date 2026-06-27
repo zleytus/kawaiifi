@@ -206,8 +206,9 @@ impl KawaiiFiWindow {
             }
         ));
 
-        imp.scan_failed_banner
-            .connect_button_clicked(|banner| banner.set_revealed(false));
+        imp.status_banner.connect_button_clicked(|banner| {
+            banner.set_revealed(false);
+        });
     }
 
     fn setup_bottom_panel_toggles(&self) {
