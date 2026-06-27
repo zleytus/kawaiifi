@@ -10,7 +10,7 @@ use gtk::{
     prelude::{ButtonExt, ToggleButtonExt, WidgetExt},
 };
 
-use crate::widgets::InterfaceList;
+use crate::widgets::{InterfaceList, InterfaceRefreshResult};
 
 use super::KawaiiFiWindow;
 
@@ -23,7 +23,13 @@ impl KawaiiFiWindow {
         self.setup_scan_controls();
         self.setup_bottom_panel_toggles();
         self.setup_settings();
-        self.load_initial_interface();
+
+        let result = self.imp().interface_list.refresh_interfaces();
+        self.handle_interface_refresh_result(result);
+
+        if let Some(interface) = self.imp().interface_list.selected_interface() {
+            self.load_interface(interface, true);
+        }
     }
 
     fn connect_components_to_models(&self) {
@@ -41,14 +47,6 @@ impl KawaiiFiWindow {
     fn setup_interface_controls(&self) {
         let imp = self.imp();
 
-        imp.interface_list
-            .connect_interfaces_load_failed(glib::clone!(
-                #[weak(rename_to = window)]
-                self,
-                move |_, error| {
-                    window.show_error("Could Not Load Wi-Fi Interfaces", error);
-                }
-            ));
         imp.interface_list.connect_interface_changed(glib::clone!(
             #[weak(rename_to = window)]
             self,
@@ -68,29 +66,12 @@ impl KawaiiFiWindow {
                 }
             }
         ));
-        imp.interface_list.connect_interfaces_updated(glib::clone!(
-            #[weak(rename_to = window)]
-            self,
-            move |interface_list| {
-                let interface = interface_list.selected_interface();
-                window
-                    .imp()
-                    .interface_toggle
-                    .set_interface(interface.as_ref());
-
-                if interface.is_none() {
-                    window.stop_scanning();
-                    window.invalidate_scan_generation();
-                    window.apply_merged_results(Vec::new());
-                }
-            }
-        ));
-
         imp.refresh_interfaces_button.connect_clicked(glib::clone!(
             #[weak(rename_to = window)]
             self,
             move |_| {
-                window.imp().interface_list.load_interfaces(true);
+                let result = window.imp().interface_list.refresh_interfaces();
+                window.handle_interface_refresh_result(result);
             }
         ));
 
@@ -211,6 +192,42 @@ impl KawaiiFiWindow {
         });
     }
 
+    fn handle_interface_refresh_result(&self, result: InterfaceRefreshResult) {
+        let interface = self.imp().interface_list.selected_interface();
+        self.imp()
+            .interface_toggle
+            .set_interface(interface.as_ref());
+
+        match result {
+            InterfaceRefreshResult::SelectionUnchanged => {}
+            InterfaceRefreshResult::SelectionChanged => {
+                let restart_scanning = self.imp().scanning_enabled.get();
+                self.stop_scanning();
+                self.invalidate_scan_generation();
+                self.apply_merged_results(Vec::new());
+                if let Some(interface) = interface {
+                    self.load_interface(interface, restart_scanning);
+                }
+            }
+            InterfaceRefreshResult::NoInterfaces => {
+                self.stop_scanning();
+                self.invalidate_scan_generation();
+                self.apply_merged_results(Vec::new());
+                self.imp().interface_toggle.set_interface(None);
+                self.imp()
+                    .status_banner
+                    .set_title("No Wi-Fi interfaces found.");
+                self.imp().status_banner.set_revealed(true);
+            }
+            InterfaceRefreshResult::Error(error) => {
+                self.stop_scanning();
+                self.invalidate_scan_generation();
+                self.apply_merged_results(Vec::new());
+                self.show_error("Could Not Load Wi-Fi Interfaces", error);
+            }
+        }
+    }
+
     fn setup_bottom_panel_toggles(&self) {
         let imp = self.imp();
 
@@ -289,11 +306,5 @@ impl KawaiiFiWindow {
             ),
         );
         self.update_filter();
-    }
-
-    fn load_initial_interface(&self) {
-        if let Some(interface) = self.imp().interface_list.selected_interface() {
-            self.load_interface(interface, true);
-        }
     }
 }

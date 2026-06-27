@@ -4,12 +4,20 @@ use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 
-#[derive(Default)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 enum InterfaceState {
     #[default]
     Uninitialized,
     Loaded(Vec<kawaiifi::Interface>),
     Error,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum InterfaceRefreshResult {
+    SelectionUnchanged,
+    SelectionChanged,
+    NoInterfaces,
+    Error(String),
 }
 
 mod row_imp {
@@ -99,9 +107,7 @@ mod imp {
 
     use super::*;
 
-    pub const SIGNAL_INTERFACES_LOAD_FAILED: &str = "interfaces-load-failed";
     pub const SIGNAL_INTERFACE_CHANGED: &str = "interface-changed";
-    pub const SIGNAL_INTERFACES_UPDATED: &str = "interfaces-updated";
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/fi/kawaii/kawaiifi/ui/interface_list.ui")]
@@ -164,21 +170,15 @@ mod imp {
                     obj.select_interface(&row.interface(), true);
                 }
             ));
-
-            obj.load_interfaces(false);
         }
 
         fn signals() -> &'static [glib::subclass::Signal] {
             static SIGNALS: OnceLock<Vec<glib::subclass::Signal>> = OnceLock::new();
             SIGNALS.get_or_init(|| {
                 vec![
-                    glib::subclass::Signal::builder(SIGNAL_INTERFACES_LOAD_FAILED)
-                        .param_types([String::static_type()])
-                        .build(),
                     glib::subclass::Signal::builder(SIGNAL_INTERFACE_CHANGED)
                         .param_types([u32::static_type()])
                         .build(),
-                    glib::subclass::Signal::builder(SIGNAL_INTERFACES_UPDATED).build(),
                 ]
             })
         }
@@ -199,7 +199,7 @@ impl InterfaceList {
         glib::Object::new()
     }
 
-    pub fn load_interfaces(&self, emit_selection_change: bool) {
+    pub fn refresh_interfaces(&self) -> InterfaceRefreshResult {
         let previous_ifindex = self.selected_interface_index();
         self.clear_rows();
 
@@ -226,14 +226,18 @@ impl InterfaceList {
                     .replace(InterfaceState::Loaded(interfaces));
 
                 if let Some(interface) = selected_interface {
-                    self.select_interface(&interface, emit_selection_change);
+                    let selected_ifindex = interface.index();
+                    self.select_interface(&interface, false);
                     self.select_row_by_index(interface.index());
+                    if previous_ifindex == Some(selected_ifindex) {
+                        InterfaceRefreshResult::SelectionUnchanged
+                    } else {
+                        InterfaceRefreshResult::SelectionChanged
+                    }
                 } else {
                     self.imp().selected_ifindex.set(None);
                     self.clear_interface_details();
-                }
-                if emit_selection_change {
-                    self.emit_by_name::<()>(imp::SIGNAL_INTERFACES_UPDATED, &[]);
+                    InterfaceRefreshResult::NoInterfaces
                 }
             }
             Err(error) => {
@@ -242,15 +246,7 @@ impl InterfaceList {
                 self.imp().interface_state.replace(InterfaceState::Error);
                 self.imp().selected_ifindex.set(None);
                 self.clear_interface_details();
-                glib::idle_add_local_once(glib::clone!(
-                    #[weak(rename_to = interface_list)]
-                    self,
-                    move || {
-                        interface_list
-                            .emit_by_name::<()>(imp::SIGNAL_INTERFACES_LOAD_FAILED, &[&message]);
-                        interface_list.emit_by_name::<()>(imp::SIGNAL_INTERFACES_UPDATED, &[]);
-                    }
-                ));
+                InterfaceRefreshResult::Error(message)
             }
         }
     }
@@ -344,18 +340,6 @@ impl InterfaceList {
         }
     }
 
-    pub fn connect_interfaces_load_failed<F: Fn(&Self, &str) + 'static>(
-        &self,
-        f: F,
-    ) -> glib::SignalHandlerId {
-        self.connect_local(imp::SIGNAL_INTERFACES_LOAD_FAILED, false, move |args| {
-            let interface_list = args[0].get::<Self>().unwrap();
-            let error = args[1].get::<String>().unwrap();
-            f(&interface_list, &error);
-            None
-        })
-    }
-
     pub fn connect_interface_changed<F: Fn(&Self, u32) + 'static>(
         &self,
         f: F,
@@ -364,17 +348,6 @@ impl InterfaceList {
             let interface_list = args[0].get::<Self>().unwrap();
             let ifindex = args[1].get::<u32>().unwrap();
             f(&interface_list, ifindex);
-            None
-        })
-    }
-
-    pub fn connect_interfaces_updated<F: Fn(&Self) + 'static>(
-        &self,
-        f: F,
-    ) -> glib::SignalHandlerId {
-        self.connect_local(imp::SIGNAL_INTERFACES_UPDATED, false, move |args| {
-            let interface_list = args[0].get::<Self>().unwrap();
-            f(&interface_list);
             None
         })
     }
