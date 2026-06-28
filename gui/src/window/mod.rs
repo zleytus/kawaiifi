@@ -14,9 +14,6 @@ mod scan_file_actions;
 mod scanning;
 mod setup;
 
-/// Interval between automatic Wi-Fi scans, in seconds.
-const SCAN_INTERVAL_SECONDS: u64 = 10;
-
 mod imp {
     use std::cell::{Cell, OnceCell, RefCell};
 

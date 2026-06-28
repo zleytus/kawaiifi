@@ -14,6 +14,9 @@ use crate::{
     scan::{ProcessedScan, spawn_scan_processing},
 };
 
+/// Interval between automatic Wi-Fi scans, in seconds.
+const SCAN_INTERVAL_SECONDS: u64 = 10;
+
 impl KawaiiFiWindow {
     pub(super) fn start_scanning(&self, interface: Interface) {
         let imp = self.imp();
@@ -139,7 +142,7 @@ impl KawaiiFiWindow {
 
                 window.schedule_active_scan(
                     next_scan_interface,
-                    Duration::from_secs(super::SCAN_INTERVAL_SECONDS),
+                    Duration::from_secs(SCAN_INTERVAL_SECONDS),
                 );
             }
         ));
