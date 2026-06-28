@@ -156,8 +156,22 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
         Box {
           $InterfaceToggle interface_toggle {}
 
-          Label file_label {
-            label: _("");
+          Box {
+            spacing: 6;
+            margin-start: 5;
+            visible: bind file_label.visible;
+
+            Image {
+              icon-name: "folder-documents-symbolic";
+            }
+
+            Label file_label {
+              label: _("");
+
+              styles [
+                "heading",
+              ]
+            }
           }
         }
 
