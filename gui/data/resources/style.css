@@ -124,9 +124,8 @@ levelbar block.channel-utilization-19 {
     background-color: #a51d2d;
 } /* Red 5 */
 
-.main-content,
-.main-content-headerbar {
-    background: var(--view-bg-color);
+columnview {
+    background-color: var(--window_bg_color);
 }
 
 .statusbar-headerbar {
