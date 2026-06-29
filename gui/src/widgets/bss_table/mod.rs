@@ -110,7 +110,6 @@ mod imp {
             self.parent_constructed();
             let obj = self.obj();
             obj.setup_columns();
-            obj.setup_column_visibility();
             obj.start_last_seen_refresh_timer();
         }
 
@@ -154,7 +153,7 @@ impl BssTable {
         glib::Object::new()
     }
 
-    pub fn setup(&self, filter_model: &gtk::FilterListModel) {
+    pub fn setup(&self, filter_model: &gtk::FilterListModel, settings: &gio::Settings) {
         let imp = self.imp();
         if imp.selection_model.get().is_some() {
             return;
@@ -173,6 +172,7 @@ impl BssTable {
         imp.column_view.set_model(Some(&selection_model));
 
         self.setup_column_sorters();
+        self.setup_column_visibility(settings);
     }
 
     pub fn selection_model(&self) -> Option<&SingleSelection> {

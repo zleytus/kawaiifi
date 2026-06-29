@@ -1,8 +1,6 @@
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::gio::{self, prelude::SettingsExtManual};
 
-use crate::config;
-
 use super::{BssTable, column_settings, columns::*};
 
 impl BssTable {
@@ -83,9 +81,8 @@ impl BssTable {
             .sort_by_column(Some(&imp.signal_column), gtk::SortType::Descending);
     }
 
-    pub(super) fn setup_column_visibility(&self) {
+    pub(super) fn setup_column_visibility(&self, settings: &gio::Settings) {
         let imp = self.imp();
-        let settings = gio::Settings::new(config::app_id());
 
         settings
             .bind(column_settings::SHOW_BSSID, &*imp.bssid_column, "visible")
