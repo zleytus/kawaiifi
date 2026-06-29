@@ -37,7 +37,7 @@ impl KawaiiFiWindow {
 
         imp.bss_table.setup(self.bss_filter_model());
         if let Some(selection_model) = imp.bss_table.selection_model() {
-            imp.bss_elements.set_selection_model(selection_model);
+            imp.bss_ie_table.set_selection_model(selection_model);
             imp.bss_chart_2_4.set_selection_model(selection_model);
             imp.bss_chart_5.set_selection_model(selection_model);
             imp.bss_chart_6.set_selection_model(selection_model);

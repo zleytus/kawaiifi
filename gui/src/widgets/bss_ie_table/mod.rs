@@ -14,8 +14,8 @@ mod imp {
     use super::*;
 
     #[derive(Default, gtk::CompositeTemplate)]
-    #[template(resource = "/fi/kawaii/kawaiifi/ui/bss_elements.ui")]
-    pub struct BssElements {
+    #[template(resource = "/fi/kawaii/kawaiifi/ui/bss_ie_table.ui")]
+    pub struct BssIeTable {
         pub list_store: OnceCell<ListStore>,
         pub sort_model: OnceCell<SortListModel>,
 
@@ -32,9 +32,9 @@ mod imp {
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for BssElements {
-        const NAME: &'static str = "BssElements";
-        type Type = super::BssElements;
+    impl ObjectSubclass for BssIeTable {
+        const NAME: &'static str = "BssIeTable";
+        type Type = super::BssIeTable;
         type ParentType = gtk::Box;
 
         fn class_init(klass: &mut Self::Class) {
@@ -46,7 +46,7 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for BssElements {
+    impl ObjectImpl for BssIeTable {
         fn constructed(&self) {
             self.parent_constructed();
             let obj = self.obj();
@@ -56,7 +56,7 @@ mod imp {
         }
     }
 
-    impl WidgetImpl for BssElements {
+    impl WidgetImpl for BssIeTable {
         fn realize(&self) {
             self.parent_realize();
 
@@ -65,16 +65,16 @@ mod imp {
         }
     }
 
-    impl BoxImpl for BssElements {}
+    impl BoxImpl for BssIeTable {}
 }
 
 glib::wrapper! {
-    pub struct BssElements(ObjectSubclass<imp::BssElements>)
+    pub struct BssIeTable(ObjectSubclass<imp::BssIeTable>)
         @extends gtk::Widget, gtk::Box,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
 }
 
-impl BssElements {
+impl BssIeTable {
     pub fn new() -> Self {
         glib::Object::builder().build()
     }
@@ -170,7 +170,7 @@ impl BssElements {
     }
 }
 
-impl Default for BssElements {
+impl Default for BssIeTable {
     fn default() -> Self {
         Self::new()
     }

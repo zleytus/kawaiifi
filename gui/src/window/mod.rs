@@ -8,7 +8,7 @@ use kawaiifi::Interface;
 use crate::config;
 use crate::objects::{BssInternal, BssObject};
 use crate::vendor::VendorCache;
-use crate::widgets::{BssChart, BssElements, BssFilter, BssTable};
+use crate::widgets::{BssChart, BssFilter, BssIeTable, BssTable};
 
 mod scan_file_actions;
 mod scanning;
@@ -80,7 +80,7 @@ mod imp {
 
         // Bottom ViewStack pages
         #[template_child]
-        pub bss_elements: TemplateChild<BssElements>,
+        pub bss_ie_table: TemplateChild<BssIeTable>,
         #[template_child]
         pub bss_chart_2_4: TemplateChild<BssChart>,
         #[template_child]

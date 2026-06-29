@@ -6,7 +6,7 @@ use gtk::{gio, glib};
 
 use crate::config;
 use crate::widgets::{
-    BssChart, BssElements, BssFilter, BssTable, InterfaceToggle, PreferencesDialog,
+    BssChart, BssFilter, BssIeTable, BssTable, InterfaceToggle, PreferencesDialog,
 };
 use crate::window::KawaiiFiWindow;
 
@@ -39,7 +39,7 @@ mod imp {
         BssTable::static_type();
         BssChart::static_type();
         BssFilter::static_type();
-        BssElements::static_type();
+        BssIeTable::static_type();
         PreferencesDialog::static_type();
     }
 

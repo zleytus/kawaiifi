@@ -2,8 +2,8 @@ blueprints = custom_target(
     'blueprints',
     input: files(
         'ui/bss_chart.blp',
-        'ui/bss_elements.blp',
         'ui/bss_filter.blp',
+        'ui/bss_ie_table.blp',
         'ui/bss_table.blp',
         'ui/interface_list.blp',
         'ui/interface_row.blp',
