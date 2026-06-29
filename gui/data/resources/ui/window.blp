@@ -4,6 +4,7 @@ using Adw 1;
 template $KawaiiFiWindow: Adw.ApplicationWindow {
   default-width: 1000;
   default-height: 700;
+  width-request: 650;
   title: _("KawaiiFi");
 
   content: Adw.OverlaySplitView interface_split_view {
@@ -50,15 +51,17 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
           Button start_scanning_button {
             icon-name: "media-playback-start-symbolic";
             tooltip-text: _("Start Scanning");
+            sensitive: bind template.scanning-enabled inverted;
           }
 
           Button stop_scanning_button {
             icon-name: "media-playback-stop-symbolic";
             tooltip-text: _("Stop Scanning");
+            sensitive: bind template.scanning-enabled;
           }
 
-          Adw.Spinner active_scan_spinner {
-            visible: false;
+          Adw.Spinner {
+            visible: bind template.scan-active;
             margin-start: 10;
             margin-end: 5;
           }
@@ -68,9 +71,10 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
         Box {
           spacing: 5;
 
-          ToggleButton filter_toggle {
+          ToggleButton {
             icon-name: "funnel-symbolic";
             tooltip-text: _("Show Filters");
+            active: bind filter_overlay_split_view.show-sidebar bidirectional;
           }
 
           MenuButton {
@@ -87,7 +91,7 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
         button-label: _("Dismiss");
       }
 
-      Adw.OverlaySplitView overlay_split_view {
+      Adw.OverlaySplitView filter_overlay_split_view {
         show-sidebar: false;
         collapsed: false;
         sidebar-position: end;
@@ -154,12 +158,15 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
 
         [start]
         Box {
-          $InterfaceToggle interface_toggle {}
+          $InterfaceToggle interface_toggle {
+            active: bind interface_split_view.show-sidebar bidirectional;
+            visible: bind template.showing-scan-file inverted;
+          }
 
           Box {
             spacing: 6;
             margin-start: 5;
-            visible: bind file_label.visible;
+            visible: bind template.showing-scan-file;
 
             Image {
               icon-name: "folder-documents-symbolic";

@@ -1,7 +1,6 @@
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::gio::prelude::{FileExt, ListModelExtManual};
 use gtk::glib::object::Cast;
-use gtk::prelude::WidgetExt;
 use gtk::{gio, glib};
 
 use crate::objects::{BssInternal, BssObject};
@@ -52,9 +51,8 @@ impl KawaiiFiWindow {
             .map(|name| name.to_string_lossy().into_owned())
             .unwrap_or_else(|| file.uri().to_string());
         self.imp().file_label.set_label(&label);
-        self.imp().file_label.set_visible(true);
+        self.set_showing_scan_file(true);
         self.imp().interface_split_view.set_show_sidebar(false);
-        self.imp().interface_toggle.set_visible(false);
 
         self.apply_merged_results(scan_file.bss_list());
     }

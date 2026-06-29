@@ -75,28 +75,6 @@ impl KawaiiFiWindow {
             }
         ));
 
-        imp.interface_toggle.connect_toggled(glib::clone!(
-            #[weak(rename_to = window)]
-            self,
-            move |interface_toggle| {
-                window
-                    .imp()
-                    .interface_split_view
-                    .set_show_sidebar(interface_toggle.is_active());
-            }
-        ));
-        imp.interface_split_view
-            .connect_show_sidebar_notify(glib::clone!(
-                #[weak(rename_to = window)]
-                self,
-                move |split_view| {
-                    window
-                        .imp()
-                        .interface_toggle
-                        .set_active(split_view.shows_sidebar());
-                }
-            ));
-
         imp.interface_toggle
             .set_interface(imp.interface_list.selected_interface().as_ref());
     }
@@ -145,17 +123,6 @@ impl KawaiiFiWindow {
 
     fn setup_filtering(&self) {
         let imp = self.imp();
-
-        imp.filter_toggle.connect_toggled(glib::clone!(
-            #[weak(rename_to = window)]
-            self,
-            move |toggle| {
-                window
-                    .imp()
-                    .overlay_split_view
-                    .set_show_sidebar(toggle.is_active());
-            }
-        ));
 
         imp.bss_filter.connect_filter_changed(glib::clone!(
             #[weak(rename_to = window)]

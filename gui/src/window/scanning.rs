@@ -4,7 +4,6 @@ use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::{
     gio::prelude::SettingsExt,
     glib::{self},
-    prelude::WidgetExt,
 };
 use kawaiifi::Interface;
 
@@ -19,30 +18,15 @@ const SCAN_INTERVAL_SECONDS: u64 = 10;
 
 impl KawaiiFiWindow {
     pub(super) fn start_scanning(&self, interface: Interface) {
-        let imp = self.imp();
         self.cancel_scheduled_scan();
-        imp.scanning_enabled.replace(true);
-        self.update_scan_controls();
-
+        self.set_scanning_enabled(true);
         self.start_scan_loop(interface);
     }
 
     pub(super) fn stop_scanning(&self) {
-        let imp = self.imp();
-        imp.scanning_enabled.replace(false);
-        self.imp().active_scan_spinner.set_visible(false);
+        self.set_scan_active(false);
+        self.set_scanning_enabled(false);
         self.cancel_scheduled_scan();
-        self.update_scan_controls();
-    }
-
-    fn update_scan_controls(&self) {
-        let scanning_enabled = self.imp().scanning_enabled.get();
-        self.imp()
-            .start_scanning_button
-            .set_sensitive(!scanning_enabled);
-        self.imp()
-            .stop_scanning_button
-            .set_sensitive(scanning_enabled);
     }
 
     /// Schedule the next active scan after the configured delay
@@ -244,11 +228,11 @@ impl KawaiiFiWindow {
     }
 
     fn on_scan_started(&self) {
-        self.imp().active_scan_spinner.set_visible(true);
+        self.set_scan_active(true);
     }
 
     fn on_scan_completed(&self) {
-        self.imp().active_scan_spinner.set_visible(false);
+        self.set_scan_active(false);
         self.imp().status_banner.set_revealed(false);
     }
 

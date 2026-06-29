@@ -15,16 +15,23 @@ mod scanning;
 mod setup;
 
 mod imp {
-    use std::cell::{Cell, OnceCell, RefCell};
+    use std::{
+        cell::{Cell, OnceCell, RefCell},
+        sync::OnceLock,
+    };
 
     use adw::Banner;
-    use gtk::{Button, Label, ToggleButton, Widget};
+    use gtk::{Button, Label};
 
     use super::*;
     use crate::{
         vendor::VendorCache,
         widgets::{InterfaceList, InterfaceToggle},
     };
+
+    pub(super) const PROP_SCANNING_ENABLED: &str = "scanning-enabled";
+    pub(super) const PROP_SCAN_ACTIVE: &str = "scan-active";
+    pub(super) const PROP_SHOWING_SCAN_FILE: &str = "showing-scan-file";
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/fi/kawaii/kawaiifi/ui/window.ui")]
@@ -40,52 +47,56 @@ mod imp {
 
         // Scanning state
         pub scanning_enabled: Cell<bool>,
+        pub scan_active: Cell<bool>,
+        pub showing_scan_file: Cell<bool>,
         pub scan_source_id: RefCell<Option<glib::SourceId>>, // To cancel scan timer
         pub scan_generation: Cell<u64>,
 
-        // UI components
+        // Top HeaderBar widgets
         #[template_child]
         pub start_scanning_button: TemplateChild<Button>,
         #[template_child]
         pub stop_scanning_button: TemplateChild<Button>,
+
+        // BSS table
         #[template_child]
-        pub active_scan_spinner: TemplateChild<Widget>,
-        #[template_child]
-        pub status_banner: TemplateChild<Banner>,
-        #[template_child]
-        pub filter_toggle: TemplateChild<ToggleButton>,
+        pub bss_table: TemplateChild<BssTable>,
+
+        // Interface sidebar
         #[template_child]
         pub interface_split_view: TemplateChild<adw::OverlaySplitView>,
         #[template_child]
-        pub overlay_split_view: TemplateChild<adw::OverlaySplitView>,
-        #[template_child]
-        pub bss_filter: TemplateChild<BssFilter>,
-        #[template_child]
-        pub interface_toggle: TemplateChild<InterfaceToggle>,
-        #[template_child]
-        pub refresh_interfaces_button: TemplateChild<Button>,
-        #[template_child]
         pub interface_list: TemplateChild<InterfaceList>,
         #[template_child]
-        pub file_label: TemplateChild<Label>,
+        pub refresh_interfaces_button: TemplateChild<Button>,
+
+        // Filter sidebar
         #[template_child]
-        pub bss_table: TemplateChild<BssTable>,
+        pub bss_filter: TemplateChild<BssFilter>,
+
+        // Error banner
+        #[template_child]
+        pub status_banner: TemplateChild<Banner>,
+
+        // Bottom ViewStack pages
+        #[template_child]
+        pub bss_elements: TemplateChild<BssElements>,
         #[template_child]
         pub bss_chart_2_4: TemplateChild<BssChart>,
         #[template_child]
         pub bss_chart_5: TemplateChild<BssChart>,
         #[template_child]
         pub bss_chart_6: TemplateChild<BssChart>,
-        #[template_child]
-        pub bss_elements: TemplateChild<BssElements>,
 
-        // Bottom Panel
+        // Bottom HeaderBar widgets
+        #[template_child]
+        pub interface_toggle: TemplateChild<InterfaceToggle>,
+        #[template_child]
+        pub file_label: TemplateChild<Label>,
         #[template_child]
         pub statusbar_label: TemplateChild<Label>,
         #[template_child]
         pub bottom_stack: TemplateChild<adw::ViewStack>,
-
-        // Toggle Buttons
         #[template_child]
         pub ies_toggle_button: TemplateChild<gtk::ToggleButton>,
         #[template_child]
@@ -139,6 +150,35 @@ mod imp {
             self.obj().setup();
         }
 
+        fn properties() -> &'static [glib::ParamSpec] {
+            static PROPERTIES: OnceLock<Vec<glib::ParamSpec>> = OnceLock::new();
+            PROPERTIES.get_or_init(|| {
+                vec![
+                    glib::ParamSpecBoolean::builder(PROP_SCANNING_ENABLED)
+                        .default_value(false)
+                        .read_only()
+                        .build(),
+                    glib::ParamSpecBoolean::builder(PROP_SCAN_ACTIVE)
+                        .default_value(false)
+                        .read_only()
+                        .build(),
+                    glib::ParamSpecBoolean::builder(PROP_SHOWING_SCAN_FILE)
+                        .default_value(false)
+                        .read_only()
+                        .build(),
+                ]
+            })
+        }
+
+        fn property(&self, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
+            match pspec.name() {
+                PROP_SCANNING_ENABLED => self.scanning_enabled.get().to_value(),
+                PROP_SCAN_ACTIVE => self.scan_active.get().to_value(),
+                PROP_SHOWING_SCAN_FILE => self.showing_scan_file.get().to_value(),
+                name => unimplemented!("Unknown property {name}"),
+            }
+        }
+
         fn dispose(&self) {
             self.obj().stop_scanning();
         }
@@ -179,8 +219,7 @@ impl KawaiiFiWindow {
 
     pub(super) fn load_interface(&self, interface: Interface, start_scanning: bool) {
         let was_showing_file = self.imp().file_label.is_visible();
-        self.imp().file_label.set_visible(false);
-        self.imp().interface_toggle.set_visible(true);
+        self.set_showing_scan_file(false);
 
         if was_showing_file {
             self.invalidate_scan_generation();
@@ -254,6 +293,24 @@ impl KawaiiFiWindow {
         self.imp()
             .statusbar_label
             .set_label(&bss_status_label(total, displayed));
+    }
+
+    pub(super) fn set_scan_active(&self, active: bool) {
+        if self.imp().scan_active.replace(active) != active {
+            self.notify(imp::PROP_SCAN_ACTIVE);
+        }
+    }
+
+    pub(super) fn set_scanning_enabled(&self, enabled: bool) {
+        if self.imp().scanning_enabled.replace(enabled) != enabled {
+            self.notify(imp::PROP_SCANNING_ENABLED);
+        }
+    }
+
+    pub(super) fn set_showing_scan_file(&self, showing_scan_file: bool) {
+        if self.imp().showing_scan_file.replace(showing_scan_file) != showing_scan_file {
+            self.notify(imp::PROP_SHOWING_SCAN_FILE);
+        }
     }
 }
 
