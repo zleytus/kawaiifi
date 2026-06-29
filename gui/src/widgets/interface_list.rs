@@ -123,6 +123,8 @@ mod imp {
         #[template_child]
         pub device_row: TemplateChild<ActionRow>,
         #[template_child]
+        pub bus_type_row: TemplateChild<ActionRow>,
+        #[template_child]
         pub driver_row: TemplateChild<ActionRow>,
         #[template_child]
         pub ssid_row: TemplateChild<ActionRow>,
@@ -294,6 +296,8 @@ impl InterfaceList {
         } else {
             imp.device_row.set_visible(false);
         }
+        imp.bus_type_row
+            .set_subtitle(&interface.bus_type().to_string());
         if let Some(driver) = interface.driver() {
             imp.driver_row.set_visible(true);
             imp.driver_row.set_subtitle(&driver);
