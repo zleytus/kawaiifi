@@ -33,10 +33,12 @@ impl KawaiiFiWindow {
                     return;
                 };
 
-                match ScanFile::open(&file).await {
-                    Ok(scan_file) => {
-                        window.stop_scanning();
-                        window.apply_loaded_scan(scan_file, &file);
+                window.stop_scanning();
+                window.invalidate_scan_generation();
+
+                match ScanFile::open_bss_list(&file).await {
+                    Ok(bss_list) => {
+                        window.apply_loaded_scan(bss_list, &file);
                     }
                     Err(err) => window.show_scan_file_open_error(err),
                 }
@@ -44,7 +46,7 @@ impl KawaiiFiWindow {
         ));
     }
 
-    fn apply_loaded_scan(&self, scan_file: ScanFile, file: &gio::File) {
+    fn apply_loaded_scan(&self, bss_list: Vec<BssInternal>, file: &gio::File) {
         self.invalidate_scan_generation();
         let label = file
             .basename()
@@ -54,7 +56,7 @@ impl KawaiiFiWindow {
         self.set_showing_scan_file(true);
         self.imp().interface_split_view.set_show_sidebar(false);
 
-        self.apply_merged_results(scan_file.bss_list());
+        self.apply_merged_results(bss_list);
     }
 
     fn show_scan_file_open_error(&self, error: ScanFileError) {

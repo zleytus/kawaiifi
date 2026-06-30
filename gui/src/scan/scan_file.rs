@@ -110,12 +110,17 @@ impl ScanFile {
         Ok(scan_file)
     }
 
-    pub async fn open(file: &gio::File) -> Result<Self, ScanFileError> {
+    pub async fn open_bss_list(file: &gio::File) -> Result<Vec<BssInternal>, ScanFileError> {
         let (contents, _) = file
             .load_contents_future()
             .await
             .map_err(ScanFileError::File)?;
-        Self::from_bytes(&contents)
+        gtk::gio::spawn_blocking(move || {
+            let scan_file = ScanFile::from_bytes(&contents)?;
+            Ok(scan_file.bss_list())
+        })
+        .await
+        .expect("Scan file worker panicked")
     }
 
     pub async fn save(&self, file: &gio::File) -> Result<(), ScanFileError> {
