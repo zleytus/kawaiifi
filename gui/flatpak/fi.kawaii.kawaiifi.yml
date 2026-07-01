@@ -45,6 +45,7 @@ modules:
           - .flatpak-builder
           - builddir*
           - repo
+          - snap
           - '*.flatpak'
           - '*.snap'
       - cargo-sources.json
