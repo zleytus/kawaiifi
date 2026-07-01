@@ -21,12 +21,18 @@
 
 ## Dependencies
 
+### Build dependencies
+
 - [Meson](https://mesonbuild.com/) >= 1.3
 - [Rust](https://www.rust-lang.org/) (stable)
-- GTK4
-- libadwaita
+- [GTK4](https://www.gtk.org/)
+- [libadwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/)
 - [blueprint-compiler](https://gitlab.gnome.org/GNOME/blueprint-compiler)
-- NetworkManager
+
+### Runtime requirements
+
+- [NetworkManager](https://networkmanager.dev/) must be installed and running.
+  KawaiiFi uses NetworkManager's D-Bus interface to initiate Wi-Fi scans.
 
 ## Building
 
