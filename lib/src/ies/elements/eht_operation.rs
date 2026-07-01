@@ -40,9 +40,9 @@ impl EhtOperation {
     pub fn summary(&self) -> String {
         let max_spatial_streams = self.basic_eht_mcs_and_nss_set.max_spatial_streams();
         if max_spatial_streams == 1 {
-            "1 spatial stream".to_string()
+            "1 Spatial Stream".to_string()
         } else {
-            format!("{} spatial streams", max_spatial_streams)
+            format!("{} Spatial Streams", max_spatial_streams)
         }
     }
 
