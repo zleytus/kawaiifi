@@ -1,15 +1,13 @@
-use oui::OuiDatabase;
 use std::sync::OnceLock;
 
-// Embed the file at compile time
-const WIRESHARK_MANUF_DATA: &str = include_str!("../data/resources/manuf");
-const KAWAIIFI_MANUF_DATA: &str = include_str!("../data/resources/manuf.kawaiifi");
+use oui::OuiDatabase;
 
-// Lazy-initialized static database
+const WIRESHARK_MANUF_DATA: &str = include_str!("../../data/resources/manuf");
+const KAWAIIFI_MANUF_DATA: &str = include_str!("../../data/resources/manuf.kawaiifi");
+
 static WIRESHARK_OUI_DB: OnceLock<OuiDatabase> = OnceLock::new();
 static KAWAIIFI_OUI_DB: OnceLock<OuiDatabase> = OnceLock::new();
 
-/// Get the global Wireshark OUI database (initialized once on first access)
 fn wireshark_oui_db() -> &'static OuiDatabase {
     WIRESHARK_OUI_DB.get_or_init(|| {
         OuiDatabase::new_from_str(WIRESHARK_MANUF_DATA)
@@ -17,7 +15,6 @@ fn wireshark_oui_db() -> &'static OuiDatabase {
     })
 }
 
-/// Get the global kawaiifi OUI database (initialized once on first access)
 fn kawaiifi_oui_db() -> &'static OuiDatabase {
     KAWAIIFI_OUI_DB.get_or_init(|| {
         OuiDatabase::new_from_str(KAWAIIFI_MANUF_DATA)
@@ -25,8 +22,7 @@ fn kawaiifi_oui_db() -> &'static OuiDatabase {
     })
 }
 
-/// Look up vendor from MAC address
-pub fn lookup_vendor(mac: &[u8]) -> Option<String> {
+pub(super) fn lookup_vendor(mac: &[u8]) -> Option<String> {
     let mac_str = mac
         .iter()
         .map(|byte| format!("{:02X}", byte))

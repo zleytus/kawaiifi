@@ -1,7 +1,6 @@
 mod application;
 mod config;
 mod objects;
-mod oui;
 mod scan;
 mod util;
 mod vendor;

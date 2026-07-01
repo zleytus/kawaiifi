@@ -1,6 +1,6 @@
 use kawaiifi::{Bss, IeData};
 
-use crate::oui;
+use super::oui;
 
 // Some APs derive BSSIDs by toggling local/admin or virtual-interface bits in
 // the first octet, so try common variants before falling back to IE OUIs.
