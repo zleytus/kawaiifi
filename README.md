@@ -6,7 +6,7 @@
 [![CI](https://github.com/zleytus/kawaiifi/actions/workflows/ci.yml/badge.svg)](https://github.com/zleytus/kawaiifi/actions/workflows/ci.yml)
 [![License: MIT or Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE-MIT)
 
-`kawaiifi` is a Wi-Fi scanning library for Linux, macOS, and Windows.
+`kawaiifi` is a Wi-Fi scanning toolkit for Linux, macOS, and Windows.
 
 It discovers local Basic Service Sets (BSSs) and reports their SSID, BSSID, signal strength, channel, channel width, security protocols, and information elements (IEs).
 
