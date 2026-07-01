@@ -65,10 +65,7 @@ mod imp {
         fn startup(&self) {
             self.parent_startup();
 
-            // Register custom widget types
             register_custom_types();
-
-            // Load icons and CSS
             load_icons();
             load_css();
         }
