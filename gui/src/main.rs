@@ -1,8 +1,8 @@
 mod application;
 mod config;
+mod mac;
 mod objects;
 mod scan;
-mod util;
 mod vendor;
 mod widgets;
 mod window;

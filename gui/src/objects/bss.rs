@@ -84,7 +84,7 @@ impl BssInternal {
 
     /// The BSSID formatted as a colon-separated hex string (e.g. `AA:BB:CC:DD:EE:FF`).
     pub fn formatted_bssid(&self) -> String {
-        crate::util::format_mac(self.bssid())
+        crate::mac::format_mac(self.bssid())
     }
 
     /// The uptime formatted as a human-readable string (e.g. `2d 3h 45m`).

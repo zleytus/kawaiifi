@@ -311,7 +311,7 @@ impl InterfaceList {
             imp.ssid_row.set_visible(false);
         }
         imp.mac_row
-            .set_subtitle(&crate::util::format_mac(&interface.mac_address()));
+            .set_subtitle(&crate::mac::format_mac(&interface.mac_address()));
         if let Some(freq_mhz) = interface.wiphy_freq_mhz() {
             imp.freq_row.set_visible(true);
             imp.freq_row.set_subtitle(&format!("{} MHz", freq_mhz));
