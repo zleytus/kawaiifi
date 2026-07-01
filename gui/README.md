@@ -5,7 +5,7 @@
 <h1 align="center">KawaiiFi</h1>
 
 <p align="center">
-  A Wi-Fi scanner for Linux built with GTK4/libadwaita
+  A Wi-Fi scanner and analyzer for Linux
 </p>
 
 <p align="center">
@@ -18,6 +18,15 @@
 <p align="center">
   <img src="data/screenshots/01-main-window-bss-table.png" alt="KawaiiFi main window showing nearby Wi-Fi BSSs">
 </p>
+
+## Features
+
+- Discover nearby Wi-Fi networks and view detailed BSS information
+- Visualize channel usage across 2.4 GHz, 5 GHz, and 6 GHz bands
+- Switch between Wi-Fi interfaces, including external USB adapters
+- Filter scan results by SSID, BSSID, vendor, band, security, channel width, and 802.11 protocols
+- Inspect 802.11 Information Elements for selected BSSs
+- Save and reopen scan snapshots with `.kwifi` files
 
 ## Dependencies
 
