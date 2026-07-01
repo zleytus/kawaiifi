@@ -119,7 +119,7 @@ impl KawaiiFiWindow {
                     Err(_) => {
                         let message = "Scan worker panicked";
                         tracing::error!(message);
-                        window.on_scan_failed(&message);
+                        window.on_scan_failed(message);
                         return;
                     }
                 }
