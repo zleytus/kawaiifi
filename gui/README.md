@@ -35,7 +35,7 @@
 - [Meson](https://mesonbuild.com/) >= 1.3
 - [Rust](https://www.rust-lang.org/) (stable)
 - [GTK4](https://www.gtk.org/)
-- [libadwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/)
+- [libadwaita](https://gnome.pages.gitlab.gnome.org/libadwaita/) >= 1.7
 - [blueprint-compiler](https://gitlab.gnome.org/GNOME/blueprint-compiler)
 
 ### Runtime requirements
