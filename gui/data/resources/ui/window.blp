@@ -68,20 +68,10 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
         }
 
         [end]
-        Box {
-          spacing: 5;
-
-          ToggleButton {
-            icon-name: "funnel-symbolic";
-            tooltip-text: _("Show Filters");
-            active: bind filter_overlay_split_view.show-sidebar bidirectional;
-          }
-
-          MenuButton {
-            icon-name: "open-menu-symbolic";
-            menu-model: primary_menu;
-            tooltip-text: _("Main Menu");
-          }
+        MenuButton {
+          icon-name: "open-menu-symbolic";
+          menu-model: primary_menu;
+          tooltip-text: _("Main Menu");
         }
       }
 
@@ -226,7 +216,6 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
         [end]
         Box {
           spacing: 6;
-          margin-end: 5;
 
           Image {
             icon-name: "access-point-symbolic";
@@ -238,6 +227,14 @@ template $KawaiiFiWindow: Adw.ApplicationWindow {
             ]
 
             label: _("");
+          }
+
+          Separator {
+            orientation: vertical;
+          }
+
+          $FilterToggle filter_toggle {
+            active: bind filter_overlay_split_view.show-sidebar bidirectional;
           }
         }
       }

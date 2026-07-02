@@ -6,7 +6,7 @@ use gtk::{gio, glib};
 
 use crate::config;
 use crate::widgets::{
-    BssChart, BssFilter, BssIeTable, BssTable, InterfaceToggle, PreferencesDialog,
+    BssChart, BssFilter, BssIeTable, BssTable, FilterToggle, InterfaceToggle, PreferencesDialog,
 };
 use crate::window::KawaiiFiWindow;
 
@@ -36,6 +36,7 @@ mod imp {
     fn register_custom_types() {
         InterfaceToggle::static_type();
         InterfaceList::static_type();
+        FilterToggle::static_type();
         BssTable::static_type();
         BssChart::static_type();
         BssFilter::static_type();

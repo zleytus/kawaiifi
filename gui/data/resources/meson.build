@@ -5,6 +5,7 @@ blueprints = custom_target(
         'ui/bss_filter.blp',
         'ui/bss_ie_table.blp',
         'ui/bss_table.blp',
+        'ui/filter_toggle.blp',
         'ui/interface_list.blp',
         'ui/interface_row.blp',
         'ui/interface_toggle.blp',

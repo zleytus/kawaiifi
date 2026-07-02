@@ -26,7 +26,7 @@ mod imp {
     use super::*;
     use crate::{
         vendor::VendorCache,
-        widgets::{InterfaceList, InterfaceToggle},
+        widgets::{FilterToggle, InterfaceList, InterfaceToggle},
     };
 
     pub(super) const PROP_SCANNING_ENABLED: &str = "scanning-enabled";
@@ -95,6 +95,8 @@ mod imp {
         pub file_label: TemplateChild<Label>,
         #[template_child]
         pub statusbar_label: TemplateChild<Label>,
+        #[template_child]
+        pub filter_toggle: TemplateChild<FilterToggle>,
         #[template_child]
         pub bottom_stack: TemplateChild<adw::ViewStack>,
         #[template_child]
@@ -293,6 +295,9 @@ impl KawaiiFiWindow {
         self.imp()
             .statusbar_label
             .set_label(&bss_status_label(total, displayed));
+        self.imp()
+            .filter_toggle
+            .set_filtered_count(total.saturating_sub(displayed));
     }
 
     pub(super) fn set_scan_active(&self, active: bool) {
@@ -316,19 +321,11 @@ impl KawaiiFiWindow {
 
 fn bss_status_label(total: u32, displayed: u32) -> String {
     if total != displayed {
-        format!("{} ({displayed} displayed)", bss_count_label(total))
+        format!("{displayed} of {total} BSSs")
     } else if total == 1 {
         "1 BSS".to_string()
     } else {
         format!("{total} BSSs")
-    }
-}
-
-fn bss_count_label(count: u32) -> String {
-    if count == 1 {
-        "1 BSS".to_string()
-    } else {
-        format!("{count} BSSs")
     }
 }
 
@@ -338,7 +335,7 @@ mod tests {
 
     #[test]
     fn bss_status_label_handles_filtered_singular_total() {
-        assert_eq!(bss_status_label(1, 0), "1 BSS (0 displayed)");
+        assert_eq!(bss_status_label(1, 0), "0 of 1 BSSs");
     }
 
     #[test]

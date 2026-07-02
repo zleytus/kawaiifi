@@ -1,0 +1,17 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $FilterToggle: Box {
+  ToggleButton filter_button {
+    tooltip-text: _("Show Filters");
+
+    styles [
+      "flat",
+    ]
+
+    Adw.ButtonContent filter_button_content {
+      icon-name: "funnel-outline-symbolic";
+      label: _("0 Filtered");
+    }
+  }
+}
