@@ -94,7 +94,7 @@ mod imp {
         #[template_child]
         pub file_label: TemplateChild<Label>,
         #[template_child]
-        pub statusbar_label: TemplateChild<Label>,
+        pub bss_count_label: TemplateChild<Label>,
         #[template_child]
         pub filter_toggle: TemplateChild<FilterToggle>,
         #[template_child]
@@ -293,7 +293,7 @@ impl KawaiiFiWindow {
         let total = self.bss_list_store().n_items();
         let displayed = self.bss_filter_model().n_items();
         self.imp()
-            .statusbar_label
+            .bss_count_label
             .set_label(&bss_status_label(total, displayed));
         self.imp()
             .filter_toggle
