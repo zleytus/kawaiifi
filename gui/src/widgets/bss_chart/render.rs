@@ -6,7 +6,7 @@ use plotters_cairo::CairoBackend;
 
 use super::data::{
     BssChartData, bss_shape_points, frequency_to_channel, get_band_frequency_range,
-    major_signal_gridlines,
+    is_dfs_frequency, major_signal_gridlines,
 };
 
 const CHART_SIGNAL_MIN: f64 = -100.0;
@@ -21,6 +21,8 @@ const SELECTED_LINE_WIDTH_PX: u32 = 3;
 const SELECTED_FILL_FLOOR: f64 = -130.0;
 const GRID_DOT_SIZE_PX: u32 = 2;
 const GRID_DOT_SPACING_PX: u32 = 6;
+const DFS_CHANNEL_TEXT_COLOR_DARK: RGBColor = RGBColor(205, 147, 9);
+const DFS_CHANNEL_TEXT_COLOR_LIGHT: RGBColor = RGBColor(229, 165, 10);
 const GRID_ALPHA: f64 = 0.85;
 
 pub(super) fn draw_plot(
@@ -73,16 +75,23 @@ pub(super) fn draw_plot(
         )
     }))?;
 
-    let x_label_style = ("sans-serif", 12)
-        .into_font()
-        .color(&text)
-        .pos(Pos::new(HPos::Center, VPos::Top));
     chart.draw_series(channel_freqs.iter().map(|freq| {
+        let label_color = match (is_dfs_frequency(*freq), is_dark) {
+            (true, true) => DFS_CHANNEL_TEXT_COLOR_DARK,
+            (true, false) => DFS_CHANNEL_TEXT_COLOR_LIGHT,
+            _ => text,
+        };
+
+        let x_label_style = ("sans-serif", 12)
+            .into_font()
+            .color(&label_color)
+            .pos(Pos::new(HPos::Center, VPos::Top));
+
         EmptyElement::at((*freq as f64, CHART_SIGNAL_MIN))
             + Text::new(
                 frequency_to_channel(*freq, band),
                 (0, X_LABEL_OFFSET_PX),
-                x_label_style.clone(),
+                x_label_style,
             )
     }))?;
 

@@ -98,6 +98,10 @@ pub(super) fn major_signal_gridlines() -> impl Iterator<Item = f64> {
     (-90..=-20).step_by(10).map(f64::from)
 }
 
+pub(super) fn is_dfs_frequency(freq_mhz: i32) -> bool {
+    (5250..=5350).contains(&freq_mhz) || (5470..=5725).contains(&freq_mhz)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
