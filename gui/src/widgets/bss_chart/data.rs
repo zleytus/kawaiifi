@@ -102,6 +102,10 @@ pub(super) fn is_dfs_frequency(freq_mhz: i32) -> bool {
     (5250..=5350).contains(&freq_mhz) || (5470..=5725).contains(&freq_mhz)
 }
 
+pub(super) fn is_one_six_or_eleven(freq_mhz: i32) -> bool {
+    freq_mhz == 2412 || freq_mhz == 2437 || freq_mhz == 2462
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

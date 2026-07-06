@@ -6,7 +6,7 @@ use plotters_cairo::CairoBackend;
 
 use super::data::{
     BssChartData, bss_shape_points, frequency_to_channel, get_band_frequency_range,
-    is_dfs_frequency, major_signal_gridlines,
+    is_dfs_frequency, is_one_six_or_eleven, major_signal_gridlines,
 };
 
 const CHART_SIGNAL_MIN: f64 = -100.0;
@@ -21,8 +21,16 @@ const SELECTED_LINE_WIDTH_PX: u32 = 3;
 const SELECTED_FILL_FLOOR: f64 = -130.0;
 const GRID_DOT_SIZE_PX: u32 = 2;
 const GRID_DOT_SPACING_PX: u32 = 6;
-const DFS_CHANNEL_TEXT_COLOR_DARK: RGBColor = RGBColor(205, 147, 9);
-const DFS_CHANNEL_TEXT_COLOR_LIGHT: RGBColor = RGBColor(229, 165, 10);
+const CHART_BACKGROUND_COLOR_DARK: RGBColor = BLACK;
+const CHART_BACKGROUND_COLOR_LIGHT: RGBColor = WHITE;
+const CHART_TEXT_COLOR_DARK: RGBColor = WHITE;
+const CHART_TEXT_COLOR_LIGHT: RGBColor = RGBColor(46, 52, 54);
+const CHART_GRID_COLOR_DARK: RGBColor = RGBColor(82, 82, 82);
+const CHART_GRID_COLOR_LIGHT: RGBColor = RGBColor(140, 140, 140);
+const DFS_CHANNEL_TEXT_COLOR_DARK: RGBColor = RGBColor(255, 194, 82);
+const DFS_CHANNEL_TEXT_COLOR_LIGHT: RGBColor = RGBColor(144, 84, 0);
+const CHANNEL_ONE_SIX_ELEVEN_TEXT_COLOR_DARK: RGBColor = RGBColor(120, 233, 171);
+const CHANNEL_ONE_SIX_ELEVEN_TEXT_COLOR_LIGHT: RGBColor = RGBColor(0, 124, 61);
 const GRID_ALPHA: f64 = 0.85;
 
 pub(super) fn draw_plot(
@@ -39,9 +47,17 @@ pub(super) fn draw_plot(
     let root = backend.into_drawing_area();
 
     let (background, text, grid) = if is_dark {
-        (BLACK, WHITE, RGBColor(82, 82, 82))
+        (
+            CHART_BACKGROUND_COLOR_DARK,
+            CHART_TEXT_COLOR_DARK,
+            CHART_GRID_COLOR_DARK,
+        )
     } else {
-        (WHITE, RGBColor(46, 52, 54), RGBColor(140, 140, 140))
+        (
+            CHART_BACKGROUND_COLOR_LIGHT,
+            CHART_TEXT_COLOR_LIGHT,
+            CHART_GRID_COLOR_LIGHT,
+        )
     };
 
     root.fill(&background)?;
@@ -76,11 +92,7 @@ pub(super) fn draw_plot(
     }))?;
 
     chart.draw_series(channel_freqs.iter().map(|freq| {
-        let label_color = match (is_dfs_frequency(*freq), is_dark) {
-            (true, true) => DFS_CHANNEL_TEXT_COLOR_DARK,
-            (true, false) => DFS_CHANNEL_TEXT_COLOR_LIGHT,
-            _ => text,
-        };
+        let label_color = channel_label_color(*freq, is_dark, text);
 
         let x_label_style = ("sans-serif", 12)
             .into_font()
@@ -130,4 +142,22 @@ pub(super) fn draw_plot(
 
     root.present()?;
     Ok(())
+}
+
+fn channel_label_color(freq_mhz: i32, is_dark: bool, default: RGBColor) -> RGBColor {
+    if is_one_six_or_eleven(freq_mhz) {
+        if is_dark {
+            CHANNEL_ONE_SIX_ELEVEN_TEXT_COLOR_DARK
+        } else {
+            CHANNEL_ONE_SIX_ELEVEN_TEXT_COLOR_LIGHT
+        }
+    } else if is_dfs_frequency(freq_mhz) {
+        if is_dark {
+            DFS_CHANNEL_TEXT_COLOR_DARK
+        } else {
+            DFS_CHANNEL_TEXT_COLOR_LIGHT
+        }
+    } else {
+        default
+    }
 }
