@@ -24,19 +24,6 @@ fn bssid_vendor_candidates(bssid: &[u8; 6]) -> Vec<[u8; 6]> {
     candidates
 }
 
-fn bss_vendor_candidates(bss: &Bss) -> Vec<[u8; 6]> {
-    let mut candidates = bssid_vendor_candidates(bss.bssid());
-    if let Some(parent_bssid) = bss.parent_bssid() {
-        for candidate in bssid_vendor_candidates(&parent_bssid) {
-            if !candidates.contains(&candidate) {
-                candidates.push(candidate);
-            }
-        }
-    }
-
-    candidates
-}
-
 fn is_likely_bss_vendor(vendor: &str) -> bool {
     let vendor = vendor.to_lowercase();
     !NON_BSS_VENDOR_IE_NAMES
@@ -46,7 +33,7 @@ fn is_likely_bss_vendor(vendor: &str) -> bool {
 
 /// Look up vendor for a BSS via OUI database, bit-flip variants, and VendorSpecific IEs.
 pub fn lookup_vendor(bss: &Bss) -> Option<String> {
-    for candidate in bss_vendor_candidates(bss) {
+    for candidate in bssid_vendor_candidates(bss.bssid()) {
         if let Some(vendor) = oui::lookup_vendor(&candidate) {
             return Some(vendor);
         }
