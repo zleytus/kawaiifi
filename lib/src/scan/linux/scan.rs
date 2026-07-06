@@ -86,10 +86,15 @@ pub(crate) async fn scan(interface: &Interface, backend: Backend) -> Result<Scan
             // Branch 1: Received a multicast event from nl80211
             Some(msg) = multicast.next::<u16, Genlmsghdr<Cmd, Attr>>() => {
                 // Skip malformed messages
-                let Ok(msg) = msg else {
-                    continue;
+                let msg = match msg {
+                    Ok(msg) => msg,
+                    Err(error) => {
+                        tracing::debug!(error = ?error, "Skipping malformed scan multicast message");
+                        continue;
+                    }
                 };
                 let Some(payload) = msg.get_payload() else {
+                    tracing::debug!("Skipping scan multicast message without payload");
                     continue;
                 };
 
@@ -130,7 +135,7 @@ pub(crate) async fn scan(interface: &Interface, backend: Backend) -> Result<Scan
                         let bss_list = match scan_results(interface, &socket).await {
                             Ok(bss_list) => bss_list,
                             Err(error) => {
-                                tracing::warn!(error = %error, "Failed to fetch scan results");
+                                tracing::warn!(error = %error, state = ?state, "Failed to fetch scan results");
                                 first_scan_results_error.get_or_insert(error);
                                 continue;
                             }
@@ -183,6 +188,8 @@ pub(crate) async fn scan(interface: &Interface, backend: Backend) -> Result<Scan
     }
 
     // All scans completed, combine and return
+    let bss_count: usize = scans.iter().map(|scan| scan.bss_list.len()).sum();
+    tracing::debug!(sub_scan_count = scans.len(), bss_count, "Completed scan");
     Scan::new(scans)
 }
 

@@ -32,7 +32,7 @@ pub(crate) async fn device_path(
     Ok(nm_proxy.get_device_by_ip_iface(interface_name).await?)
 }
 
-#[tracing::instrument(skip(interface), fields(interface = %interface.name()))]
+#[tracing::instrument(skip(interface), fields(interface = %interface.name(), ifindex = interface.index()))]
 pub(crate) async fn trigger_scan(interface: &Interface) -> Result<(), ScanError> {
     tracing::debug!("Triggering NetworkManager scan");
     let connection = zbus::Connection::system().await?;

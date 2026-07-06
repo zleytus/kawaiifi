@@ -34,11 +34,11 @@ pub fn from_bytes(bytes: &[u8]) -> Vec<Ie> {
                 let expected_bytes = usize::from(ie.len) + 2;
                 if bytes_read != expected_bytes {
                     tracing::warn!(
-                        "Incorrect number of bytes read for IE at offset {}: read {}, expected {}. IE: {:?}",
                         offset,
                         bytes_read,
                         expected_bytes,
-                        &ie
+                        ie = ?ie,
+                        "Incorrect number of bytes read for IE"
                     );
                 }
                 #[cfg(debug_assertions)]
@@ -46,18 +46,18 @@ pub fn from_bytes(bytes: &[u8]) -> Vec<Ie> {
                     && serialized.as_slice() != &input[..expected_bytes.min(input.len())]
                 {
                     tracing::warn!(
-                        "Mismatch between raw IE bytes and parsed Ie::to_bytes at offset {}. IE: {:?}",
                         offset,
-                        &ie
+                        ie = ?ie,
+                        "Mismatch between raw IE bytes and serialized IE"
                     );
                 }
                 ies.push(ie);
                 if expected_bytes > input.len() {
                     tracing::warn!(
-                        "IE at offset {} declares {} bytes but only {} bytes remain",
                         offset,
                         expected_bytes,
-                        input.len()
+                        remaining_bytes = input.len(),
+                        "IE declares more bytes than remain"
                     );
                     break;
                 }
@@ -68,11 +68,21 @@ pub fn from_bytes(bytes: &[u8]) -> Vec<Ie> {
                     .get(offset..offset.saturating_add(20).min(bytes.len()))
                     .unwrap_or(&[]);
                 tracing::warn!(
-                    "Failed to parse IE at offset {} (parsed {} IEs successfully): {:?}. Failed bytes: {:02x?}",
                     offset,
-                    ies.len(),
-                    error,
-                    failed_bytes
+                    parsed_count = ies.len(),
+                    total_bytes = bytes.len(),
+                    remaining_bytes = input.len(),
+                    error = ?error,
+                    failed_bytes = ?failed_bytes,
+                    "Failed to parse IE"
+                );
+                tracing::debug!(
+                    offset,
+                    parsed_count = ies.len(),
+                    total_bytes = bytes.len(),
+                    full_bytes = ?bytes,
+                    parsed_ies = ?ies,
+                    "Full IE parse failure context"
                 );
                 break;
             }

@@ -65,7 +65,6 @@ pub(crate) async fn trigger_scan(
 
     // If we don't receive an ACK, assume the user was denied permission to scan
     if !ack_received {
-        tracing::error!("Scan request not acknowledged, permission denied");
         return Err(ScanError::PermissionDenied);
     }
 
