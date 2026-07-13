@@ -26,26 +26,6 @@ pub struct Interface {
     interface: objc2::rc::Retained<CWInterface>,
 }
 
-impl fmt::Debug for Interface {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Interface")
-            .field("name", &self.name())
-            .field("hardware_address", &self.hardware_address())
-            .field("ssid", &self.ssid())
-            .field("bssid", &self.bssid())
-            .field("power_on", &self.power_on())
-            .field("wlan_channel", &self.wlan_channel())
-            .field("active_phy_mode", &self.active_phy_mode())
-            .field("security", &self.security())
-            .field("transmit_rate_mbps", &self.transmit_rate_mbps())
-            .field("country_code", &self.country_code())
-            .field("interface_mode", &self.interface_mode())
-            .field("transmit_power_mw", &self.transmit_power_mw())
-            .field("service_active", &self.service_active())
-            .finish_non_exhaustive()
-    }
-}
-
 impl Interface {
     /// The BSD name of the Wi-Fi interface (e.g., `en0`).
     pub fn name(&self) -> Option<String> {
@@ -177,6 +157,26 @@ impl Interface {
             .iter()
             .filter_map(|network| Bss::from_core_wlan_network(&network))
             .collect())
+    }
+}
+
+impl fmt::Debug for Interface {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Interface")
+            .field("name", &self.name())
+            .field("hardware_address", &self.hardware_address())
+            .field("ssid", &self.ssid())
+            .field("bssid", &self.bssid())
+            .field("power_on", &self.power_on())
+            .field("wlan_channel", &self.wlan_channel())
+            .field("active_phy_mode", &self.active_phy_mode())
+            .field("security", &self.security())
+            .field("transmit_rate_mbps", &self.transmit_rate_mbps())
+            .field("country_code", &self.country_code())
+            .field("interface_mode", &self.interface_mode())
+            .field("transmit_power_mw", &self.transmit_power_mw())
+            .field("service_active", &self.service_active())
+            .finish_non_exhaustive()
     }
 }
 
