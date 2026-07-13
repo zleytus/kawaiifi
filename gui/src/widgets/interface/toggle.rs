@@ -100,7 +100,7 @@ impl InterfaceToggle {
 
         if let Some(interface) = interface {
             content.set_label(interface.name());
-            content.set_icon_name(interface_icon_name(interface.bus_type()));
+            content.set_icon_name(super::icon_name(interface.bus_type()));
             self.imp().interface_button.set_sensitive(true);
         } else {
             content.set_label("No Interfaces");
@@ -108,14 +108,6 @@ impl InterfaceToggle {
             self.imp().interface_button.set_sensitive(false);
             self.imp().interface_button.set_active(false);
         }
-    }
-}
-
-fn interface_icon_name(bus_type: kawaiifi::BusType) -> &'static str {
-    match bus_type {
-        kawaiifi::BusType::Pci => "pci-card-symbolic",
-        kawaiifi::BusType::Usb => "drive-harddisk-usb-symbolic",
-        _ => "network-wireless-symbolic",
     }
 }
 

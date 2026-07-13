@@ -75,7 +75,7 @@ impl InterfaceRow {
     fn set_interface(&self, interface: &kawaiifi::Interface) {
         let imp = self.imp();
         imp.bus_icon
-            .set_icon_name(Some(interface_icon_name(interface.bus_type())));
+            .set_icon_name(Some(super::icon_name(interface.bus_type())));
         imp.interface_name_label.set_label(&format!(
             "{} ({})",
             interface.name(),
@@ -354,14 +354,6 @@ impl InterfaceList {
             f(&interface_list, ifindex);
             None
         })
-    }
-}
-
-fn interface_icon_name(bus_type: kawaiifi::BusType) -> &'static str {
-    match bus_type {
-        kawaiifi::BusType::Pci => "pci-card-symbolic",
-        kawaiifi::BusType::Usb => "drive-harddisk-usb-symbolic",
-        _ => "network-wireless-symbolic",
     }
 }
 
