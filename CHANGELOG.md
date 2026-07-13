@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### `kawaiifi`
+
+#### Breaking
+
+- Changed `ScanError::NetworkManager` to contain an `nmrs::ConnectionError`
+  instead of a `zbus::Error`.
+
+#### Changed
+
+- Replaced the `zbus` connection and NetworkManager D-Bus proxies used
+  for Linux scans with `nmrs`.
+
 ## 0.2.1 - 2026-06-17
 
 - Fixed formatting in the asynchronous scan example in the generated crate documentation.

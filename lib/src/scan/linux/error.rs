@@ -24,7 +24,7 @@ pub enum Error {
 
     /// A NetworkManager D-Bus operation failed.
     #[error("NetworkManager error: {0}")]
-    NetworkManager(#[from] zbus::Error),
+    NetworkManager(#[from] nmrs::ConnectionError),
 
     /// The scan completed without returning any scan records.
     #[error("scan did not produce any results")]

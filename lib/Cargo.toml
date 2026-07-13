@@ -3,7 +3,7 @@ name = "kawaiifi"
 version = "0.2.1"
 authors = ["Zach Leytus <zach.leytus@gmail.com>"]
 edition = "2024"
-rust-version = "1.88"
+rust-version = "1.90"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 description = "Wi-Fi scanning library for Linux, macOS, and Windows."
@@ -28,9 +28,9 @@ typed-builder = "0.23.2"
 [target.'cfg(target_os = "linux")'.dependencies]
 libc = "0.2"
 neli = { version = "0.7.3", features = ["async"] }
+nmrs = "3.4"
 pci-ids = "0.2"
 usb-ids = "1.2025.2"
-zbus = { version = "5", default-features = false, features = ["tokio"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "0.6.4"
