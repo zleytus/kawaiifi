@@ -73,59 +73,17 @@ pub fn default_interface() -> Result<Option<Interface>, crate::InterfaceError> {
 /// # Ok(())
 /// # }
 /// ```
-#[cfg(target_os = "linux")]
 pub fn interfaces() -> Result<Vec<Interface>, crate::InterfaceError> {
-    linux::interfaces()
-}
-
-/// Returns all available Wi-Fi interfaces on the system.
-///
-/// An empty vector indicates that enumeration succeeded but no Wi-Fi
-/// interfaces were found. The order of the returned interfaces is
-/// platform-defined and is not guaranteed to remain stable.
-///
-/// # Errors
-///
-/// Returns an [`InterfaceError`](crate::InterfaceError) if the system's Wi-Fi
-/// interfaces cannot be enumerated. Currently, enumeration errors are reported
-/// on Linux; the macOS and Windows implementations return `Ok`.
-///
-/// # Examples
-///
-/// ```
-/// # fn example() -> Result<(), kawaiifi::InterfaceError> {
-/// let interfaces = kawaiifi::interfaces()?;
-/// println!("Found {} Wi-Fi interface(s)", interfaces.len());
-/// # Ok(())
-/// # }
-/// ```
-#[cfg(target_os = "macos")]
-pub fn interfaces() -> Result<Vec<Interface>, crate::InterfaceError> {
-    Ok(macos::interfaces())
-}
-
-/// Returns all available Wi-Fi interfaces on the system.
-///
-/// An empty vector indicates that enumeration succeeded but no Wi-Fi
-/// interfaces were found. The order of the returned interfaces is
-/// platform-defined and is not guaranteed to remain stable.
-///
-/// # Errors
-///
-/// Returns an [`InterfaceError`](crate::InterfaceError) if the system's Wi-Fi
-/// interfaces cannot be enumerated. Currently, enumeration errors are reported
-/// on Linux; the macOS and Windows implementations return `Ok`.
-///
-/// # Examples
-///
-/// ```
-/// # fn example() -> Result<(), kawaiifi::InterfaceError> {
-/// let interfaces = kawaiifi::interfaces()?;
-/// println!("Found {} Wi-Fi interface(s)", interfaces.len());
-/// # Ok(())
-/// # }
-/// ```
-#[cfg(target_os = "windows")]
-pub fn interfaces() -> Result<Vec<Interface>, crate::InterfaceError> {
-    Ok(windows::interfaces())
+    #[cfg(target_os = "linux")]
+    {
+        linux::interfaces()
+    }
+    #[cfg(target_os = "macos")]
+    {
+        Ok(macos::interfaces())
+    }
+    #[cfg(target_os = "windows")]
+    {
+        Ok(windows::interfaces())
+    }
 }
