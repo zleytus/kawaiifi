@@ -3,13 +3,7 @@ use std::ffi::{CString, c_char};
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 use kawaiifi::Bss;
 
-pub fn string_to_c(s: String) -> *mut c_char {
-    CString::new(s)
-        .map(CString::into_raw)
-        .unwrap_or(std::ptr::null_mut())
-}
-
-pub fn str_to_c(s: &str) -> *mut c_char {
+pub fn to_c_string(s: impl Into<Vec<u8>>) -> *mut c_char {
     CString::new(s)
         .map(CString::into_raw)
         .unwrap_or(std::ptr::null_mut())

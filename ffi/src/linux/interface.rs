@@ -3,7 +3,7 @@ use std::ffi::c_char;
 use kawaiifi::Interface;
 
 use crate::bss::ChannelWidth;
-use crate::common::{str_to_c, string_to_c};
+use crate::common::to_c_string;
 
 /// FFI-safe equivalent of kawaiifi::BusType.
 #[repr(C)]
@@ -19,7 +19,7 @@ pub enum BusType {
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_interface_name(interface: Option<&Interface>) -> *mut c_char {
     interface
-        .map(|i| str_to_c(i.name()))
+        .map(|i| to_c_string(i.name()))
         .unwrap_or(std::ptr::null_mut())
 }
 
@@ -72,7 +72,7 @@ pub unsafe extern "C" fn kawaiifi_interface_four_address(interface: Option<&Inte
 pub unsafe extern "C" fn kawaiifi_interface_ssid(interface: Option<&Interface>) -> *mut c_char {
     interface
         .and_then(Interface::ssid)
-        .map(str_to_c)
+        .map(to_c_string)
         .unwrap_or(std::ptr::null_mut())
 }
 
@@ -253,7 +253,7 @@ pub unsafe extern "C" fn kawaiifi_interface_vendor_name(
 ) -> *mut c_char {
     interface
         .and_then(Interface::vendor_name)
-        .map(string_to_c)
+        .map(to_c_string)
         .unwrap_or(std::ptr::null_mut())
 }
 
@@ -265,7 +265,7 @@ pub unsafe extern "C" fn kawaiifi_interface_device_name(
 ) -> *mut c_char {
     interface
         .and_then(Interface::device_name)
-        .map(string_to_c)
+        .map(to_c_string)
         .unwrap_or(std::ptr::null_mut())
 }
 
@@ -275,7 +275,7 @@ pub unsafe extern "C" fn kawaiifi_interface_device_name(
 pub unsafe extern "C" fn kawaiifi_interface_driver(interface: Option<&Interface>) -> *mut c_char {
     interface
         .and_then(Interface::driver)
-        .map(string_to_c)
+        .map(to_c_string)
         .unwrap_or(std::ptr::null_mut())
 }
 

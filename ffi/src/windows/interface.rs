@@ -3,7 +3,7 @@ use std::ffi::c_char;
 use kawaiifi::Interface;
 use windows_sys::core::GUID;
 
-use crate::common::string_to_c;
+use crate::common::to_c_string;
 
 /// Returns the GUID of the network interface, or a zeroed GUID if `interface` is null.
 #[unsafe(no_mangle)]
@@ -18,6 +18,6 @@ pub unsafe extern "C" fn kawaiifi_interface_description(
     interface: Option<&Interface>,
 ) -> *mut c_char {
     interface
-        .map(|i| string_to_c(i.description()))
+        .map(|i| to_c_string(i.description()))
         .unwrap_or(std::ptr::null_mut())
 }

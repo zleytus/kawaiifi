@@ -3,7 +3,7 @@ use std::ffi::c_char;
 use kawaiifi::Interface;
 use objc2_core_wlan::{CWInterfaceMode, CWPHYMode, CWSecurity};
 
-use crate::common::string_to_c;
+use crate::common::to_c_string;
 
 /// FFI-safe equivalent of CoreWLAN's CWPHYMode.
 #[derive(Debug)]
@@ -134,7 +134,7 @@ impl From<CWInterfaceMode> for CwInterfaceMode {
 pub unsafe extern "C" fn kawaiifi_interface_name(interface: Option<&Interface>) -> *mut c_char {
     interface
         .and_then(Interface::name)
-        .map(string_to_c)
+        .map(to_c_string)
         .unwrap_or(std::ptr::null_mut())
 }
 
@@ -175,7 +175,7 @@ pub unsafe extern "C" fn kawaiifi_interface_hardware_address(
 ) -> *mut c_char {
     interface
         .and_then(Interface::hardware_address)
-        .map(string_to_c)
+        .map(to_c_string)
         .unwrap_or(std::ptr::null_mut())
 }
 
@@ -185,7 +185,7 @@ pub unsafe extern "C" fn kawaiifi_interface_hardware_address(
 pub unsafe extern "C" fn kawaiifi_interface_ssid(interface: Option<&Interface>) -> *mut c_char {
     interface
         .and_then(Interface::ssid)
-        .map(string_to_c)
+        .map(to_c_string)
         .unwrap_or(std::ptr::null_mut())
 }
 
@@ -261,7 +261,7 @@ pub unsafe extern "C" fn kawaiifi_interface_country_code(
 ) -> *mut c_char {
     interface
         .and_then(Interface::country_code)
-        .map(string_to_c)
+        .map(to_c_string)
         .unwrap_or(std::ptr::null_mut())
 }
 

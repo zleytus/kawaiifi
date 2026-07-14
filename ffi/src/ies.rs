@@ -2,7 +2,7 @@ use std::ffi::c_char;
 
 use kawaiifi::Ie;
 
-use crate::common::string_to_c;
+use crate::common::to_c_string;
 
 /// Returns the element ID of the information element, or 0 if `ie` is null.
 #[unsafe(no_mangle)]
@@ -34,7 +34,7 @@ pub unsafe extern "C" fn kawaiifi_ie_id_ext(ie: Option<&Ie>, out: Option<&mut u8
 /// The caller must free the returned string with `kawaiifi_string_free`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_ie_name(ie: Option<&Ie>) -> *mut c_char {
-    ie.map(|ie| string_to_c(ie.name().to_owned()))
+    ie.map(|ie| to_c_string(ie.name().to_owned()))
         .unwrap_or(std::ptr::null_mut())
 }
 
@@ -64,7 +64,7 @@ pub unsafe extern "C" fn kawaiifi_ie_bytes(ie: Option<&Ie>, out_count: *mut usiz
 /// Returns the IE's summary as a C string. The caller must free with `kawaiifi_string_free`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_ie_summary(ie: Option<&Ie>) -> *mut c_char {
-    ie.map(|ie| string_to_c(ie.summary()))
+    ie.map(|ie| to_c_string(ie.summary()))
         .unwrap_or(std::ptr::null_mut())
 }
 

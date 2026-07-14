@@ -2,7 +2,7 @@ use std::ffi::c_char;
 
 use kawaiifi::ies::Field;
 
-use crate::common::string_to_c;
+use crate::common::to_c_string;
 
 pub struct FieldList(Vec<Field>);
 
@@ -40,7 +40,7 @@ pub unsafe extern "C" fn kawaiifi_field_list_free(list: Option<Box<FieldList>>) 
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_field_title(field: Option<&Field>) -> *mut c_char {
     field
-        .map(|f| string_to_c(f.title().to_string()))
+        .map(|f| to_c_string(f.title().to_string()))
         .unwrap_or(std::ptr::null_mut())
 }
 
@@ -48,7 +48,7 @@ pub unsafe extern "C" fn kawaiifi_field_title(field: Option<&Field>) -> *mut c_c
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_field_value(field: Option<&Field>) -> *mut c_char {
     field
-        .map(|f| string_to_c(f.value().to_string()))
+        .map(|f| to_c_string(f.value().to_string()))
         .unwrap_or(std::ptr::null_mut())
 }
 
@@ -94,7 +94,7 @@ pub unsafe extern "C" fn kawaiifi_field_bytes(
 pub unsafe extern "C" fn kawaiifi_field_bits(field: Option<&Field>) -> *mut c_char {
     field
         .and_then(|f| f.bits())
-        .map(string_to_c)
+        .map(to_c_string)
         .unwrap_or(std::ptr::null_mut())
 }
 
@@ -103,7 +103,7 @@ pub unsafe extern "C" fn kawaiifi_field_bits(field: Option<&Field>) -> *mut c_ch
 pub unsafe extern "C" fn kawaiifi_field_units(field: Option<&Field>) -> *mut c_char {
     field
         .and_then(|f| f.units())
-        .map(|u| string_to_c(u.to_string()))
+        .map(|u| to_c_string(u.to_string()))
         .unwrap_or(std::ptr::null_mut())
 }
 

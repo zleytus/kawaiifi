@@ -1,6 +1,6 @@
 use kawaiifi::Bss;
 
-use crate::common::str_to_c;
+use crate::common::to_c_string;
 
 pub struct BssList(pub Vec<Bss>);
 
@@ -59,7 +59,7 @@ pub unsafe extern "C" fn kawaiifi_bss_bssid(bss: Option<&Bss>) -> *const u8 {
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_bss_ssid(bss: Option<&Bss>) -> *mut std::ffi::c_char {
     bss.and_then(Bss::ssid)
-        .map(str_to_c)
+        .map(to_c_string)
         .unwrap_or(std::ptr::null_mut())
 }
 
