@@ -1,3 +1,6 @@
+use std::fmt::Display;
+
+use adw::ActionRow;
 use adw::prelude::ActionRowExt;
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::glib;
@@ -283,45 +286,28 @@ impl InterfaceList {
 
     fn update_interface_details(&self, interface: &kawaiifi::Interface) {
         let imp = self.imp();
+
         imp.name_row.set_subtitle(interface.name());
-        if let Some(vendor) = interface.vendor_name() {
-            imp.vendor_row.set_visible(true);
-            imp.vendor_row.set_subtitle(&vendor);
-        } else {
-            imp.vendor_row.set_visible(false);
-        }
-        if let Some(device) = interface.device_name() {
-            imp.device_row.set_visible(true);
-            imp.device_row.set_subtitle(&device);
-        } else {
-            imp.device_row.set_visible(false);
-        }
         imp.bus_type_row
             .set_subtitle(&interface.bus_type().to_string());
-        if let Some(driver) = interface.driver() {
-            imp.driver_row.set_visible(true);
-            imp.driver_row.set_subtitle(&driver);
-        } else {
-            imp.driver_row.set_visible(false);
-        }
-        if let Some(ssid) = interface.ssid() {
-            imp.ssid_row.set_visible(true);
-            imp.ssid_row.set_subtitle(ssid);
-        } else {
-            imp.ssid_row.set_visible(false);
-        }
         imp.mac_row
             .set_subtitle(&crate::mac::format_mac(&interface.mac_address()));
-        if let Some(freq_mhz) = interface.wiphy_freq_mhz() {
-            imp.freq_row.set_visible(true);
-            imp.freq_row.set_subtitle(&format!("{} MHz", freq_mhz));
-        } else {
-            imp.freq_row.set_visible(false);
-        }
         imp.index_row.set_subtitle(&interface.index().to_string());
         imp.wiphy_row.set_subtitle(&interface.wiphy().to_string());
         imp.wdev_row
             .set_subtitle(&format!("{:#X}", interface.wdev()));
+
+        set_optional_subtitle(&imp.vendor_row, interface.vendor_name());
+        set_optional_subtitle(&imp.device_row, interface.device_name());
+        set_optional_subtitle(&imp.driver_row, interface.driver());
+        set_optional_subtitle(&imp.ssid_row, interface.ssid());
+        set_optional_subtitle(
+            &imp.freq_row,
+            interface
+                .wiphy_freq_mhz()
+                .map(|freq_mhz| format!("{freq_mhz} MHz")),
+        );
+
         imp.details_group.set_visible(true);
     }
 
@@ -357,15 +343,24 @@ impl InterfaceList {
     }
 }
 
+impl Default for InterfaceList {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+fn set_optional_subtitle(action_row: &ActionRow, subtitle: Option<impl Display>) {
+    if let Some(subtitle) = subtitle {
+        action_row.set_visible(true);
+        action_row.set_subtitle(&subtitle.to_string());
+    } else {
+        action_row.set_visible(false);
+    }
+}
+
 fn interface_summary(interface: &kawaiifi::Interface) -> String {
     interface
         .vendor_name()
         .or_else(|| interface.driver())
         .unwrap_or_else(|| "Unknown adapter".to_string())
-}
-
-impl Default for InterfaceList {
-    fn default() -> Self {
-        Self::new()
-    }
 }
