@@ -9,6 +9,9 @@ mod macos;
 #[cfg(target_os = "windows")]
 mod windows;
 
+#[cfg(any(target_os = "macos", target_os = "windows"))]
+mod results;
+
 #[cfg(target_os = "linux")]
 pub use linux::*;
 
@@ -17,3 +20,6 @@ pub use macos::*;
 
 #[cfg(target_os = "windows")]
 pub use windows::*;
+
+#[cfg(any(target_os = "macos", target_os = "windows"))]
+pub use results::Scan;
