@@ -26,7 +26,10 @@ public class Bss
         }
     }
 
-    /// <summary>The SSID (network name), or an empty string if not present.</summary>
+    /// <summary>
+    /// The non-empty, valid UTF-8 SSID (network name), or an empty string if it is hidden,
+    /// unavailable, invalid UTF-8, or contains an interior null byte.
+    /// </summary>
     public string Ssid
     {
         get
@@ -34,6 +37,24 @@ public class Bss
             unsafe
             {
                 var ssid = NativeMethods.kawaiifi_bss_ssid(_ptr);
+                var result = Marshal.PtrToStringUTF8((IntPtr)ssid);
+                NativeMethods.kawaiifi_string_free(ssid);
+                return result ?? "";
+            }
+        }
+    }
+
+    /// <summary>
+    /// The non-empty SSID (network name), replacing invalid UTF-8 byte sequences with U+FFFD,
+    /// or an empty string if it is hidden, unavailable, or contains an interior null byte.
+    /// </summary>
+    public string SsidLossy
+    {
+        get
+        {
+            unsafe
+            {
+                var ssid = NativeMethods.kawaiifi_bss_ssid_lossy(_ptr);
                 var result = Marshal.PtrToStringUTF8((IntPtr)ssid);
                 NativeMethods.kawaiifi_string_free(ssid);
                 return result ?? "";

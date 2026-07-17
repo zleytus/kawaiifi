@@ -491,11 +491,24 @@ void kawaiifi_bss_list_free(struct BssList *list);
 const uint8_t *kawaiifi_bss_bssid(const struct Bss *bss);
 
 /**
- * Returns the SSID as a null-terminated C string, or null if `bss` is null, the network is
- * hidden, or the SSID contains interior null bytes (rare but valid per 802.11).
+ * Returns the non-empty, valid UTF-8 SSID as a newly allocated, null-terminated C string.
+ *
+ * Returns null if `bss` is null; the SSID is hidden or unavailable; its bytes are not valid
+ * UTF-8; or it contains an interior null byte (rare but valid per 802.11). Use
+ * [`kawaiifi_bss_ssid_lossy`] to display an SSID with invalid UTF-8 bytes.
  * The caller must free the returned string with `kawaiifi_string_free`.
  */
 char *kawaiifi_bss_ssid(const struct Bss *bss);
+
+/**
+ * Returns the non-empty SSID as a newly allocated, null-terminated C string.
+ *
+ * Invalid UTF-8 byte sequences are replaced with `U+FFFD`. Returns null if `bss` is null; the
+ * SSID is hidden or unavailable; or it contains an interior null byte (rare but valid per
+ * 802.11).
+ * The caller must free the returned string with `kawaiifi_string_free`.
+ */
+char *kawaiifi_bss_ssid_lossy(const struct Bss *bss);
 
 /**
  * Returns the operating frequency of the BSS in MHz, or 0 if `bss` is null.

@@ -14,6 +14,22 @@
 - Replaced the `zbus` connection and NetworkManager D-Bus proxies used
   for Linux scans with `nmrs`.
 
+#### Added
+
+- Added `Bss::ssid_lossy()` for displaying SSIDs with invalid UTF-8 bytes.
+
+### `kawaiifi-ffi`
+
+#### Added
+
+- Added `kawaiifi_bss_ssid_lossy`.
+
+### `Kawaiifi.Net`
+
+#### Added
+
+- Added `Bss.SsidLossy`.
+
 ## 0.2.1 - 2026-06-17
 
 - Fixed formatting in the asynchronous scan example in the generated crate documentation.

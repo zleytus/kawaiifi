@@ -45,12 +45,26 @@ namespace CsBindgen
         internal static extern byte* kawaiifi_bss_bssid(Bss* bss);
 
         /// <summary>
-        ///  Returns the SSID as a null-terminated C string, or null if `bss` is null, the network is
-        ///  hidden, or the SSID contains interior null bytes (rare but valid per 802.11).
+        ///  Returns the non-empty, valid UTF-8 SSID as a newly allocated, null-terminated C string.
+        ///
+        ///  Returns null if `bss` is null; the SSID is hidden or unavailable; its bytes are not valid
+        ///  UTF-8; or it contains an interior null byte (rare but valid per 802.11). Use
+        ///  [`kawaiifi_bss_ssid_lossy`] to display an SSID with invalid UTF-8 bytes.
         ///  The caller must free the returned string with `kawaiifi_string_free`.
         /// </summary>
         [DllImport(__DllName, EntryPoint = "kawaiifi_bss_ssid", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern byte* kawaiifi_bss_ssid(Bss* bss);
+
+        /// <summary>
+        ///  Returns the non-empty SSID as a newly allocated, null-terminated C string.
+        ///
+        ///  Invalid UTF-8 byte sequences are replaced with `U+FFFD`. Returns null if `bss` is null; the
+        ///  SSID is hidden or unavailable; or it contains an interior null byte (rare but valid per
+        ///  802.11).
+        ///  The caller must free the returned string with `kawaiifi_string_free`.
+        /// </summary>
+        [DllImport(__DllName, EntryPoint = "kawaiifi_bss_ssid_lossy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern byte* kawaiifi_bss_ssid_lossy(Bss* bss);
 
         /// <summary>
         ///  Returns the operating frequency of the BSS in MHz, or 0 if `bss` is null.

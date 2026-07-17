@@ -53,12 +53,28 @@ pub unsafe extern "C" fn kawaiifi_bss_bssid(bss: Option<&Bss>) -> *const u8 {
     bss.map(|b| b.bssid().as_ptr()).unwrap_or(std::ptr::null())
 }
 
-/// Returns the SSID as a null-terminated C string, or null if `bss` is null, the network is
-/// hidden, or the SSID contains interior null bytes (rare but valid per 802.11).
+/// Returns the non-empty, valid UTF-8 SSID as a newly allocated, null-terminated C string.
+///
+/// Returns null if `bss` is null; the SSID is hidden or unavailable; its bytes are not valid
+/// UTF-8; or it contains an interior null byte (rare but valid per 802.11). Use
+/// [`kawaiifi_bss_ssid_lossy`] to display an SSID with invalid UTF-8 bytes.
 /// The caller must free the returned string with `kawaiifi_string_free`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_bss_ssid(bss: Option<&Bss>) -> *mut std::ffi::c_char {
     bss.and_then(Bss::ssid)
+        .map(to_c_string)
+        .unwrap_or(std::ptr::null_mut())
+}
+
+/// Returns the non-empty SSID as a newly allocated, null-terminated C string.
+///
+/// Invalid UTF-8 byte sequences are replaced with `U+FFFD`. Returns null if `bss` is null; the
+/// SSID is hidden or unavailable; or it contains an interior null byte (rare but valid per
+/// 802.11).
+/// The caller must free the returned string with `kawaiifi_string_free`.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kawaiifi_bss_ssid_lossy(bss: Option<&Bss>) -> *mut std::ffi::c_char {
+    bss.and_then(Bss::ssid_lossy)
         .map(to_c_string)
         .unwrap_or(std::ptr::null_mut())
 }

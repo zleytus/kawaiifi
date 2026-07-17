@@ -269,7 +269,11 @@ impl Bss {
         self.last_seen_utc
     }
 
-    /// The SSID (network name), or `None` if hidden or unavailable.
+    /// The SSID (network name) if it is present, non-empty, and valid UTF-8.
+    ///
+    /// Returns `None` if the SSID is hidden or unavailable, or if its bytes are
+    /// not valid UTF-8. Use [`Self::ssid_lossy`] to display a non-empty SSID
+    /// whose bytes are not valid UTF-8.
     pub fn ssid(&self) -> Option<&str> {
         fn find_ssid(ies: &[Ie]) -> Option<&str> {
             ies.iter().find_map(|ie| {
@@ -277,6 +281,35 @@ impl Bss {
                     && !ssid.is_empty()
                 {
                     ssid.as_str().ok()
+                } else {
+                    None
+                }
+            })
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            find_ssid(&self.ies).or_else(|| self.beacon_ies.as_deref().and_then(find_ssid))
+        }
+
+        #[cfg(not(target_os = "linux"))]
+        {
+            find_ssid(&self.ies)
+        }
+    }
+
+    /// The SSID (network name), replacing invalid UTF-8 sequences with `U+FFFD`.
+    ///
+    /// Returns `None` if the SSID is hidden or unavailable. Unlike
+    /// [`Self::ssid`], this method returns a string for a non-empty SSID even
+    /// when its bytes are not valid UTF-8.
+    pub fn ssid_lossy(&self) -> Option<String> {
+        fn find_ssid(ies: &[Ie]) -> Option<String> {
+            ies.iter().find_map(|ie| {
+                if let IeData::Ssid(ssid) = &ie.data
+                    && !ssid.is_empty()
+                {
+                    Some(ssid.to_string_lossy())
                 } else {
                     None
                 }
