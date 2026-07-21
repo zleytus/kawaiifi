@@ -1431,28 +1431,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gui"
-version = "0.1.0"
-dependencies = [
- "async-channel",
- "chrono",
- "const-hex",
- "enumflags2",
- "gtk4",
- "kawaiifi 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "libadwaita",
- "nix",
- "oui",
- "oui-data",
- "plotters",
- "plotters-cairo",
- "serde",
- "serde_json",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
 name = "hashbrown"
 version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1622,6 +1600,28 @@ dependencies = [
  "kawaiifi 0.2.1",
  "objc2-core-wlan",
  "windows-sys",
+]
+
+[[package]]
+name = "kawaiifi-gui"
+version = "0.1.0"
+dependencies = [
+ "async-channel",
+ "chrono",
+ "const-hex",
+ "enumflags2",
+ "gtk4",
+ "kawaiifi 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libadwaita",
+ "nix",
+ "oui",
+ "oui-data",
+ "plotters",
+ "plotters-cairo",
+ "serde",
+ "serde_json",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
