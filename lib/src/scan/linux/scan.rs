@@ -102,12 +102,21 @@ pub(crate) async fn scan(interface: &Interface, backend: Backend) -> Result<Scan
                     // A scan was triggered (by us or someone else)
                     Cmd::TriggerScan => {
                         // Parse the trigger event
-                        let Ok(scan_triggered) = ScanTriggered::try_from(payload) else {
-                            continue;
+                        let scan_triggered = match ScanTriggered::try_from(payload) {
+                            Ok(scan_triggered) => scan_triggered,
+                            Err(error) => {
+                                tracing::trace!(error = %error, "Ignoring malformed scan-triggered event");
+                                continue;
+                            }
                         };
 
                         // Ignore scans on other interfaces
                         if scan_triggered.ifindex != interface.index() {
+                            tracing::trace!(
+                                event_ifindex = scan_triggered.ifindex,
+                                scan_ifindex = interface.index(),
+                                "Ignoring scan-triggered event for another interface"
+                            );
                             continue;
                         };
 
@@ -122,17 +131,30 @@ pub(crate) async fn scan(interface: &Interface, backend: Backend) -> Result<Scan
                     // A scan completed
                     Cmd::NewScanResults => {
                         // Parse the completion event
-                        let Ok(scan_completed) = ScanCompleted::try_from(payload) else {
-                            continue;
+                        let scan_completed = match ScanCompleted::try_from(payload) {
+                            Ok(scan_completed) => scan_completed,
+                            Err(error) => {
+                                tracing::trace!(error = %error, "Ignoring malformed scan-completed event");
+                                continue;
+                            }
                         };
 
                         // Ignore scans on other interfaces
                         if scan_completed.ifindex != interface.index() {
+                            tracing::trace!(
+                                event_ifindex = scan_completed.ifindex,
+                                scan_ifindex = interface.index(),
+                                "Ignoring scan-completed event for another interface"
+                            );
                             continue;
                         }
 
                         // Make sure we have an existing `ScanTriggered` event
                         let Some(scan_triggered) = last_scan_triggered.take() else {
+                            tracing::trace!(
+                                ifindex = scan_completed.ifindex,
+                                "Ignoring unpaired scan-completed event"
+                            );
                             continue;
                         };
 
@@ -163,11 +185,21 @@ pub(crate) async fn scan(interface: &Interface, backend: Backend) -> Result<Scan
                     Cmd::ScanAborted => {
                         let attrs = payload.attrs().get_attr_handle();
                         let Ok(ifindex) = attrs.get_attr_payload_as::<u32>(Attr::Ifindex) else {
-                            tracing::debug!("Ignoring scan-aborted event without an interface index");
+                            tracing::trace!("Ignoring scan-aborted event without an interface index");
                             continue;
                         };
 
-                        if ifindex != interface.index() || last_scan_triggered.is_none() {
+                        if ifindex != interface.index() {
+                            tracing::trace!(
+                                event_ifindex = ifindex,
+                                scan_ifindex = interface.index(),
+                                "Ignoring scan-aborted event for another interface"
+                            );
+                            continue;
+                        }
+
+                        if last_scan_triggered.is_none() {
+                            tracing::trace!(ifindex, "Ignoring unpaired scan-aborted event");
                             continue;
                         }
 
@@ -175,7 +207,12 @@ pub(crate) async fn scan(interface: &Interface, backend: Backend) -> Result<Scan
                     }
 
                     // Ignore other nl80211 commands
-                    _ => {}
+                    _ => {
+                        tracing::trace!(
+                            command = ?payload.cmd(),
+                            "Ignoring unrelated nl80211 scan event"
+                        );
+                    }
                 }
             },
 
