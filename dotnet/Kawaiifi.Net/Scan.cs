@@ -121,9 +121,12 @@ public class Scan : IDisposable
         }
     }
 
-    /// <summary>The frequencies in MHz that were scanned.</summary>
+    /// <summary>
+    /// The frequencies in MHz that were scanned.
+    /// Returns null when frequencies were not reported with the scan.
+    /// </summary>
     [SupportedOSPlatform("linux")]
-    public uint[] FrequenciesMhz
+    public uint[]? FrequenciesMhz
     {
         get
         {
@@ -131,6 +134,12 @@ public class Scan : IDisposable
             {
                 nuint count = 0;
                 var ptr = NativeMethodsLinux.kawaiifi_scan_freqs_mhz(Ptr, &count);
+
+                if (ptr == null)
+                {
+                    return null;
+                }
+
                 return new Span<uint>(ptr, (int)count).ToArray();
             }
         }

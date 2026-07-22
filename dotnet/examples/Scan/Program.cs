@@ -6,7 +6,7 @@ if (OperatingSystem.IsLinux())
 {
     using var scan = defaultInterface?.Scan();
     Console.WriteLine(
-        $"Found {scan?.BssList.Count} BSS(s) in {scan?.EndTimeUtcMs - scan?.StartTimeUtcMs} ms on {scan?.FrequenciesMhz.Length} frequencies using {defaultInterface?.Name}");
+        $"Found {scan?.BssList.Count} BSS(s) in {scan?.EndTimeUtcMs - scan?.StartTimeUtcMs} ms on {scan?.FrequenciesMhz?.Length} frequencies using {defaultInterface?.Name}");
 }
 
 if (OperatingSystem.IsMacOS())

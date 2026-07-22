@@ -71,15 +71,15 @@ pub unsafe extern "C" fn kawaiifi_scan_ifindex(scan: Option<&Scan>) -> u32 {
 }
 
 /// Returns a borrowed pointer to the frequencies (in MHz) that were scanned and writes the count into `out_count`.
+/// Returns NULL if `scan` is NULL or if frequencies were not reported with the scan.
 /// The pointer is valid for the lifetime of the scan. Do NOT free it.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn kawaiifi_scan_freqs_mhz(
     scan: Option<&Scan>,
     out_count: *mut usize,
 ) -> *const u32 {
-    match scan {
-        Some(scan) => {
-            let freqs = scan.freqs_mhz();
+    match scan.and_then(|scan| scan.freqs_mhz()) {
+        Some(freqs) => {
             if !out_count.is_null() {
                 unsafe { *out_count = freqs.len() };
             }

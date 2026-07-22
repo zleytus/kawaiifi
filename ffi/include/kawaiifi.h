@@ -1062,6 +1062,7 @@ uint32_t kawaiifi_scan_ifindex(const struct Scan *scan);
 #if defined(__linux__)
 /**
  * Returns a borrowed pointer to the frequencies (in MHz) that were scanned and writes the count into `out_count`.
+ * Returns NULL if `scan` is NULL or if frequencies were not reported with the scan.
  * The pointer is valid for the lifetime of the scan. Do NOT free it.
  */
 const uint32_t *kawaiifi_scan_freqs_mhz(const struct Scan *scan,

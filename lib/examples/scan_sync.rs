@@ -7,10 +7,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let scan = interface.scan_blocking()?;
 
     println!(
-        "Found {} BSS(s) in {:#?} on {} frequencies using {}",
+        "Found {} BSS(s) in {:#?} on {:?} frequencies using {}",
         scan.bss_list().len(),
         scan.duration(),
-        scan.freqs_mhz().len(),
+        scan.freqs_mhz().map(|freqs| freqs.len()),
         interface.name(),
     );
 

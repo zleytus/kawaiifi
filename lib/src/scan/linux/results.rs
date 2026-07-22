@@ -38,7 +38,7 @@ use crate::{
 /// let scan = interface.scan().await?;
 ///
 /// println!("Found {} BSSs", scan.bss_list().len());
-/// println!("Scanned {} frequencies", scan.freqs_mhz().len());
+/// println!("Scanned {:?} frequencies", scan.freqs_mhz().map(|freqs| freqs.len()));
 /// println!("Scan took {:?}", scan.duration());
 ///
 /// for bss in scan.bss_list() {
@@ -52,7 +52,7 @@ pub struct Scan {
     bss_list: Vec<Bss>,
     wiphy: u32,
     ifindex: u32,
-    freqs_mhz: Vec<u32>,
+    freqs_mhz: Option<Vec<u32>>,
     ies: Vec<Ie>,
     flags: Option<Flags>,
     start_time: DateTime<Utc>,
@@ -65,6 +65,20 @@ impl Scan {
             return Err(Error::EmptyScan);
         }
 
+        // If any subscan has unknown frequencies, the aggregate list of frequencies is incomplete
+        // and we set freqs_mhz to None
+        let mut freqs_mhz = Some(Vec::new());
+        for subscan in scans.iter() {
+            if let Some(subscan_freqs) = subscan.freqs_mhz()
+                && let Some(freqs_mhz) = &mut freqs_mhz
+            {
+                freqs_mhz.extend(subscan_freqs);
+            } else {
+                freqs_mhz = None;
+                break;
+            }
+        }
+
         Ok(Self {
             bss_list: scans
                 .iter()
@@ -72,10 +86,7 @@ impl Scan {
                 .collect(),
             wiphy: scans.first().map(|scan| scan.wiphy()).unwrap_or_default(),
             ifindex: scans.first().map(|scan| scan.ifindex()).unwrap_or_default(),
-            freqs_mhz: scans
-                .iter()
-                .flat_map(|scan| scan.freqs_mhz().iter().cloned())
-                .collect(),
+            freqs_mhz,
             ies: HashSet::<Ie>::from_iter(scans.iter().flat_map(|scan| scan.ies().iter().cloned()))
                 .into_iter()
                 .collect(),
@@ -110,8 +121,8 @@ impl Scan {
     }
 
     /// The frequencies that were scanned for BSSs.
-    pub fn freqs_mhz(&self) -> &[u32] {
-        &self.freqs_mhz
+    pub fn freqs_mhz(&self) -> Option<&[u32]> {
+        self.freqs_mhz.as_deref()
     }
 
     /// The information elements that were sent with each probe request.
@@ -161,8 +172,8 @@ impl ScanInternal {
     }
 
     /// The frequencies at which probe requests were transmitted
-    fn freqs_mhz(&self) -> &[u32] {
-        &self.scan_completed.freqs_mhz
+    fn freqs_mhz(&self) -> Option<&[u32]> {
+        self.scan_completed.freqs_mhz.as_deref()
     }
 
     /// The information elements that were sent with each probe request
@@ -261,7 +272,7 @@ impl Deref for ScanCompleted {
 pub(super) struct ScanParams {
     pub(super) wiphy: u32,
     pub(super) ifindex: u32,
-    pub(super) freqs_mhz: Vec<u32>,
+    pub(super) freqs_mhz: Option<Vec<u32>>,
     pub(super) ies: Vec<Ie>,
     pub(super) flags: Option<Flags>,
 }
@@ -273,11 +284,28 @@ impl TryFrom<&Genlmsghdr<Cmd, Attr>> for ScanParams {
         let attr_handle = msghdr.attrs().get_attr_handle();
         let wiphy = attr_handle.get_attr_payload_as::<u32>(Attr::Wiphy)?;
         let ifindex = attr_handle.get_attr_payload_as::<u32>(Attr::Ifindex)?;
-        let scan_freqs_handle = attr_handle.get_nested_attributes::<u16>(Attr::ScanFrequencies)?;
-        let freqs_mhz = scan_freqs_handle
-            .iter()
-            .map(|attr| attr.get_payload_as::<u32>().unwrap_or_default())
-            .collect();
+        let freqs_mhz = if attr_handle.get_attribute(Attr::ScanFrequencies).is_some() {
+            let handle = attr_handle.get_nested_attributes::<u16>(Attr::ScanFrequencies)?;
+            Some(
+                handle
+                    .iter()
+                    .map(|attr| attr.get_payload_as::<u32>())
+                    .collect::<Result<Vec<_>, _>>()?,
+            )
+        } else if attr_handle.get_attribute(Attr::ScanFreqKhz).is_some() {
+            let handle = attr_handle.get_nested_attributes::<u16>(Attr::ScanFreqKhz)?;
+            Some(
+                handle
+                    .iter()
+                    .map(|attr| {
+                        attr.get_payload_as::<u32>()
+                            .map(|freq_khz| freq_khz / 1_000)
+                    })
+                    .collect::<Result<Vec<_>, _>>()?,
+            )
+        } else {
+            None
+        };
         let ies = attr_handle
             .get_attribute(Attr::Ie)
             .map(|attr| ies::from_bytes(attr.payload().as_ref()))

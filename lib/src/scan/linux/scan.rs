@@ -131,6 +131,11 @@ pub(crate) async fn scan(interface: &Interface, backend: Backend) -> Result<Scan
                             continue;
                         }
 
+                        // Make sure we have an existing `ScanTriggered` event
+                        let Some(scan_triggered) = last_scan_triggered.take() else {
+                            continue;
+                        };
+
                         // Fetch the actual BSS results
                         let bss_list = match scan_results(interface, &socket).await {
                             Ok(bss_list) => bss_list,
@@ -142,13 +147,11 @@ pub(crate) async fn scan(interface: &Interface, backend: Backend) -> Result<Scan
                         };
 
                         // Pair the trigger and completion events with results
-                        if let Some(scan_triggered) = last_scan_triggered.take() {
-                            scans.push(ScanInternal {
-                                bss_list,
-                                scan_triggered,
-                                scan_completed,
-                            });
-                        }
+                        scans.push(ScanInternal {
+                            bss_list,
+                            scan_triggered,
+                            scan_completed,
+                        });
 
                         // Switch to short timeout to wait for potential next sub-scan
                         // (NetworkManager may trigger multiple scans for different bands)
