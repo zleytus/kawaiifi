@@ -79,7 +79,7 @@ impl BssInternal {
 
     /// The SSID, or `None` for hidden networks.
     pub fn formatted_ssid(&self) -> Option<String> {
-        self.ssid().map(|s| s.replace('\0', "�"))
+        self.ssid_lossy()
     }
 
     /// The BSSID formatted as a colon-separated hex string (e.g. `AA:BB:CC:DD:EE:FF`).
