@@ -30,6 +30,10 @@ pub enum Error {
     #[error("scan did not produce any results")]
     EmptyScan,
 
+    /// The scan was aborted.
+    #[error("scan was aborted")]
+    ScanAborted,
+
     /// An I/O operation failed.
     #[error(transparent)]
     IOError(#[from] std::io::Error),

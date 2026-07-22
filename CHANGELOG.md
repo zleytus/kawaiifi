@@ -17,6 +17,7 @@
 #### Added
 
 - Added `Bss::ssid_lossy()` for displaying SSIDs with invalid UTF-8 bytes.
+- Added `Error::ScanAborted` on Linux.
 
 ### `kawaiifi-ffi`
 

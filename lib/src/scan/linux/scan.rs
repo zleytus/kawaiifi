@@ -159,6 +159,21 @@ pub(crate) async fn scan(interface: &Interface, backend: Backend) -> Result<Scan
                         state = ScanState::WaitingForNextScan;
                     }
 
+                    // A scan was aborted
+                    Cmd::ScanAborted => {
+                        let attrs = payload.attrs().get_attr_handle();
+                        let Ok(ifindex) = attrs.get_attr_payload_as::<u32>(Attr::Ifindex) else {
+                            tracing::debug!("Ignoring scan-aborted event without an interface index");
+                            continue;
+                        };
+
+                        if ifindex != interface.index() || last_scan_triggered.is_none() {
+                            continue;
+                        }
+
+                        return Err(Error::ScanAborted);
+                    }
+
                     // Ignore other nl80211 commands
                     _ => {}
                 }
